@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Dactra")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+15001da88844e2437b987262ee364d5d2d6bb994")]
 [assembly: System.Reflection.AssemblyProductAttribute("Dactra")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Dactra")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
