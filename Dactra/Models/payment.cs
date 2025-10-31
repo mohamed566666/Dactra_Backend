@@ -10,10 +10,7 @@ namespace Dactra.Models
         public string Currency { get; set; } = string.Empty;
         public string Method { get; set; } = string.Empty;
         public bool Status { get; set; } = false;
-        [ForeignKey("Patient")]
-        public int PatientId { get; set; }
-        public Patient Patient { get; set; }
-
+ 
         public List<Patient_Appointment> Patient_Appointment { get; set; }
 
     }

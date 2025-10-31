@@ -12,8 +12,7 @@
         public string MaritalStatus { get; set; } = string.Empty;
         public string ChronicDisease { get; set; } = string.Empty;
         public List<VitalSign> VitalSign { get; set; } = new List<VitalSign>();
-        public payment payment { get; set; }
-        public Prescription Prescription { get; set; }
+  
 
         public List<Patient_Appointment> Patient_Appointment { get; set; }
 
