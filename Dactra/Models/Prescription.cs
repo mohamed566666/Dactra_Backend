@@ -4,7 +4,7 @@ namespace Dactra.Models
 {
     public class Prescription
     {
-        public int QID { get; set; }
+        public int PID { get; set; }
         public string Diagnosis { get; set; } = string.Empty;
 
         public List<Medicines> Medicines { get; set; } = new List<Medicines>();

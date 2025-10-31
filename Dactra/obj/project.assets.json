@@ -2871,23 +2871,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Rashad\\.nuget\\packages\\": {},
+    "C:\\Users\\Mohamed\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Rashad\\OneDrive\\Desktop\\Gd Project\\Dactra_Backend\\Dactra\\Dactra.csproj",
+      "projectUniqueName": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Dactra.csproj",
       "projectName": "Dactra",
-      "projectPath": "C:\\Users\\Rashad\\OneDrive\\Desktop\\Gd Project\\Dactra_Backend\\Dactra\\Dactra.csproj",
-      "packagesPath": "C:\\Users\\Rashad\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Rashad\\OneDrive\\Desktop\\Gd Project\\Dactra_Backend\\Dactra\\obj\\",
+      "projectPath": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Dactra.csproj",
+      "packagesPath": "C:\\Users\\Mohamed\\.nuget\\packages\\",
+      "outputPath": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Rashad\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Mohamed\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -2948,6 +2948,24 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[8.0.21, 8.0.21]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[8.0.21, 8.0.21]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[8.0.21, 8.0.21]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[8.0.21, 8.0.21]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
