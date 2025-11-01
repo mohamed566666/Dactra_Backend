@@ -9,7 +9,7 @@
 
         public string Category { get; set; } = string.Empty;
         public int PatientId { get; set; }
-        public Patient Patient { get; set; }
+        public PatientProfile Patient { get; set; }
 
         public int MajorsId { get; set; }
         public Majors Majors { get; set; }
