@@ -7,5 +7,6 @@
         public DateTime Starting_Career_Date { get; set; }
         public int Years_of_Experience { get; set; }
         public ICollection<Post> Posts { get; set; }
+        public ICollection<Schedule_table> Time { get; set; }
     }
 }

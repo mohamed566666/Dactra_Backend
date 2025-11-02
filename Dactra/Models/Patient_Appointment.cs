@@ -11,9 +11,9 @@
         public payment Payment { get; set; }
 
 
-        //public int Schedule_tableId { get; set; }
+        public int Schedule_tableId { get; set; }
 
-        //public Schedule_table Schedule_table { get; set; }
+        public Schedule_table Schedule_table { get; set; }
 
 
         public bool Status { get; set; }=false;
