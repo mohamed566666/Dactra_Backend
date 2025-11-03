@@ -1,10 +1,16 @@
-﻿namespace Dactra.Models
+﻿using System.ComponentModel.DataAnnotations;
+namespace Dactra.Models
 {
     public class TestService
     {
-        public int testServiceId { get; set; }
-        public string testServiceName { get; set; }
-        public string testServiceDescription { get; set; }
+        [Key]
+        public int Id { get; set; }
+
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        public string Description { get; set; } = string.Empty;
         public ICollection<ProviderOffering> Offerings { get; set; } = new List<ProviderOffering>();
     }
 }

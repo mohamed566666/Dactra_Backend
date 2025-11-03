@@ -1,14 +1,30 @@
-﻿namespace Dactra.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Dactra.Models
 {
     public class Post
     {
+        [Key]
         public int Id { get; set; }
+
+        [Required]
         public string Content { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        [Required]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [Required]
         public int MajorsId { get; set; }
-        public Majors Category { get; set; }
+
+        [ForeignKey(nameof(MajorsId))]
+        public Majors Category { get; set; } = null!;
+
+        [Required]
         public int DoctorId { get; set; }
-        public DoctorProfile Doctor { get; set; }
+
+        [ForeignKey(nameof(DoctorId))]
+        public DoctorProfile Doctor { get; set; } = null!;
 
     }
 }

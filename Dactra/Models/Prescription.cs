@@ -1,15 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Dactra.Models
 {
     public class Prescription
     {
-        public int PID { get; set; }
+        [Key]
+        public int Id { get; set; }
         public string Diagnosis { get; set; } = string.Empty;
 
         public List<Medicines> Medicines { get; set; } = new List<Medicines>();
 
-
-        public List<Patient_Appointment> Patient_Appointment { get; set; }
+        public List<PatientAppointment> PatientAppointment { get; set; } = new List<PatientAppointment>();
+        public List<PrescriptionWithMedicin> PrescriptionWithMedicins { get; set; } = new List<PrescriptionWithMedicin>();
     }
 }
