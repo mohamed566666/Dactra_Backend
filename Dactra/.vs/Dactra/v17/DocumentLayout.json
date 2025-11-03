@@ -3,12 +3,40 @@
   "WorkspaceRootPath": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\applicationrole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\applicationrole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\applicationuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\applicationuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\doctorprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\doctorprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\patientprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\patientprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\enums\\gender.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:enums\\gender.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\serviceprovider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\serviceprovider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\majors.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\majors.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\applicationrole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\applicationrole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\medicines.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -19,20 +47,12 @@
       "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\prescription.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\applicationuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\applicationuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\vitalsign.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\vitalsign.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\testservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\testservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\serviceprovider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\serviceprovider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\scheduletable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -63,24 +83,12 @@
       "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\patientappointment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\patientprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\patientprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\answer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\answer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\medicaltestproviderprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\medicaltestproviderprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\majors.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\majors.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|d:\\fsci\\level 4\\semester 1\\graduation project\\dactra_backend\\dactra\\models\\doctorprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AF241270-B881-4920-8E4B-3630FCC3EDBA}|Dactra.csproj|solutionrelative:models\\doctorprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -90,11 +98,37 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Gender.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Enums\\Gender.cs",
+              "RelativeDocumentMoniker": "Enums\\Gender.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Enums\\Gender.cs",
+              "RelativeToolTip": "Enums\\Gender.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T20:16:56.278Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAA8AAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T19:52:36.477Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "ApplicationRole.cs",
               "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\ApplicationRole.cs",
               "RelativeDocumentMoniker": "Models\\ApplicationRole.cs",
@@ -108,227 +142,19 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "ApplicationDbContext.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Data\\ApplicationDbContext.cs",
-              "RelativeDocumentMoniker": "Data\\ApplicationDbContext.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Data\\ApplicationDbContext.cs",
-              "RelativeToolTip": "Data\\ApplicationDbContext.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T13:52:51.036Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "Rating.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Rating.cs",
-              "RelativeDocumentMoniker": "Models\\Rating.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Rating.cs",
-              "RelativeToolTip": "Models\\Rating.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T11:36:03.444Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "ScheduleTable.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\ScheduleTable.cs",
-              "RelativeDocumentMoniker": "Models\\ScheduleTable.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\ScheduleTable.cs",
-              "RelativeToolTip": "Models\\ScheduleTable.cs",
-              "ViewState": "AgIAAAEAAAAAAAAAAAAgwB4AAAANAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T12:35:13.596Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "ServiceProvider.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\ServiceProvider.cs",
-              "RelativeDocumentMoniker": "Models\\ServiceProvider.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\ServiceProvider.cs",
-              "RelativeToolTip": "Models\\ServiceProvider.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T12:54:45.406Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "TestService.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\TestService.cs",
-              "RelativeDocumentMoniker": "Models\\TestService.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\TestService.cs",
-              "RelativeToolTip": "Models\\TestService.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T12:55:42.509Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "VitalSign.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\VitalSign.cs",
-              "RelativeDocumentMoniker": "Models\\VitalSign.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\VitalSign.cs",
-              "RelativeToolTip": "Models\\VitalSign.cs",
-              "ViewState": "AgIAAAUAAAAAAAAAAAAxwBcAAAA8AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T12:58:35.845Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Prescription.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Prescription.cs",
-              "RelativeDocumentMoniker": "Models\\Prescription.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Prescription.cs",
-              "RelativeToolTip": "Models\\Prescription.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T12:48:18.597Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Medicines.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Medicines.cs",
-              "RelativeDocumentMoniker": "Models\\Medicines.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Medicines.cs",
-              "RelativeToolTip": "Models\\Medicines.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T12:50:01.044Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "Questions.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Questions.cs",
-              "RelativeDocumentMoniker": "Models\\Questions.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Questions.cs",
-              "RelativeToolTip": "Models\\Questions.cs",
-              "ViewState": "AgIAAAEAAAAAAAAAAAAkwBoAAAA8AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T12:45:04.724Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "ProviderOffering.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\ProviderOffering.cs",
-              "RelativeDocumentMoniker": "Models\\ProviderOffering.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\ProviderOffering.cs",
-              "RelativeToolTip": "Models\\ProviderOffering.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAAAAwBQAAAA8AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T12:45:02.77Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
               "Title": "ApplicationUser.cs",
               "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\ApplicationUser.cs",
               "RelativeDocumentMoniker": "Models\\ApplicationUser.cs",
               "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\ApplicationUser.cs",
               "RelativeToolTip": "Models\\ApplicationUser.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAvAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAABCAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-03T13:00:37.868Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "Post.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Post.cs",
-              "RelativeDocumentMoniker": "Models\\Post.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Post.cs",
-              "RelativeToolTip": "Models\\Post.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAAAAwBMAAAAmAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T12:48:30.153Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "Payment.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Payment.cs",
-              "RelativeDocumentMoniker": "Models\\Payment.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Payment.cs",
-              "RelativeToolTip": "Models\\Payment.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAmAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T12:48:41.886Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "PatientAppointment.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\PatientAppointment.cs",
-              "RelativeDocumentMoniker": "Models\\PatientAppointment.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\PatientAppointment.cs",
-              "RelativeToolTip": "Models\\PatientAppointment.cs",
-              "ViewState": "AgIAABEAAAAAAAAAAAAgwB8AAAAtAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T12:48:49.7Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 15,
-              "Title": "PatientProfile.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\PatientProfile.cs",
-              "RelativeDocumentMoniker": "Models\\PatientProfile.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\PatientProfile.cs",
-              "RelativeToolTip": "Models\\PatientProfile.cs",
-              "ViewState": "AgIAABwAAAAAAAAAAADwvyoAAAAXAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T12:48:44.708Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 16,
-              "Title": "Answer.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Answer.cs",
-              "RelativeDocumentMoniker": "Models\\Answer.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Answer.cs",
-              "RelativeToolTip": "Models\\Answer.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAiwBAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T13:47:45.654Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 17,
-              "Title": "MedicalTestProviderProfile.cs",
-              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\MedicalTestProviderProfile.cs",
-              "RelativeDocumentMoniker": "Models\\MedicalTestProviderProfile.cs",
-              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\MedicalTestProviderProfile.cs",
-              "RelativeToolTip": "Models\\MedicalTestProviderProfile.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T12:50:59.151Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 7,
               "Title": "Majors.cs",
               "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Majors.cs",
               "RelativeDocumentMoniker": "Models\\Majors.cs",
@@ -341,16 +167,211 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 3,
               "Title": "DoctorProfile.cs",
               "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\DoctorProfile.cs",
               "RelativeDocumentMoniker": "Models\\DoctorProfile.cs",
               "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\DoctorProfile.cs",
               "RelativeToolTip": "Models\\DoctorProfile.cs",
-              "ViewState": "AgIAAAIAAAAAAAAAAAAkwBAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAABoAAAAAAAAAAAAswCcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-03T13:08:58.284Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "PatientProfile.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\PatientProfile.cs",
+              "RelativeDocumentMoniker": "Models\\PatientProfile.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\PatientProfile.cs",
+              "RelativeToolTip": "Models\\PatientProfile.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABYAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T12:48:44.708Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Data\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "Data\\ApplicationDbContext.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Data\\ApplicationDbContext.cs",
+              "RelativeToolTip": "Data\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAAIAAAAAAAAAAAAIwCAAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T13:52:51.036Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "VitalSign.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\VitalSign.cs",
+              "RelativeDocumentMoniker": "Models\\VitalSign.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\VitalSign.cs",
+              "RelativeToolTip": "Models\\VitalSign.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAxwBcAAAA8AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T12:58:35.845Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Prescription.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Prescription.cs",
+              "RelativeDocumentMoniker": "Models\\Prescription.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Prescription.cs",
+              "RelativeToolTip": "Models\\Prescription.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T12:48:18.597Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ServiceProvider.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\ServiceProvider.cs",
+              "RelativeDocumentMoniker": "Models\\ServiceProvider.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\ServiceProvider.cs",
+              "RelativeToolTip": "Models\\ServiceProvider.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T12:54:45.406Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "TestService.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\TestService.cs",
+              "RelativeDocumentMoniker": "Models\\TestService.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\TestService.cs",
+              "RelativeToolTip": "Models\\TestService.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T12:55:42.509Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "ScheduleTable.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\ScheduleTable.cs",
+              "RelativeDocumentMoniker": "Models\\ScheduleTable.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\ScheduleTable.cs",
+              "RelativeToolTip": "Models\\ScheduleTable.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAgwB4AAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T12:35:13.596Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "Rating.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Rating.cs",
+              "RelativeDocumentMoniker": "Models\\Rating.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Rating.cs",
+              "RelativeToolTip": "Models\\Rating.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T11:36:03.444Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Medicines.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Medicines.cs",
+              "RelativeDocumentMoniker": "Models\\Medicines.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Medicines.cs",
+              "RelativeToolTip": "Models\\Medicines.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T12:50:01.044Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Questions.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Questions.cs",
+              "RelativeDocumentMoniker": "Models\\Questions.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Questions.cs",
+              "RelativeToolTip": "Models\\Questions.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAkwBoAAAA8AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T12:45:04.724Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "ProviderOffering.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\ProviderOffering.cs",
+              "RelativeDocumentMoniker": "Models\\ProviderOffering.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\ProviderOffering.cs",
+              "RelativeToolTip": "Models\\ProviderOffering.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAAwBQAAAA8AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T12:45:02.77Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "Post.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Post.cs",
+              "RelativeDocumentMoniker": "Models\\Post.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Post.cs",
+              "RelativeToolTip": "Models\\Post.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAAwBMAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T12:48:30.153Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "Payment.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Payment.cs",
+              "RelativeDocumentMoniker": "Models\\Payment.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Payment.cs",
+              "RelativeToolTip": "Models\\Payment.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T12:48:41.886Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "PatientAppointment.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\PatientAppointment.cs",
+              "RelativeDocumentMoniker": "Models\\PatientAppointment.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\PatientAppointment.cs",
+              "RelativeToolTip": "Models\\PatientAppointment.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAAAgwB8AAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T12:48:49.7Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "Answer.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Answer.cs",
+              "RelativeDocumentMoniker": "Models\\Answer.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\Answer.cs",
+              "RelativeToolTip": "Models\\Answer.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAiwBAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T13:47:45.654Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "MedicalTestProviderProfile.cs",
+              "DocumentMoniker": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\MedicalTestProviderProfile.cs",
+              "RelativeDocumentMoniker": "Models\\MedicalTestProviderProfile.cs",
+              "ToolTip": "D:\\FSCI\\Level 4\\Semester 1\\Graduation Project\\Dactra_Backend\\Dactra\\Models\\MedicalTestProviderProfile.cs",
+              "RelativeToolTip": "Models\\MedicalTestProviderProfile.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T12:50:59.151Z"
             }
           ]
         }

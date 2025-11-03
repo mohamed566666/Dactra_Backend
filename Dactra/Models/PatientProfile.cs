@@ -14,6 +14,14 @@ namespace Dactra.Models
         [ForeignKey(nameof(UserId))]
         public ApplicationUser User { get; set; } = null!;
 
+        [Required]
+        [MaxLength(50)]
+        public string FirstName { get; set; } = string.Empty;
+        [Required]
+        [MaxLength(50)]
+        public string LastName { get; set; } = string.Empty;
+        public Gender Gender { get; set; }
+
         [Range(0, 250)]
         public int Height { get; set; }
 
