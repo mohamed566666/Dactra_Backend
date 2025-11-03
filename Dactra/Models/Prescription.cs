@@ -12,5 +12,6 @@ namespace Dactra.Models
         public List<Medicines> Medicines { get; set; } = new List<Medicines>();
 
         public List<PatientAppointment> PatientAppointment { get; set; } = new List<PatientAppointment>();
+        public List<PrescriptionWithMedicin> PrescriptionWithMedicins { get; set; } = new List<PrescriptionWithMedicin>();
     }
 }

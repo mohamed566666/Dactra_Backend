@@ -30,9 +30,28 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.Entity<Prescription>()
-            .HasMany(p => p.Medicines)
-            .WithMany(m => m.prescriptions);
+
+        modelBuilder.Entity<Dactra.Models.ServiceProvider>()
+        .ToTable("ServiceProviders");
+
+        modelBuilder.Entity<DoctorProfile>()
+            .ToTable("DoctorProfiles");
+
+        modelBuilder.Entity<MedicalTestProviderProfile>()
+            .ToTable("MedicalTestProviderProfiles");
+
+        modelBuilder.Entity<PrescriptionWithMedicin>()
+    .HasKey(pm => new { pm.PrescriptionId, pm.MedicinesId });
+
+        modelBuilder.Entity<PrescriptionWithMedicin>()
+            .HasOne(pm => pm.Prescription)
+            .WithMany(p => p.PrescriptionWithMedicins)
+            .HasForeignKey(pm => pm.PrescriptionId);
+
+        modelBuilder.Entity<PrescriptionWithMedicin>()
+            .HasOne(pm => pm.Medicines)
+            .WithMany(m => m.PrescriptionWithMedicins)
+            .HasForeignKey(pm => pm.MedicinesId);
 
         foreach (var fk in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
             fk.DeleteBehavior = DeleteBehavior.NoAction;

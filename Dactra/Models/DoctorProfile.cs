@@ -18,6 +18,8 @@ namespace Dactra.Models
         [Required]
         public DateTime DateOfBirth { get; set; }
 
+        public ServiceProvider Provider { get; set; } = null!;
+
         [NotMapped]
         public int Age => CalculateAge(DateOfBirth);
 

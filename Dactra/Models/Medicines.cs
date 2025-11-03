@@ -11,5 +11,6 @@ namespace Dactra.Models
         public string Indication { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public List<Prescription> prescriptions { get; set; } = new List<Prescription>();
+        public List<PrescriptionWithMedicin> PrescriptionWithMedicins { get; set; } = new List<PrescriptionWithMedicin>();
     }
 }

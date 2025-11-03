@@ -22,7 +22,6 @@ namespace Dactra.Models
 
         [Required]
         public DateTime End { get; set; }
-        public Schedule_Mode Type { get; set; }
 
         [NotMapped]
         public List<bool> BookedStatuses
