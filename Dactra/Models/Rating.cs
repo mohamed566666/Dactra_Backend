@@ -1,15 +1,27 @@
-﻿namespace Dactra.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Dactra.Models
 {
     public class Rating
     {
-        public int Rate_Id { get; set; }
+        [Key]
+        public int Id { get; set; }
 
-        public int Patient_ID { get; set; }
-        public PatientProfile Patient { get; set; }
-        
-        public int Provider_ID { get; set; }
-        public ServiceProvider Provider { get; set; }
-        
+        [Required]
+        public int PatientId { get; set; }
+
+        [ForeignKey(nameof(PatientId))]
+        public PatientProfile Patient { get; set; } = null!;
+
+        [Required]
+        public int ProviderId { get; set; }
+
+        [ForeignKey(nameof(ProviderId))]
+        public ServiceProvider Provider { get; set; } = null!;
+
+        [Required]
+        [Range(1, 5)]
         public int Score { get; set; }
         public string Comment { get; set; } = string.Empty;
         public DateTime Rated_At { get; set; } = DateTime.Now;

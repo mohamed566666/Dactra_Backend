@@ -1,13 +1,26 @@
-﻿namespace Dactra.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Dactra.Models
 {
     public class VitalSign
     {
+        [Key]
         public int Id { get; set; }
-        public int  Value { get; set; }
-        public string  Type { get; set; } = string.Empty;
-        public string data { get; set; }=string.Empty;
-        public int PatientId { get; set; }
-        public Patient Patient { get; set; }
 
+        [Required]
+        public int  Value { get; set; }
+
+        [Required]
+        public string  Type { get; set; } = string.Empty;
+
+        [Required]
+        public string Note { get; set; }=string.Empty;
+
+        [Required]
+        public int PatientId { get; set; }
+
+        [ForeignKey(nameof(PatientId))]
+        public PatientProfile Patient { get; set; } = null!;
     }
 }

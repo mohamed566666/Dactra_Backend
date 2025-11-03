@@ -1,24 +1,46 @@
 ﻿using Dactra.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Dactra.Models
 {
     public class PatientProfile
     {
         public int Id { get; set; }
-        public int User_ID { get; set; }
-        public ApplicationUser User { get; set; }
+
+        [Required]
+        public string UserId { get; set; } = null!;
+
+        [ForeignKey(nameof(UserId))]
+        public ApplicationUser User { get; set; } = null!;
+
+        [Range(0, 250)]
         public int Height { get; set; }
+
+        [Range(0, 500)]
         public int Weight { get; set; }
-        public DateTime Date_Of_Birth { get; set; }
-        public int Age { get; set; }
+
+        [Required]
+        public DateTime DateOfBirth { get; set; }
+
+        [NotMapped]
+        public int Age{get => CalculateAge(DateOfBirth);}
         public BloodTypes BloodType { get; set; }
-        public ICollection<Medicines> Current_Medications { get; set; }
+        public ICollection<Medicines> Current_Medications { get; set; } = new List<Medicines>();
         public bool IS_Smoking { get; set; }
         public string Allergies { get; set; } = string.Empty;
         public MaritalStatus MaritalStatus { get; set; }
         public string ChronicDisease { get; set; } = string.Empty;
         public List<VitalSign> VitalSign { get; set; } = new List<VitalSign>();
-        public List<Patient_Appointment> Patient_Appointment { get; set; }
+        public List<PatientAppointment> Patient_Appointment { get; set; } = new List<PatientAppointment>();
         public List<Questions> questions { get; set; } = new List<Questions>();
+
+        private int CalculateAge(DateTime dob)
+        {
+            var today = DateTime.UtcNow.Date;
+            var age = today.Year - dob.Year;
+            if (dob.Date > today.AddYears(-age)) age--;
+            return age;
+        }
     }
 }
