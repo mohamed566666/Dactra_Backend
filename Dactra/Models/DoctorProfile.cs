@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Dactra.Models
 {
-    public class DoctorProfile : ServiceProvider
+    public class DoctorProfile : ServiceProviderProfile
     {
 
         [Required]
@@ -17,8 +17,6 @@ namespace Dactra.Models
 
         [Required]
         public DateTime DateOfBirth { get; set; }
-
-        public ServiceProvider Provider { get; set; } = null!;
 
         [NotMapped]
         public int Age => CalculateAge(DateOfBirth);

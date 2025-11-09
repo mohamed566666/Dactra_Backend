@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Dactra.Models
 {
-    public class ServiceProvider
+    public class ServiceProviderProfile
     {
         [Key]
         public int Id { get; set; }
