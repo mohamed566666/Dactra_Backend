@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251109102918_delete wrong navigations")]
+    partial class deletewrongnavigations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -521,7 +524,7 @@ namespace Dactra.Migrations
                     b.ToTable("ScheduleTables");
                 });
 
-            modelBuilder.Entity("Dactra.Models.ServiceProviderProfile", b =>
+            modelBuilder.Entity("Dactra.Models.ServiceProvider", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -739,7 +742,7 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Dactra.Models.DoctorProfile", b =>
                 {
-                    b.HasBaseType("Dactra.Models.ServiceProviderProfile");
+                    b.HasBaseType("Dactra.Models.ServiceProvider");
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
@@ -765,7 +768,7 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Dactra.Models.MedicalTestProviderProfile", b =>
                 {
-                    b.HasBaseType("Dactra.Models.ServiceProviderProfile");
+                    b.HasBaseType("Dactra.Models.ServiceProvider");
 
                     b.Property<int>("Type")
                         .HasColumnType("int");
@@ -930,7 +933,7 @@ namespace Dactra.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Dactra.Models.ServiceProviderProfile", "Provider")
+                    b.HasOne("Dactra.Models.ServiceProvider", "Provider")
                         .WithMany()
                         .HasForeignKey("ProviderId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -952,7 +955,7 @@ namespace Dactra.Migrations
                     b.Navigation("Doctor");
                 });
 
-            modelBuilder.Entity("Dactra.Models.ServiceProviderProfile", b =>
+            modelBuilder.Entity("Dactra.Models.ServiceProvider", b =>
                 {
                     b.HasOne("Dactra.Models.ApplicationUser", "User")
                         .WithMany()
@@ -1042,7 +1045,7 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Dactra.Models.DoctorProfile", b =>
                 {
-                    b.HasOne("Dactra.Models.ServiceProviderProfile", null)
+                    b.HasOne("Dactra.Models.ServiceProvider", null)
                         .WithOne()
                         .HasForeignKey("Dactra.Models.DoctorProfile", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1051,7 +1054,7 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Dactra.Models.MedicalTestProviderProfile", b =>
                 {
-                    b.HasOne("Dactra.Models.ServiceProviderProfile", null)
+                    b.HasOne("Dactra.Models.ServiceProvider", null)
                         .WithOne()
                         .HasForeignKey("Dactra.Models.MedicalTestProviderProfile", "Id")
                         .OnDelete(DeleteBehavior.Cascade)

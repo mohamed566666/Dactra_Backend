@@ -11,7 +11,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     }
     public DbSet<PatientProfile> Patients { get; set; }
     public DbSet<DoctorProfile> Doctors { get; set; }
-    public DbSet<Dactra.Models.ServiceProvider> Providers { get; set; }
+    public DbSet<ServiceProviderProfile> Providers { get; set; }
     public DbSet<MedicalTestProviderProfile> MedicalTestProviders { get; set; }
     public DbSet<TestService> TestServices { get; set; }
     public DbSet<ProviderOffering> ProviderOfferings { get; set; }
@@ -31,14 +31,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Dactra.Models.ServiceProvider>()
+        modelBuilder.Entity<ServiceProviderProfile>()
         .ToTable("ServiceProviders");
 
         modelBuilder.Entity<DoctorProfile>()
-            .ToTable("DoctorProfiles");
+        .ToTable("DoctorProfiles");
 
         modelBuilder.Entity<MedicalTestProviderProfile>()
-            .ToTable("MedicalTestProviderProfiles");
+        .ToTable("MedicalTestProviderProfiles");
 
         modelBuilder.Entity<PrescriptionWithMedicin>()
     .HasKey(pm => new { pm.PrescriptionId, pm.MedicinesId });

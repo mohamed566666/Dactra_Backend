@@ -18,7 +18,7 @@ namespace Dactra.Models
         public int ProviderId { get; set; }
 
         [ForeignKey(nameof(ProviderId))]
-        public ServiceProvider Provider { get; set; } = null!;
+        public ServiceProviderProfile Provider { get; set; } = null!;
 
         [Required]
         [Range(1, 5)]
