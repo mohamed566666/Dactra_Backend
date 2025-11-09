@@ -2,8 +2,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Principal;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -30,6 +31,17 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        List<IdentityRole> roles = new List<IdentityRole>
+        {
+            new IdentityRole { Name="Admin", NormalizedName="ADMIN" },
+            new IdentityRole { Name="DoctorProfile", NormalizedName="DOCTORPROFILE" },
+            new IdentityRole { Name="PatientProfile", NormalizedName="PATIENTPROFILE" },
+            new IdentityRole { Name="MedicalTestProviderProfile", NormalizedName="MEDICALTESTPROVIDERPROFILE" }
+        };
+
+        modelBuilder.Entity<IdentityRole>().HasData(roles);
+
 
         modelBuilder.Entity<Dactra.Models.ServiceProvider>()
         .ToTable("ServiceProviders");
