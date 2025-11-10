@@ -27,6 +27,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Rating> Ratings { get; set; }
     public DbSet<ScheduleTable> ScheduleTables { get; set; }
     public DbSet<Medicines> Medicines { get; set; }
+    public DbSet<EmailVerification> EmailVerifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -43,16 +44,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
         modelBuilder.Entity<IdentityRole>().HasData(roles);
 
-
-        modelBuilder.Entity<Dactra.Models.ServiceProvider>()
-
         modelBuilder.Entity<ServiceProviderProfile>()
-
         .ToTable("ServiceProviders");
-
         modelBuilder.Entity<DoctorProfile>()
         .ToTable("DoctorProfiles");
-
         modelBuilder.Entity<MedicalTestProviderProfile>()
         .ToTable("MedicalTestProviderProfiles");
 
