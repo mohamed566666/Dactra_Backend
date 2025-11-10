@@ -1,6 +1,6 @@
 ﻿using Dactra.DTOs;
-using Dactra.Interface;
 using Dactra.Models;
+using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

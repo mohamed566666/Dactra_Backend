@@ -1,6 +1,6 @@
 ﻿using Dactra.Models;
 
-namespace Dactra.Interface
+namespace Dactra.Services.Interfaces
 {
     public interface ITokenService
     {

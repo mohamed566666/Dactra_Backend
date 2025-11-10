@@ -1,10 +1,13 @@
-using Dactra.Interface;
 using Dactra.Models;
-using Dactra.Service;
+using Dactra.Repositories.Implementation;
+using Dactra.Repositories.Interfaces;
+using Dactra.Services.Implementation;
+using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +16,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IDoctorProfileRepository, DoctorProfileRepository>();
+builder.Services.AddScoped<IMedicalTestProviderProfileRepository, MedicalTestProviderProfileRepository>();
+builder.Services.AddScoped<IPatientProfileRepository, PatientProfileRepository>();
 
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
