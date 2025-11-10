@@ -24,7 +24,7 @@ builder.Services.AddScoped<IMedicalTestProviderProfileRepository, MedicalTestPro
 builder.Services.AddScoped<IPatientProfileRepository, PatientProfileRepository>();
 
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {
     options.User.RequireUniqueEmail = true;
     options.Password.RequireDigit = true;
