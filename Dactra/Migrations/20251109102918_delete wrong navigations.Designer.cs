@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251109102918_delete wrong navigations")]
+    partial class deletewrongnavigations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,6 +52,33 @@ namespace Dactra.Migrations
                     b.HasIndex("QuestionId");
 
                     b.ToTable("Answers");
+                });
+
+            modelBuilder.Entity("Dactra.Models.ApplicationRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.ToTable("AspNetRoles", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.ApplicationUser", b =>
@@ -494,7 +524,7 @@ namespace Dactra.Migrations
                     b.ToTable("ScheduleTables");
                 });
 
-            modelBuilder.Entity("Dactra.Models.ServiceProviderProfile", b =>
+            modelBuilder.Entity("Dactra.Models.ServiceProvider", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -602,59 +632,6 @@ namespace Dactra.Migrations
                     b.HasIndex("prescriptionsId");
 
                     b.ToTable("MedicinesPrescription");
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("[NormalizedName] IS NOT NULL");
-
-                    b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "7c2ff838-1bfb-44f9-953d-065bf52a42af",
-                            Name = "Admin",
-                            NormalizedName = "ADMIN"
-                        },
-                        new
-                        {
-                            Id = "46e0c85f-9306-47ad-8b8f-8540f71d30d9",
-                            Name = "DoctorProfile",
-                            NormalizedName = "DOCTORPROFILE"
-                        },
-                        new
-                        {
-                            Id = "c8b14b46-566a-41b9-943b-2e5b7b41e6b2",
-                            Name = "PatientProfile",
-                            NormalizedName = "PATIENTPROFILE"
-                        },
-                        new
-                        {
-                            Id = "90a02609-04a3-4b38-b3f6-78d17d95bf52",
-                            Name = "MedicalTestProviderProfile",
-                            NormalizedName = "MEDICALTESTPROVIDERPROFILE"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -765,7 +742,7 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Dactra.Models.DoctorProfile", b =>
                 {
-                    b.HasBaseType("Dactra.Models.ServiceProviderProfile");
+                    b.HasBaseType("Dactra.Models.ServiceProvider");
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
@@ -791,7 +768,7 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Dactra.Models.MedicalTestProviderProfile", b =>
                 {
-                    b.HasBaseType("Dactra.Models.ServiceProviderProfile");
+                    b.HasBaseType("Dactra.Models.ServiceProvider");
 
                     b.Property<int>("Type")
                         .HasColumnType("int");
@@ -956,7 +933,7 @@ namespace Dactra.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Dactra.Models.ServiceProviderProfile", "Provider")
+                    b.HasOne("Dactra.Models.ServiceProvider", "Provider")
                         .WithMany()
                         .HasForeignKey("ProviderId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -978,7 +955,7 @@ namespace Dactra.Migrations
                     b.Navigation("Doctor");
                 });
 
-            modelBuilder.Entity("Dactra.Models.ServiceProviderProfile", b =>
+            modelBuilder.Entity("Dactra.Models.ServiceProvider", b =>
                 {
                     b.HasOne("Dactra.Models.ApplicationUser", "User")
                         .WithMany()
@@ -1017,7 +994,7 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                    b.HasOne("Dactra.Models.ApplicationRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -1044,7 +1021,7 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                    b.HasOne("Dactra.Models.ApplicationRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -1068,7 +1045,7 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Dactra.Models.DoctorProfile", b =>
                 {
-                    b.HasOne("Dactra.Models.ServiceProviderProfile", null)
+                    b.HasOne("Dactra.Models.ServiceProvider", null)
                         .WithOne()
                         .HasForeignKey("Dactra.Models.DoctorProfile", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1077,7 +1054,7 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Dactra.Models.MedicalTestProviderProfile", b =>
                 {
-                    b.HasOne("Dactra.Models.ServiceProviderProfile", null)
+                    b.HasOne("Dactra.Models.ServiceProvider", null)
                         .WithOne()
                         .HasForeignKey("Dactra.Models.MedicalTestProviderProfile", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
