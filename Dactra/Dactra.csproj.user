@@ -2,7 +2,7 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ActiveDebugProfile>http</ActiveDebugProfile>
-    <NameOfLastUsedPublishProfile>C:\Users\Rashad\OneDrive\Desktop\GD2\Dactra_Backend\Dactra\Properties\PublishProfiles\site41894-WebDeploy1.pubxml</NameOfLastUsedPublishProfile>
+    <NameOfLastUsedPublishProfile>D:\FSCI\Level 4\Semester 1\Graduation Project\Dactra_Backend\Dactra\Properties\PublishProfiles\site41894-WebDeploy2.pubxml</NameOfLastUsedPublishProfile>
     <Controller_SelectedScaffolderID>ApiControllerEmptyScaffolder</Controller_SelectedScaffolderID>
     <Controller_SelectedScaffolderCategoryPath>root/Common/Api</Controller_SelectedScaffolderCategoryPath>
   </PropertyGroup>

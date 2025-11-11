@@ -72,5 +72,9 @@ namespace Dactra.Services.Implementation
             return createUserResult;
         }
 
+        public async Task<IEnumerable<ApplicationUser>> GetAllUsersAsync()
+        {
+            return await _userRepository.GetAllAsync();
+        }
     }
 }
