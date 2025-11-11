@@ -77,12 +77,15 @@ namespace Dactra.Controllers
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == loginDto.Email.ToLower());
             if (user == null)
                 return Unauthorized("invalid Email");
+            if(!user.IsVerified)
+                return BadRequest("not verified");
 
 
             var resulte = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
             if (!resulte.Succeeded)
                 return Unauthorized(" Email or password Invalid");
+            
 
             return Ok(
                     new NewUserDto
