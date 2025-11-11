@@ -1,6 +1,8 @@
 ﻿using Dactra.Models;
 using Dactra.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using MimeKit.Encodings;
 
 namespace Dactra.Repositories.Implementation
 {
@@ -25,7 +27,11 @@ namespace Dactra.Repositories.Implementation
         {
             return await _userManager.FindByIdAsync(id);
         }
+        
         public async Task DeleteUserAsync(ApplicationUser user)
             => await _userManager.DeleteAsync(user);
+
+        public async Task<IEnumerable<ApplicationUser>> GetAllAsync()
+            => await _userManager.Users.AsNoTracking().ToListAsync();
     }
 }

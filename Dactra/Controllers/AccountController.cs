@@ -44,6 +44,19 @@ namespace Dactra.Controllers
             return Ok(Response);
         }
 
+        [HttpGet("CurrentUsers..JustForTestingNow")]
+        public async Task<IActionResult> GetCurrentUsers()
+        {
+            var users = await _userService.GetAllUsersAsync();
+            var ret = users.Select(u => new UserBasicsDTO
+            {
+                UserName = u.UserName,
+                EmailConfirmed = u.EmailConfirmed,
+                IsVerified = u.IsVerified,
+            }).ToList();
+            return Ok(ret);
+        }
+
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody]LoginDto loginDto  )
         {
