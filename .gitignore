@@ -23,6 +23,9 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
+# Sensitive appsettings files
+Dactra_Backend/appsettings*.json
+
 # .NET Core
 project.lock.json
 project.fragment.lock.json

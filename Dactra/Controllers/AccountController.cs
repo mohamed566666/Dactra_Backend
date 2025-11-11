@@ -15,42 +15,35 @@ namespace Dactra.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ITokenService _tokenService;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        public AccountController(UserManager<ApplicationUser> usermanager,ITokenService tokenService, SignInManager <ApplicationUser> signInManager)
+        private readonly IUserService _userService;
+        public AccountController(UserManager<ApplicationUser> usermanager,ITokenService tokenService, SignInManager <ApplicationUser> signInManager , IUserService userService)
         {
             _userManager = usermanager;
             _tokenService = tokenService;
             _signInManager = signInManager;
+            _userService = userService;
         }
-        //[HttpPost("register")]
-        //public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
-        //{
-        //    try {
-        //             var user = new ApplicationUser
-        //            {
-        //                UserName = registerDto.name
-        //            };
-        //            var createuser= await _userManager.CreateAsync(user, registerDto.password);
-        //            if (createuser.Succeeded) {
-        //                var roleresult = await _userManager.AddToRoleAsync(user, "DoctorProfile");
-        //                if (roleresult.Succeeded)
-        //                {
-        //                    return Ok(roleresult);
-        //                }
-        //                else
-        //                {
-        //                    return BadRequest();
-        //                }
+        [HttpPost("Register")]
 
-        //            }
-        //            else { 
-        //                return BadRequest(); 
-        //            }
+        public async Task<IActionResult> Register([FromBody] RegisterDto model)
+        {
+            if (model == null)
+                return BadRequest(new { Error = "Request body is required." });
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            if (model.Password != model.ConfirmPassword)
+                return BadRequest("Password and Confirm Password do not match.");
+            var result = await _userService.RegisterAsync(model);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+            var Response = new RegisterResponseDto
+            {
+                UserId = result.Succeeded ? (await _userManager.FindByEmailAsync(model.Email)).Id : null,
+                Email = model.Email
+            };
+            return Ok(Response);
+        }
 
-        //    }catch (Exception ex)
-        //    {
-        //        return BadRequest();
-        //    }
-        //}
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody]LoginDto loginDto  )
         {

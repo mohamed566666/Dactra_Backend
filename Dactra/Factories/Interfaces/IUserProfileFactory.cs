@@ -1,7 +1,9 @@
-﻿namespace Dactra.Factories.Interfaces
+﻿using Dactra.Models;
+
+namespace Dactra.Factories.Interfaces
 {
     public interface IUserProfileFactory
     {
-        object CreateProfile(string role, string userId);
+        ProfileBase CreateProfile(string role, string userId);
     }
 }

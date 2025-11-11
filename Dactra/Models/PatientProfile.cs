@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Dactra.Models
 {
-    public class PatientProfile
+    public class PatientProfile : ProfileBase
     {
         public int Id { get; set; }
 

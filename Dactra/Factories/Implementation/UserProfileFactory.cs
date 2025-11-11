@@ -5,13 +5,13 @@ namespace Dactra.Factories.Implementation
 {
     public class UserProfileFactory : IUserProfileFactory
     {
-        public object CreateProfile(string role, string userId)
+        public ProfileBase CreateProfile(string role, string userId)
         {
             return role switch
             {
-                "PatientProfile" => new PatientProfile { UserId = userId },
-                "DoctorProfile" => new DoctorProfile { UserId = userId },
-                "MedicalTestProviderProfile" => new MedicalTestProviderProfile { UserId = userId },
+                "Patient" => new PatientProfile { UserId = userId },
+                "Doctor" => new DoctorProfile { UserId = userId },
+                "MedicalTestProvider" => new MedicalTestProviderProfile { UserId = userId },
                 _ => throw new ArgumentException($"Role '{role}' is not recognized")
             };
         }
