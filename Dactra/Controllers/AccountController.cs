@@ -19,7 +19,7 @@ namespace Dactra.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IEmailSender _emailSender;
 
-        public AccountController(UserManager<ApplicationUser> usermanager,ITokenService tokenService, SignInManager <ApplicationUser> signInManager , IUserService userService, ApplicationDbContext context, IEmailSender emailSender)
+        public AccountController(UserManager<ApplicationUser> usermanager, ITokenService tokenService, SignInManager<ApplicationUser> signInManager, IUserService userService, ApplicationDbContext context, IEmailSender emailSender)
         {
             _userManager = usermanager;
             _tokenService = tokenService;
@@ -49,12 +49,13 @@ namespace Dactra.Controllers
             return Ok(Response);
         }
 
-        [HttpGet("CurrentUsers..JustForTestingNow")]
+        [HttpGet("AllUsers..JustForTestingNow")]
         public async Task<IActionResult> GetCurrentUsers()
         {
             var users = await _userService.GetAllUsersAsync();
             var ret = users.Select(u => new UserBasicsDTO
             {
+                Id = u.Id,
                 UserName = u.UserName,
                 EmailConfirmed = u.EmailConfirmed,
                 IsVerified = u.IsVerified,
@@ -63,36 +64,36 @@ namespace Dactra.Controllers
         }
 
         [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromBody]LoginDto loginDto  )
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user= await _userManager.Users.FirstOrDefaultAsync(u=> u.Email.ToLower() == loginDto.Email.ToLower());
-            if(user==null)
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == loginDto.Email.ToLower());
+            if (user == null)
                 return Unauthorized("invalid Email");
 
 
             var resulte = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
-            if(!resulte.Succeeded) 
+            if (!resulte.Succeeded)
                 return Unauthorized(" Email or password Invalid");
 
             return Ok(
                     new NewUserDto
                     {
                         Email = user.Email,
-                        Username=user.UserName,
-                        Token=_tokenService.CreateToken(user),
+                        Username = user.UserName,
+                        Token = _tokenService.CreateToken(user),
                     }
             );
 
         }
         [HttpPost("verifyOTP")]
-        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto VerifyDTO) 
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto VerifyDTO)
         {
-            
-            var otp = _context.EmailVerifications.Where(o=>o.Email==VerifyDTO.Email).FirstOrDefault();
+
+            var otp = _context.EmailVerifications.Where(o => o.Email == VerifyDTO.Email).FirstOrDefault();
             if (otp == null)
                 return BadRequest("NOT Found");
 
@@ -100,7 +101,7 @@ namespace Dactra.Controllers
             {
                 return BadRequest("OTP Expired");
             }
-            bool valid= otp.OTP==VerifyDTO.OTP;
+            bool valid = otp.OTP == VerifyDTO.OTP;
             if (!valid)
                 return BadRequest("Invalid OTP");
 
@@ -108,9 +109,9 @@ namespace Dactra.Controllers
             return Ok("OTP verified successfuly");
         }
         [HttpPost("resendOTP")]
-        public async Task<IActionResult> ResendOTP([FromBody ] ResendOTPDto  resendOTPDto )
+        public async Task<IActionResult> ResendOTP([FromBody] ResendOTPDto resendOTPDto)
         {
-            var otp=await _context.EmailVerifications.Where(o=>o.Email==resendOTPDto.Email).FirstOrDefaultAsync();
+            var otp = await _context.EmailVerifications.Where(o => o.Email == resendOTPDto.Email).FirstOrDefaultAsync();
 
             if (otp != null && DateTime.UtcNow < otp.ExpiryDate)
             {
@@ -130,8 +131,67 @@ namespace Dactra.Controllers
             await _context.SaveChangesAsync();
             return Ok("OTP sent successfully");
         }
+        [HttpDelete("deleteAllUsers..JustForTestingNow")]
+        public async Task<IActionResult> DeleteAllUsers()
+        {
+            var users = await _userManager.Users.ToListAsync();
+            foreach (var user in users)
+            {
+                await _userManager.DeleteAsync(user);
+            }
+            return Ok("All users deleted.");
+        }
+        [HttpPost("SendOTP")]
+        public async Task<IActionResult> TestEmail([FromBody] SendOTPtoMailDTO sendOtpDto)
+        {
+            await _userService.SendDTOforVerficatio(sendOtpDto);
+            return Ok("OTP sent successfully.");
+        }
 
+        [HttpDelete("DeleteUserByid{id}")]
+        public async Task<IActionResult> DeleteUserByID([FromBody] string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+            var result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                return BadRequest("Failed to delete user.");
+            }
+            return Ok("User deleted successfully.");
+        }
+        [HttpGet("GetUserById{id}")]
+        public async Task<IActionResult> GetUserByID([FromBody] string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+            var userDto = new UserBasicsDTO
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                EmailConfirmed = user.EmailConfirmed,
+                IsVerified = user.IsVerified,
+            };
+            return Ok(userDto);
+        }
+        [HttpGet("GetAllEmailsVerfications")]
+        public async Task<IActionResult> GetAllEmailsVerfications()
+        {
+            var otps = await _context.EmailVerifications.ToListAsync();
+            var ret = otps.Select(u => new VerficationsDTP
+            {
+                Id = u.Id,
+                Email = u.Email,
+                ExpiryDate = u.ExpiryDate,
+
+            }).ToList();
+            return Ok(ret);
+        }
     }
-
-
 }

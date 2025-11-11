@@ -2,9 +2,9 @@
 {
     public class EmailSettings
     {
-        public string EmailFrom { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public string Host { get; set; } = string.Empty;
+        public string EmailFrom { get; set; }
+        public string Password { get; set; }
+        public string Host { get; set; }
         public int Port { get; set; }
     }
 }
