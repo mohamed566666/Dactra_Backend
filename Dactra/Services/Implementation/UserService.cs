@@ -68,10 +68,17 @@ namespace Dactra.Services.Implementation
             var UserProfile = _UserProfileFactory.CreateProfile(model.Role, user.Id);
             UserProfile.UserId = user.Id;
             UserProfile.User = user;
-            string verificationCode = new Random().Next(1000, 9999).ToString();
+            string verificationCode = new Random().Next(100000, 999999).ToString();
             await _emailSender.SendEmailAsync(model.Email, "Verification Code", $"Your OTP is: <b>{verificationCode}</b>");
-            await _emailVerificationRepository.AddVerificationAsync(model.Email, verificationCode, TimeSpan.FromMinutes(1));
-            await _roleRepository.AddUserToRoleAsync(user, model.Role);
+            await _emailVerificationRepository.AddVerificationAsync(model.Email, verificationCode, TimeSpan.FromMinutes(5));
+            var roleName = model.Role switch
+            {
+                "Doctor" => "DoctorProfile",
+                "Patient" => "PatientProfile",
+                "MedicalTestProvider" => "MedicalTestProviderProfile",
+                _ => model.Role
+            };
+            await _roleRepository.AddUserToRoleAsync(user, roleName);
             return createUserResult;
         }
 

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Principal;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -34,15 +34,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         base.OnModelCreating(modelBuilder);
 
 
-        List<IdentityRole> roles = new List<IdentityRole>
+        List<ApplicationRole> roles = new List<ApplicationRole>
         {
-            new IdentityRole { Name="Admin", NormalizedName="ADMIN" },
-            new IdentityRole { Name="DoctorProfile", NormalizedName="DOCTORPROFILE" },
-            new IdentityRole { Name="PatientProfile", NormalizedName="PATIENTPROFILE" },
-            new IdentityRole { Name="MedicalTestProviderProfile", NormalizedName="MEDICALTESTPROVIDERPROFILE" }
+            new ApplicationRole { Name="Admin", NormalizedName="ADMIN" },
+            new ApplicationRole { Name="DoctorProfile", NormalizedName="DOCTORPROFILE" },
+            new ApplicationRole { Name="PatientProfile", NormalizedName="PATIENTPROFILE" },
+            new ApplicationRole { Name="MedicalTestProviderProfile", NormalizedName="MEDICALTESTPROVIDERPROFILE" }
         };
 
-        modelBuilder.Entity<IdentityRole>().HasData(roles);
+
+        modelBuilder.Entity<ApplicationRole>().HasData(roles);
 
         modelBuilder.Entity<ServiceProviderProfile>()
         .ToTable("ServiceProviders");
