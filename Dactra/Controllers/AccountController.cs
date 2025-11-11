@@ -16,12 +16,17 @@ namespace Dactra.Controllers
         private readonly ITokenService _tokenService;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IUserService _userService;
-        public AccountController(UserManager<ApplicationUser> usermanager,ITokenService tokenService, SignInManager <ApplicationUser> signInManager , IUserService userService)
+        private readonly ApplicationDbContext _context;
+        private readonly IEmailSender _emailSender;
+
+        public AccountController(UserManager<ApplicationUser> usermanager,ITokenService tokenService, SignInManager <ApplicationUser> signInManager , IUserService userService, ApplicationDbContext context, IEmailSender emailSender)
         {
             _userManager = usermanager;
             _tokenService = tokenService;
             _signInManager = signInManager;
             _userService = userService;
+            _context = context;
+            _emailSender = emailSender;
         }
         [HttpPost("Register")]
 
@@ -80,13 +85,51 @@ namespace Dactra.Controllers
                         Username=user.UserName,
                         Token=_tokenService.CreateToken(user),
                     }
-                
-                );
-
+            );
 
         }
+        [HttpPost("verifyOTP")]
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto VerifyDTO) 
+        {
+            
+            var otp = _context.EmailVerifications.Where(o=>o.Email==VerifyDTO.Email).FirstOrDefault();
+            if (otp == null)
+                return BadRequest("NOT Found");
 
+            if (DateTime.UtcNow > otp.ExpiryDate)
+            {
+                return BadRequest("OTP Expired");
+            }
+            bool valid= otp.OTP==VerifyDTO.OTP;
+            if (!valid)
+                return BadRequest("Invalid OTP");
 
+            await _context.SaveChangesAsync();
+            return Ok("OTP verified successfuly");
+        }
+        [HttpPost("resendOTP")]
+        public async Task<IActionResult> ResendOTP([FromBody ] ResendOTPDto  resendOTPDto )
+        {
+            var otp=await _context.EmailVerifications.Where(o=>o.Email==resendOTPDto.Email).FirstOrDefaultAsync();
+
+            if (otp != null && DateTime.UtcNow < otp.ExpiryDate)
+            {
+                await _emailSender.SendEmailAsync(resendOTPDto.Email, "Verification Code To Dactra", $"Your OTP is: <b>{otp.OTP}</b>");
+                return Ok("OTP resended");
+            }
+            string newCode = new Random().Next(100000, 999999).ToString();
+            await _emailSender.SendEmailAsync(resendOTPDto.Email, "Verification Code To Dactra", $"Your new OTP is: <b>{newCode}</b>");
+            var res = new EmailVerification
+            {
+                Email = resendOTPDto.Email,
+                OTP = newCode,
+                ExpiryDate = DateTime.UtcNow.AddMinutes(5),
+
+            };
+            _context.EmailVerifications.Add(res);
+            await _context.SaveChangesAsync();
+            return Ok("OTP sent successfully");
+        }
 
     }
 
