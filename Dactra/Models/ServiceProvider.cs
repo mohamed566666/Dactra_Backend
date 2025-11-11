@@ -3,17 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Dactra.Models
 {
-    public class ServiceProviderProfile
+    public class ServiceProviderProfile : ProfileBase
     {
         [Key]
         public int Id { get; set; }
-
-        [Required]
-        public string UserId { get; set; } = string.Empty;
-
-        [ForeignKey(nameof(UserId))]
-        public ApplicationUser User { get; set; } = null!;
-
         [Required]
         [MaxLength(50)]
         public string Name { get; set; } = string.Empty;

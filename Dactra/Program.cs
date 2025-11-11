@@ -1,4 +1,6 @@
-﻿using Dactra.Models;
+﻿using Dactra.Factories.Implementation;
+using Dactra.Factories.Interfaces;
+using Dactra.Models;
 using Dactra.Repositories.Implementation;
 using Dactra.Repositories.Interfaces;
 using Dactra.Services.Implementation;
@@ -32,7 +34,11 @@ builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IDoctorProfileRepository, DoctorProfileRepository>();
 builder.Services.AddScoped<IMedicalTestProviderProfileRepository, MedicalTestProviderProfileRepository>();
 builder.Services.AddScoped<IPatientProfileRepository, PatientProfileRepository>();
-
+builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserProfileFactory , UserProfileFactory>();
+builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.AddControllers();
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {
