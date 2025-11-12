@@ -1,4 +1,4 @@
-﻿using Dactra.DTOs;
+﻿using Dactra.DTOs.AuthemticationDTOs;
 using Dactra.Factories.Interfaces;
 using Dactra.Models;
 using Dactra.Repositories.Implementation;
@@ -65,9 +65,6 @@ namespace Dactra.Services.Implementation
             {
                 return createUserResult;
             }
-            var UserProfile = _UserProfileFactory.CreateProfile(model.Role, user.Id);
-            UserProfile.UserId = user.Id;
-            UserProfile.User = user;
             string verificationCode = new Random().Next(100000, 999999).ToString();
             await _emailSender.SendEmailAsync(model.Email, "Verification Code", $"Your OTP is: <b>{verificationCode}</b>");
             await _emailVerificationRepository.AddVerificationAsync(model.Email, verificationCode, TimeSpan.FromMinutes(5));
