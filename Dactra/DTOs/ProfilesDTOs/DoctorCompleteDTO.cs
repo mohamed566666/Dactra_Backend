@@ -13,7 +13,6 @@ namespace Dactra.DTOs.ProfilesDTO
         public DateTime StartingCareerDate { get; set; }
         public string LicenceNo { get; set; }
         public string Address { get; set; }
-        public Majors Major { get; set; }
-        public string About { get; set; }
+        public int MajorId { get; set; }
     }
 }
