@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Dactra.Repositories;
+using Dactra.Repositories.Implementation;
+using Dactra.Repositories.Interfaces;
 
 namespace Dactra.Controllers
 {
@@ -18,8 +21,9 @@ namespace Dactra.Controllers
         private readonly IUserService _userService;
         private readonly ApplicationDbContext _context;
         private readonly IEmailSender _emailSender;
+        private readonly IUserRepository _userRepository;
 
-        public AccountController(UserManager<ApplicationUser> usermanager, ITokenService tokenService, SignInManager<ApplicationUser> signInManager, IUserService userService, ApplicationDbContext context, IEmailSender emailSender)
+        public AccountController(UserManager<ApplicationUser> usermanager, ITokenService tokenService, SignInManager<ApplicationUser> signInManager, IUserService userService, ApplicationDbContext context, IEmailSender emailSender, IUserRepository userRepository)
         {
             _userManager = usermanager;
             _tokenService = tokenService;
@@ -27,6 +31,7 @@ namespace Dactra.Controllers
             _userService = userService;
             _context = context;
             _emailSender = emailSender;
+            _userRepository = userRepository;
         }
         [HttpPost("Register")]
 
@@ -72,12 +77,15 @@ namespace Dactra.Controllers
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == loginDto.Email.ToLower());
             if (user == null)
                 return Unauthorized("invalid Email");
+            if(!user.IsVerified)
+                return BadRequest("not verified");
 
 
             var resulte = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
             if (!resulte.Succeeded)
                 return Unauthorized(" Email or password Invalid");
+            
 
             return Ok(
                     new NewUserDto
@@ -93,7 +101,7 @@ namespace Dactra.Controllers
         public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto VerifyDTO)
         {
 
-            var otp = _context.EmailVerifications.Where(o => o.Email == VerifyDTO.Email).FirstOrDefault();
+            var otp = _context.EmailVerifications.Where(o => o.Email == VerifyDTO.Email).OrderBy(o=>o.ExpiryDate).LastOrDefault();
             if (otp == null)
                 return BadRequest("NOT Found");
 
@@ -105,6 +113,8 @@ namespace Dactra.Controllers
             if (!valid)
                 return BadRequest("Invalid OTP");
 
+            var user=await _userRepository.GetUserByEmailAsync(otp.Email);
+            user.IsVerified = true;
             await _context.SaveChangesAsync();
             return Ok("OTP verified successfuly");
         }
