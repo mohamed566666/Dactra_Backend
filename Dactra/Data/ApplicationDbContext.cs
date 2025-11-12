@@ -28,6 +28,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<ScheduleTable> ScheduleTables { get; set; }
     public DbSet<Medicines> Medicines { get; set; }
     public DbSet<EmailVerification> EmailVerifications { get; set; }
+    public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

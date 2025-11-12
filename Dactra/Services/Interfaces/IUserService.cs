@@ -9,5 +9,6 @@ namespace Dactra.Services.Interfaces
         public Task<IdentityResult> SendDTOforVerficatio(SendOTPtoMailDTO model);
         public Task<IdentityResult> RegisterAsync(RegisterDto model);
         public Task<IEnumerable<ApplicationUser>> GetAllUsersAsync();
+        Task UpdateAsync(ApplicationUser user);
     }
 }

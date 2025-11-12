@@ -20,8 +20,9 @@ namespace Dactra.Services.Implementation
         private readonly IEmailVerificationRepository _emailVerificationRepository;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IRoleRepository _roleRepository;
+        private readonly ApplicationDbContext _context;
 
-        public UserService(IUserProfileFactory userProfileFactory, IUserRepository userRepository, IEmailSender emailSender, IEmailVerificationRepository emailVerificationRepository, UserManager<ApplicationUser> userManager , IRoleRepository roleRepository)
+        public UserService(IUserProfileFactory userProfileFactory, IUserRepository userRepository, IEmailSender emailSender, IEmailVerificationRepository emailVerificationRepository, UserManager<ApplicationUser> userManager , IRoleRepository roleRepository, ApplicationDbContext context)
         {
             _UserProfileFactory = userProfileFactory;
             _userRepository = userRepository;
@@ -29,6 +30,7 @@ namespace Dactra.Services.Implementation
             _emailVerificationRepository = emailVerificationRepository;
             _userManager = userManager;
             _roleRepository = roleRepository;
+            _context = context;
         }
         public async Task<IdentityResult> SendDTOforVerficatio(SendOTPtoMailDTO model)
         {
@@ -59,6 +61,7 @@ namespace Dactra.Services.Implementation
                 CreatedAt = DateTime.UtcNow,
                 IsActive = false,
                 IsVerified = false,
+                IsRegistrationComplete = false
             };
             var createUserResult = await _userRepository.CreateUserAsync(user, model.Password);
             if (!createUserResult.Succeeded)
@@ -82,6 +85,11 @@ namespace Dactra.Services.Implementation
         public async Task<IEnumerable<ApplicationUser>> GetAllUsersAsync()
         {
             return await _userRepository.GetAllAsync();
+        }
+        public async Task UpdateAsync(ApplicationUser user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
         }
     }
 }
