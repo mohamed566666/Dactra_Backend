@@ -165,8 +165,8 @@ namespace Dactra.Controllers
             return Ok("OTP sent successfully.");
         }
 
-        [HttpDelete("DeleteUserByid{id}")]
-        public async Task<IActionResult> DeleteUserByID([FromBody] string id)
+        [HttpDelete("DeleteUserByid")]
+        public async Task<IActionResult> DeleteUserByID([FromHeader] string id)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
@@ -184,7 +184,7 @@ namespace Dactra.Controllers
             return BadRequest(result.Errors);
         }
         [HttpGet("GetUserById")]
-        public async Task<IActionResult> GetUserByID([FromBody] string id)
+        public async Task<IActionResult> GetUserByID([FromHeader] string id)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)

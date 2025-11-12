@@ -14,6 +14,9 @@ namespace Dactra.Models
         [MaxLength(50)]
         public string LastName { get; set; } = string.Empty;
         public Gender Gender { get; set; }
+        [Required]
+        public int SpecializationId { get; set; }
+        [ForeignKey(nameof(SpecializationId))]
         public Majors specialization { get; set; }
 
         [Required]

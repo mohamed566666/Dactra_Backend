@@ -36,6 +36,7 @@ namespace Dactra.Services.Implementation
             var PatientProfile = new PatientProfile
             {
                 UserId = user.Id,
+                User = user,
                 FirstName = PatientCompleteDTO.FirstName,
                 LastName = PatientCompleteDTO.LastName,
                 Gender = PatientCompleteDTO.Gender,

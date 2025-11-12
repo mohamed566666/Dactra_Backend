@@ -35,6 +35,7 @@ namespace Dactra.Services.Implementation
             var doctorProfile = new DoctorProfile
             {
                 UserId = user.Id,
+                User = user,
                 FirstName = doctorComplateDTO.FirstName,
                 LastName = doctorComplateDTO.LastName,
                 LicenceNo = doctorComplateDTO.LicenceNo,
@@ -42,8 +43,6 @@ namespace Dactra.Services.Implementation
                 StartingCareerDate = doctorComplateDTO.StartingCareerDate,
                 Address = doctorComplateDTO.Address,
                 Gender = doctorComplateDTO.Gender,
-                specialization = doctorComplateDTO.Major,
-                About = doctorComplateDTO.About
             };
             await _doctorProfileRepository.AddAsync(doctorProfile);
         }
