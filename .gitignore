@@ -25,6 +25,9 @@ bld/
 
 # Sensitive appsettings files
 **/appsettings*.json
+**/Properties/
+**/*.csproj.user
+**/wwwroot/
 
 # .NET Core
 project.lock.json

@@ -1,4 +1,4 @@
-﻿using Dactra.DTOs;
+﻿using Dactra.DTOs.AuthemticationDTOs;
 using Dactra.Models;
 using Microsoft.AspNetCore.Identity;
 

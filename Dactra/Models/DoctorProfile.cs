@@ -14,6 +14,7 @@ namespace Dactra.Models
         [MaxLength(50)]
         public string LastName { get; set; } = string.Empty;
         public Gender Gender { get; set; }
+        public Majors specialization { get; set; }
 
         [Required]
         public DateTime DateOfBirth { get; set; }

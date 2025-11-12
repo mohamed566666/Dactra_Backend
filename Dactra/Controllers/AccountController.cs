@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Dactra.Repositories;
 using Dactra.Repositories.Implementation;
 using Dactra.Repositories.Interfaces;
+using Dactra.DTOs.AuthemticationDTOs;
 
 namespace Dactra.Controllers
 {
@@ -115,6 +116,7 @@ namespace Dactra.Controllers
 
             var user=await _userRepository.GetUserByEmailAsync(otp.Email);
             user.IsVerified = true;
+            user.IsActive = true;
             await _context.SaveChangesAsync();
             return Ok("OTP verified successfuly");
         }
@@ -154,6 +156,11 @@ namespace Dactra.Controllers
         [HttpPost("SendOTP")]
         public async Task<IActionResult> TestEmail([FromBody] SendOTPtoMailDTO sendOtpDto)
         {
+            var user = await _userManager.FindByEmailAsync(sendOtpDto.Email);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
             await _userService.SendDTOforVerficatio(sendOtpDto);
             return Ok("OTP sent successfully.");
         }
@@ -163,17 +170,20 @@ namespace Dactra.Controllers
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
+                return NotFound(new { message = "User not found" });
+            var userRoles = await _userManager.GetRolesAsync(user);
+            if (userRoles.Any())
             {
-                return NotFound("User not found.");
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, userRoles);
+                if (!removeResult.Succeeded)
+                    return BadRequest(removeResult.Errors);
             }
             var result = await _userManager.DeleteAsync(user);
-            if (!result.Succeeded)
-            {
-                return BadRequest("Failed to delete user.");
-            }
-            return Ok("User deleted successfully.");
+            if (result.Succeeded)
+                return Ok(new { message = "User deleted successfully" });
+            return BadRequest(result.Errors);
         }
-        [HttpGet("GetUserById{id}")]
+        [HttpGet("GetUserById")]
         public async Task<IActionResult> GetUserByID([FromBody] string id)
         {
             var user = await _userManager.FindByIdAsync(id);

@@ -41,6 +41,9 @@ builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationReposi
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserProfileFactory , UserProfileFactory>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.AddScoped<IDoctorService, DoctorService>();
+builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IMedicalTestsProviderService, MedicalTestsProviderService>();
 builder.Services.AddControllers();
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
