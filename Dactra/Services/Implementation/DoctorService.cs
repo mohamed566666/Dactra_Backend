@@ -49,6 +49,16 @@ namespace Dactra.Services.Implementation
             await _userRepository.UpdateUserAsync(user);
         }
 
+        public async Task DeleteDoctorProfileAsync(int doctorProfileId)
+        {
+            var profile = await _doctorProfileRepository.GetByIdAsync(doctorProfileId);
+            if (profile == null)
+            {
+                throw new ArgumentException("Doctor Profile Not Found");
+            }
+            await _doctorProfileRepository.DeleteAsync(profile);
+        }
+
         public async Task<IEnumerable<DoctorProfile>> GetAllProfileAsync()
         {
             return await _doctorProfileRepository.GetAllAsync();
