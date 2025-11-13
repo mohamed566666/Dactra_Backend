@@ -60,7 +60,7 @@ namespace Dactra.Controllers
             return Ok(Response);
         }
 
-        [HttpGet("AllUsers..JustForTestingNow")]
+        [HttpGet("GetAllUsers..JustForTestingNow")]
         public async Task<IActionResult> GetCurrentUsers()
         {
             var users = await _userService.GetAllUsersAsync();
@@ -123,6 +123,7 @@ namespace Dactra.Controllers
             var user=await _userRepository.GetUserByEmailAsync(otp.Email);
             user.IsVerified = true;
             user.IsActive = true;
+            user.EmailConfirmed = true;
             await _context.SaveChangesAsync();
             return Ok("OTP verified successfuly");
         }
@@ -203,8 +204,8 @@ namespace Dactra.Controllers
             return Ok("OTP sent successfully.");
         }
 
-        [HttpDelete("DeleteUserByid")]
-        public async Task<IActionResult> DeleteUserByID([FromHeader] string id)
+        [HttpDelete("DeleteUserByid/{id}")]
+        public async Task<IActionResult> DeleteUserByID(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
@@ -221,8 +222,8 @@ namespace Dactra.Controllers
                 return Ok(new { message = "User deleted successfully" });
             return BadRequest(result.Errors);
         }
-        [HttpGet("GetUserById")]
-        public async Task<IActionResult> GetUserByID([FromHeader] string id)
+        [HttpGet("GetUserById/{id}")]
+        public async Task<IActionResult> GetUserByID(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)

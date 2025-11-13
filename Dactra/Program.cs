@@ -20,7 +20,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.AllowAnyOrigin()// أو العنوان اللي عليه الفرونت
+            policy.AllowAnyOrigin()
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
@@ -44,6 +44,8 @@ builder.Services.AddScoped<IEmailSender, EmailSender>();
 builder.Services.AddScoped<IDoctorService, DoctorService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IMedicalTestsProviderService, MedicalTestsProviderService>();
+builder.Services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
+
 builder.Services.AddControllers();
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>

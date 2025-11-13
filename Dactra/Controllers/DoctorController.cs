@@ -16,7 +16,7 @@ namespace Dactra.Controllers
         {
             _doctorService = doctorService;
         }
-        [HttpGet("GetAllProfile")]
+        [HttpGet("GetAllProfiles")]
         public async Task<IActionResult> GetAllProfiles()
         {
             var DoctorProfiles = await _doctorService.GetAllProfileAsync();
@@ -26,6 +26,12 @@ namespace Dactra.Controllers
         public async Task<IActionResult> CompleteRegister(DoctorCompleteDTO doctorComplateDTO)
         {
             await _doctorService.CompleteRegistrationAsync(doctorComplateDTO);
+            return Ok();
+        }
+        [HttpDelete("DeleteDoctor/{doctorId}")]
+        public async Task<IActionResult> DeleteDoctor(int doctorId)
+        {
+            await _doctorService.DeleteDoctorProfileAsync(doctorId);
             return Ok();
         }
     }
