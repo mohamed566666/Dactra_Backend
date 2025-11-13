@@ -9,5 +9,6 @@ namespace Dactra.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
         public bool IsVerified { get; set; } = false;
+        public bool IsRegistrationComplete { get; set; } = false;
     }
 }
