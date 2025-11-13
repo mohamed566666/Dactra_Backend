@@ -45,6 +45,8 @@ namespace Dactra.Services.Implementation
                 Gender = doctorComplateDTO.Gender,
             };
             await _doctorProfileRepository.AddAsync(doctorProfile);
+            user.IsRegistrationComplete = true;
+            await _userRepository.UpdateUserAsync(user);
         }
 
         public async Task<IEnumerable<DoctorProfile>> GetAllProfileAsync()

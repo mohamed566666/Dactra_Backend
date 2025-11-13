@@ -47,9 +47,13 @@ namespace Dactra.Services.Implementation
                 IS_Smoking = PatientCompleteDTO.IS_Smoking,
                 Allergies = PatientCompleteDTO.Allergies,
                 MaritalStatus = PatientCompleteDTO.MaritalStatus,
-                ChronicDisease = PatientCompleteDTO.ChronicDisease
-            };
+                ChronicDisease = PatientCompleteDTO.ChronicDisease,
+               
+            };  
+
             await _patientProfileRepository.AddAsync(PatientProfile);
+            user.IsRegistrationComplete = true;
+            await _userRepository.UpdateUserAsync(user);
         }
 
         public async Task<IEnumerable<PatientProfile>> GetAllProfileAsync()

@@ -1,14 +1,17 @@
 ﻿using Dactra.DTOs;
+using Dactra.DTOs.AccountDTOs;
+using Dactra.DTOs.AuthemticationDTOs;
 using Dactra.Models;
+using Dactra.Repositories;
+using Dactra.Repositories.Implementation;
+using Dactra.Repositories.Interfaces;
 using Dactra.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Dactra.Repositories;
-using Dactra.Repositories.Implementation;
-using Dactra.Repositories.Interfaces;
-using Dactra.DTOs.AuthemticationDTOs;
+using System.Security.Cryptography;
 
 namespace Dactra.Controllers
 {
@@ -23,8 +26,9 @@ namespace Dactra.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IEmailSender _emailSender;
         private readonly IUserRepository _userRepository;
+        private readonly IPasswordResetRepository _passwordResetRepository;
 
-        public AccountController(UserManager<ApplicationUser> usermanager, ITokenService tokenService, SignInManager<ApplicationUser> signInManager, IUserService userService, ApplicationDbContext context, IEmailSender emailSender, IUserRepository userRepository)
+        public AccountController(UserManager<ApplicationUser> usermanager, ITokenService tokenService, SignInManager<ApplicationUser> signInManager, IUserService userService, ApplicationDbContext context, IEmailSender emailSender, IUserRepository userRepository, IPasswordResetRepository passwordResetRepository)
         {
             _userManager = usermanager;
             _tokenService = tokenService;
@@ -33,6 +37,7 @@ namespace Dactra.Controllers
             _context = context;
             _emailSender = emailSender;
             _userRepository = userRepository;
+            _passwordResetRepository = passwordResetRepository;
         }
         [HttpPost("Register")]
 
@@ -94,6 +99,7 @@ namespace Dactra.Controllers
                         Email = user.Email,
                         Username = user.UserName,
                         Token = _tokenService.CreateToken(user),
+                        IsRegistrationComplete= user.IsRegistrationComplete,
                     }
             );
 
@@ -119,6 +125,38 @@ namespace Dactra.Controllers
             user.IsActive = true;
             await _context.SaveChangesAsync();
             return Ok("OTP verified successfuly");
+        }
+        [HttpPost("verifyOTP_Forgetpassword")]
+        public async Task<IActionResult> VerifyOtp_ForgetPassword([FromBody] VerifyOtpDto VerifyDTO)
+        {
+
+            var otp = _context.EmailVerifications.Where(o => o.Email == VerifyDTO.Email).OrderBy(o=>o.ExpiryDate).LastOrDefault();
+            if (otp == null)
+                return BadRequest("NOT Found");
+
+            if (DateTime.UtcNow > otp.ExpiryDate)
+            {
+                return BadRequest("OTP Expired");
+            }
+            bool valid = otp.OTP == VerifyDTO.OTP;
+            if (!valid)
+                return BadRequest("Invalid OTP");
+
+            var user=await _userRepository.GetUserByEmailAsync(otp.Email);
+            user.IsVerified = true;
+            user.IsActive = true;
+            var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+            var tokenEntity = new UserRefreshToken
+            {
+                UserId = user.Id,
+                Token = refreshToken,
+                ExpireAt = DateTime.UtcNow.AddMinutes(10),
+                IsUsed = false
+            };
+            _context.UserRefreshTokens.Add(tokenEntity);
+            await _context.SaveChangesAsync();
+          
+            return Ok(new {massage= "OTP verified successfuly", tokenEntity });
         }
         [HttpPost("resendOTP")]
         public async Task<IActionResult> ResendOTP([FromBody] ResendOTPDto resendOTPDto)
@@ -212,6 +250,16 @@ namespace Dactra.Controllers
 
             }).ToList();
             return Ok(ret);
+        }
+        [Authorize]
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> Resetpassword([FromBody] ResetPasswordTokenDto model)
+        {
+            var result = await _passwordResetRepository.ResetPasswordUsingRefreshTokenAsync(model);
+            if (!result)
+                return BadRequest("Invalid or expired token, or password mismatch.");
+
+            return Ok("Password has been successfully reset.");
         }
     }
 }
