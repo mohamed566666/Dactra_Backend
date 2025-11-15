@@ -5,6 +5,7 @@ using Dactra.Models;
 using Dactra.Repositories;
 using Dactra.Repositories.Implementation;
 using Dactra.Repositories.Interfaces;
+using Dactra.Services.Implementation;
 using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -252,7 +253,7 @@ namespace Dactra.Controllers
             }).ToList();
             return Ok(ret);
         }
-        [Authorize]
+       
         [HttpPost("reset-password")]
         public async Task<IActionResult> Resetpassword([FromBody] ResetPasswordTokenDto model)
         {
