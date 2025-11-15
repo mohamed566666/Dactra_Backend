@@ -34,11 +34,8 @@ namespace Dactra.Repositories.Implementation
             if (user == null)
                 return false;
 
+            var result = await _userManager.ResetPasswordAsync(user, tokenEntity.Token, model.NewPassword);
             
-            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-            var result = await _userManager.ResetPasswordAsync(user, resetToken, model.NewPassword);
-
             if (!result.Succeeded)
                 return false;
 

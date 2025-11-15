@@ -147,7 +147,7 @@ namespace Dactra.Controllers
             var user=await _userRepository.GetUserByEmailAsync(otp.Email);
             user.IsVerified = true;
             user.IsActive = true;
-            var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+            var refreshToken = await _userManager.GeneratePasswordResetTokenAsync(user);
             var tokenEntity = new UserRefreshToken
             {
                 UserId = user.Id,
@@ -253,7 +253,7 @@ namespace Dactra.Controllers
             }).ToList();
             return Ok(ret);
         }
-       
+        [AllowAnonymous]
         [HttpPost("reset-password")]
         public async Task<IActionResult> Resetpassword([FromBody] ResetPasswordTokenDto model)
         {
