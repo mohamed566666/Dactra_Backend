@@ -61,20 +61,6 @@ namespace Dactra.Controllers
             return Ok(Response);
         }
 
-        [HttpGet("GetAllUsers..JustForTestingNow")]
-        public async Task<IActionResult> GetCurrentUsers()
-        {
-            var users = await _userService.GetAllUsersAsync();
-            var ret = users.Select(u => new UserBasicsDTO
-            {
-                Id = u.Id,
-                UserName = u.UserName,
-                EmailConfirmed = u.EmailConfirmed,
-                IsVerified = u.IsVerified,
-            }).ToList();
-            return Ok(ret);
-        }
-
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
@@ -183,16 +169,7 @@ namespace Dactra.Controllers
             await _context.SaveChangesAsync();
             return Ok("OTP sent successfully");
         }
-        [HttpDelete("deleteAllUsers..JustForTestingNow")]
-        public async Task<IActionResult> DeleteAllUsers()
-        {
-            var users = await _userManager.Users.ToListAsync();
-            foreach (var user in users)
-            {
-                await _userManager.DeleteAsync(user);
-            }
-            return Ok("All users deleted.");
-        }
+
         [HttpPost("SendOTP")]
         public async Task<IActionResult> TestEmail([FromBody] SendOTPtoMailDTO sendOtpDto)
         {
@@ -205,24 +182,31 @@ namespace Dactra.Controllers
             return Ok("OTP sent successfully.");
         }
 
-        [HttpDelete("DeleteUserByid/{id}")]
-        public async Task<IActionResult> DeleteUserByID(string id)
+        [AllowAnonymous]
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> Resetpassword([FromBody] ResetPasswordTokenDto model)
         {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null)
-                return NotFound(new { message = "User not found" });
-            var userRoles = await _userManager.GetRolesAsync(user);
-            if (userRoles.Any())
-            {
-                var removeResult = await _userManager.RemoveFromRolesAsync(user, userRoles);
-                if (!removeResult.Succeeded)
-                    return BadRequest(removeResult.Errors);
-            }
-            var result = await _userManager.DeleteAsync(user);
-            if (result.Succeeded)
-                return Ok(new { message = "User deleted successfully" });
-            return BadRequest(result.Errors);
+            var result = await _passwordResetRepository.ResetPasswordUsingRefreshTokenAsync(model);
+            if (!result)
+                return BadRequest("Invalid or expired token, or password mismatch.");
+
+            return Ok("Password has been successfully reset.");
         }
+
+        [HttpGet("GetAllUsers")]
+        public async Task<IActionResult> GetCurrentUsers()
+        {
+            var users = await _userService.GetAllUsersAsync();
+            var ret = users.Select(u => new UserBasicsDTO
+            {
+                Id = u.Id,
+                UserName = u.UserName,
+                EmailConfirmed = u.EmailConfirmed,
+                IsVerified = u.IsVerified,
+            }).ToList();
+            return Ok(ret);
+        }
+
         [HttpGet("GetUserById/{id}")]
         public async Task<IActionResult> GetUserByID(string id)
         {
@@ -253,15 +237,24 @@ namespace Dactra.Controllers
             }).ToList();
             return Ok(ret);
         }
-        [AllowAnonymous]
-        [HttpPost("reset-password")]
-        public async Task<IActionResult> Resetpassword([FromBody] ResetPasswordTokenDto model)
-        {
-            var result = await _passwordResetRepository.ResetPasswordUsingRefreshTokenAsync(model);
-            if (!result)
-                return BadRequest("Invalid or expired token, or password mismatch.");
 
-            return Ok("Password has been successfully reset.");
+        [HttpDelete("DeleteUserByid/{id}")]
+        public async Task<IActionResult> DeleteUserByID(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+                return NotFound(new { message = "User not found" });
+            var userRoles = await _userManager.GetRolesAsync(user);
+            if (userRoles.Any())
+            {
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, userRoles);
+                if (!removeResult.Succeeded)
+                    return BadRequest(removeResult.Errors);
+            }
+            var result = await _userManager.DeleteAsync(user);
+            if (result.Succeeded)
+                return Ok(new { message = "User deleted successfully" });
+            return BadRequest(result.Errors);
         }
     }
 }
