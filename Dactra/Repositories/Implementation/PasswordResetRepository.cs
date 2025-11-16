@@ -22,7 +22,10 @@ namespace Dactra.Repositories.Implementation
                 return false;
 
             var tokenEntity = await _context.UserRefreshTokens
-                .FirstOrDefaultAsync(t => t.Token == model.RefreshToken && !t.IsUsed);
+                .Where(t => t.Token == model.RefreshToken && !t.IsUsed)
+                .OrderByDescending(t => t.ExpireAt)
+                .FirstOrDefaultAsync();
+
 
             if (tokenEntity == null || tokenEntity.ExpireAt < DateTime.UtcNow)
                 return false;
@@ -31,10 +34,8 @@ namespace Dactra.Repositories.Implementation
             if (user == null)
                 return false;
 
+            var result = await _userManager.ResetPasswordAsync(user, tokenEntity.Token, model.NewPassword);
             
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var result = await _userManager.ResetPasswordAsync(user, token, model.NewPassword);
-
             if (!result.Succeeded)
                 return false;
 
