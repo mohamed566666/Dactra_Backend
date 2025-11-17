@@ -43,10 +43,10 @@ namespace Dactra.Services.Implementation
                     UserId = user.Id,
                     User = user,
                     Name = medicalTestProviderDTO.Name,
-                    LicenceNo = medicalTestProviderDTO.licenceNo,
+                    LicenceNo = medicalTestProviderDTO.LicenceNo,
                     Address = medicalTestProviderDTO.Address,
                     About = medicalTestProviderDTO.About,
-                    Type = medicalTestProviderDTO.rule.ToLower() == "lab" ? MedicalTestProviderType.Lab : MedicalTestProviderType.Scan
+                    Type = medicalTestProviderDTO.Role.ToLower() == "lab" ? MedicalTestProviderType.Lab : MedicalTestProviderType.Scan
                 };
                 await _medicalTestProviderProfileRepository.AddAsync(medicalTestProviderProfile);
                 user.IsRegistrationComplete = true;
