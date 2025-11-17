@@ -72,6 +72,8 @@ namespace Dactra.Controllers
                 return Unauthorized("invalid Email");
             if(!user.IsVerified)
                 return BadRequest("not verified");
+            if(!user.IsRegistrationComplete)
+                return BadRequest("Registration not Complete");
 
 
             var resulte = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
