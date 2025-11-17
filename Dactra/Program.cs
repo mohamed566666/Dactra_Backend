@@ -39,6 +39,7 @@ builder.Services.AddScoped<IDoctorProfileRepository, DoctorProfileRepository>();
 builder.Services.AddScoped<IMedicalTestProviderProfileRepository, MedicalTestProviderProfileRepository>();
 builder.Services.AddScoped<IPatientProfileRepository, PatientProfileRepository>();
 builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
+builder.Services.AddScoped<IMajorsRepository, MajorsRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserProfileFactory , UserProfileFactory>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
@@ -46,6 +47,7 @@ builder.Services.AddScoped<IDoctorService, DoctorService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IMedicalTestsProviderService, MedicalTestsProviderService>();
 builder.Services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
+builder.Services.AddScoped<IMajorsService, MajorsService>();
 
 builder.Services.AddControllers();
 

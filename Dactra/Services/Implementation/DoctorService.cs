@@ -48,6 +48,7 @@ namespace Dactra.Services.Implementation
                     StartingCareerDate = doctorComplateDTO.StartingCareerDate,
                     Address = doctorComplateDTO.Address,
                     Gender = doctorComplateDTO.Gender,
+                    SpecializationId = doctorComplateDTO.MajorId,
                 };
                 await _doctorProfileRepository.AddAsync(doctorProfile);
                 user.IsRegistrationComplete = true;
