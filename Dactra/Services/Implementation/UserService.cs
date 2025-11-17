@@ -74,12 +74,13 @@ namespace Dactra.Services.Implementation
                 string verificationCode = new Random().Next(100000, 999999).ToString();
                 await _emailSender.SendEmailAsync(model.Email, "Verification Code", $"Your OTP is: <b>{verificationCode}</b>");
                 await _emailVerificationRepository.AddVerificationAsync(model.Email, verificationCode, TimeSpan.FromMinutes(5));
+                model.Role = model.Role.ToLower();
                 var roleName = model.Role switch
                 {
-                    "Doctor" => "DoctorProfile",
-                    "Patient" => "PatientProfile",
-                    "Lab" => "MedicalTestProviderProfile",
-                    "Scan" => "MedicalTestProviderProfile",
+                    "doctor" => "DoctorProfile",
+                    "patient" => "PatientProfile",
+                    "lab" => "MedicalTestProviderProfile",
+                    "scan" => "MedicalTestProviderProfile",
                     _ => model.Role
                 };
                 await _roleRepository.AddUserToRoleAsync(user, roleName);
