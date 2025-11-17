@@ -28,8 +28,9 @@ namespace Dactra.Controllers
         private readonly IEmailSender _emailSender;
         private readonly IUserRepository _userRepository;
         private readonly IPasswordResetRepository _passwordResetRepository;
+        private readonly IRoleRepository _roleRepository;
 
-        public AccountController(UserManager<ApplicationUser> usermanager, ITokenService tokenService, SignInManager<ApplicationUser> signInManager, IUserService userService, ApplicationDbContext context, IEmailSender emailSender, IUserRepository userRepository, IPasswordResetRepository passwordResetRepository)
+        public AccountController(UserManager<ApplicationUser> usermanager, ITokenService tokenService, SignInManager<ApplicationUser> signInManager, IUserService userService, ApplicationDbContext context, IEmailSender emailSender, IUserRepository userRepository, IPasswordResetRepository passwordResetRepository, IRoleRepository roleRepository)
         {
             _userManager = usermanager;
             _tokenService = tokenService;
@@ -39,6 +40,7 @@ namespace Dactra.Controllers
             _emailSender = emailSender;
             _userRepository = userRepository;
             _passwordResetRepository = passwordResetRepository;
+            _roleRepository = roleRepository;
         }
         [HttpPost("Register")]
 
@@ -68,12 +70,15 @@ namespace Dactra.Controllers
                 return BadRequest(ModelState);
 
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == loginDto.Email.ToLower());
+            var role= await _roleRepository.GetUserRolesAsync(user);
+
             if (user == null)
                 return Unauthorized("invalid Email");
             if(!user.IsVerified)
-                return BadRequest("not verified");
+                return BadRequest(new { massage=" not verified",Email=user.Email,role=role });
             if(!user.IsRegistrationComplete)
-                return BadRequest("Registration not Complete");
+                return BadRequest(new { massage = "Registration not Completed", Email = user.Email, role = role } );
+            
 
 
             var resulte = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
