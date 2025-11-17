@@ -9,44 +9,56 @@ namespace Dactra.Services.Implementation
     {
         private readonly IDoctorProfileRepository _doctorProfileRepository;
         private readonly IUserRepository _userRepository;
+        private readonly ApplicationDbContext _context;
 
-        public DoctorService(IDoctorProfileRepository doctorProfileRepository , IUserRepository userRepository)
+        public DoctorService(IDoctorProfileRepository doctorProfileRepository , IUserRepository userRepository, ApplicationDbContext context)
         {
             _doctorProfileRepository = doctorProfileRepository;
             _userRepository = userRepository;
+            _context = context;
         }
 
         public async Task CompleteRegistrationAsync(DoctorCompleteDTO doctorComplateDTO)
         {
-            var user = await _userRepository.GetUserByEmailAsync(doctorComplateDTO.Email);
-            if (user == null)
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                throw new ArgumentException("User Not Found");
+                var user = await _userRepository.GetUserByEmailAsync(doctorComplateDTO.Email);
+                if (user == null)
+                {
+                    throw new ArgumentException("User Not Found");
+                }
+                if (!user.IsVerified)
+                {
+                    throw new InvalidOperationException("Please verify your account first");
+                }
+                var existingProfile = await _doctorProfileRepository.GetByUserIdAsync(user.Id);
+                if (existingProfile != null)
+                {
+                    throw new InvalidOperationException("This User Already has an Profile");
+                }
+                var doctorProfile = new DoctorProfile
+                {
+                    UserId = user.Id,
+                    User = user,
+                    FirstName = doctorComplateDTO.FirstName,
+                    LastName = doctorComplateDTO.LastName,
+                    LicenceNo = doctorComplateDTO.LicenceNo,
+                    DateOfBirth = doctorComplateDTO.DateOfBirth,
+                    StartingCareerDate = doctorComplateDTO.StartingCareerDate,
+                    Address = doctorComplateDTO.Address,
+                    Gender = doctorComplateDTO.Gender,
+                };
+                await _doctorProfileRepository.AddAsync(doctorProfile);
+                user.IsRegistrationComplete = true;
+                await _userRepository.UpdateUserAsync(user);
+                await transaction.CommitAsync();
             }
-            if (!user.IsVerified)
+            catch (Exception ex)
             {
-                throw new InvalidOperationException("Please verify your account first");
+                await transaction.RollbackAsync();
+                throw new Exception("An error occurred while completing registration: " + ex.Message);
             }
-            var existingProfile = await _doctorProfileRepository.GetByUserIdAsync(user.Id);
-            if (existingProfile != null)
-            {
-                throw new InvalidOperationException("This User Already has an Profile");
-            }
-            var doctorProfile = new DoctorProfile
-            {
-                UserId = user.Id,
-                User = user,
-                FirstName = doctorComplateDTO.FirstName,
-                LastName = doctorComplateDTO.LastName,
-                LicenceNo = doctorComplateDTO.LicenceNo,
-                DateOfBirth = doctorComplateDTO.DateOfBirth,
-                StartingCareerDate = doctorComplateDTO.StartingCareerDate,
-                Address = doctorComplateDTO.Address,
-                Gender = doctorComplateDTO.Gender,
-            };
-            await _doctorProfileRepository.AddAsync(doctorProfile);
-            user.IsRegistrationComplete = true;
-            await _userRepository.UpdateUserAsync(user);
         }
 
         public async Task DeleteDoctorProfileAsync(int doctorProfileId)

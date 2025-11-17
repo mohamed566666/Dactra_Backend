@@ -48,7 +48,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.ToTable("Answers");
+                    b.ToTable("Answers", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.ApplicationRole", b =>
@@ -202,7 +202,7 @@ namespace Dactra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EmailVerifications");
+                    b.ToTable("EmailVerifications", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.Majors", b =>
@@ -227,7 +227,7 @@ namespace Dactra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Majors");
+                    b.ToTable("Majors", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.Medicines", b =>
@@ -257,7 +257,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("PatientProfileId");
 
-                    b.ToTable("Medicines");
+                    b.ToTable("Medicines", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.PatientAppointment", b =>
@@ -296,7 +296,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("ScheduleTableId");
 
-                    b.ToTable("PatientAppointments");
+                    b.ToTable("PatientAppointments", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.PatientProfile", b =>
@@ -354,7 +354,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Patients");
+                    b.ToTable("Patients", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.Payment", b =>
@@ -384,7 +384,7 @@ namespace Dactra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.Post", b =>
@@ -414,7 +414,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("MajorsId");
 
-                    b.ToTable("Posts");
+                    b.ToTable("Posts", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.Prescription", b =>
@@ -431,7 +431,7 @@ namespace Dactra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Prescriptions");
+                    b.ToTable("Prescriptions", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.PrescriptionWithMedicin", b =>
@@ -455,7 +455,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("MedicinesId");
 
-                    b.ToTable("PrescriptionWithMedicin");
+                    b.ToTable("PrescriptionWithMedicin", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.ProviderOffering", b =>
@@ -484,7 +484,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("TestServiceId");
 
-                    b.ToTable("ProviderOfferings");
+                    b.ToTable("ProviderOfferings", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.Questions", b =>
@@ -514,7 +514,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("Questions");
+                    b.ToTable("Questions", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.Rating", b =>
@@ -547,7 +547,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("Ratings");
+                    b.ToTable("Ratings", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.ScheduleTable", b =>
@@ -571,7 +571,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("ScheduleTables");
+                    b.ToTable("ScheduleTables", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.ServiceProviderProfile", b =>
@@ -637,7 +637,7 @@ namespace Dactra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TestServices");
+                    b.ToTable("TestServices", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.UserRefreshToken", b =>
@@ -664,7 +664,7 @@ namespace Dactra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserRefreshTokens");
+                    b.ToTable("UserRefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("Dactra.Models.VitalSign", b =>
@@ -693,7 +693,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("VitalSigns");
+                    b.ToTable("VitalSigns", (string)null);
                 });
 
             modelBuilder.Entity("MedicinesPrescription", b =>
@@ -708,7 +708,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("prescriptionsId");
 
-                    b.ToTable("MedicinesPrescription");
+                    b.ToTable("MedicinesPrescription", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
