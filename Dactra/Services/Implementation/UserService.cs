@@ -47,39 +47,53 @@ namespace Dactra.Services.Implementation
 
         public async Task<IdentityResult> RegisterAsync(RegisterDto model)
         {
-            var existingUser = await _userRepository.GetUserByEmailAsync(model.Email);
-            if (existingUser != null)
+            await using var transAction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                return IdentityResult.Failed(new IdentityError { Description = "Email is already registered." });
-            }
-            var user = new ApplicationUser
-            {
-                Email = model.Email,
-                UserName = model.Email,
-                PhoneNumber = model.PhoneNumber,
-                EmailConfirmed = false,
-                CreatedAt = DateTime.UtcNow,
-                IsActive = false,
-                IsVerified = false,
-                IsRegistrationComplete = false
-            };
-            var createUserResult = await _userRepository.CreateUserAsync(user, model.Password);
-            if (!createUserResult.Succeeded)
-            {
+                var existingUser = await _userRepository.GetUserByEmailAsync(model.Email);
+                if (existingUser != null)
+                {
+                    return IdentityResult.Failed(new IdentityError { Description = "Email is already registered." });
+                }
+                var user = new ApplicationUser
+                {
+                    Email = model.Email,
+                    UserName = model.Email,
+                    PhoneNumber = model.PhoneNumber,
+                    EmailConfirmed = false,
+                    CreatedAt = DateTime.UtcNow,
+                    IsActive = false,
+                    IsVerified = false,
+                    IsRegistrationComplete = false
+                };
+                var createUserResult = await _userRepository.CreateUserAsync(user, model.Password);
+                if (!createUserResult.Succeeded)
+                {
+                    return createUserResult;
+                }
+                string verificationCode = new Random().Next(100000, 999999).ToString();
+                await _emailSender.SendEmailAsync(model.Email, "Verification Code", $"Your OTP is: <b>{verificationCode}</b>");
+                await _emailVerificationRepository.AddVerificationAsync(model.Email, verificationCode, TimeSpan.FromMinutes(5));
+                var roleName = model.Role switch
+                {
+                    "Doctor" => "DoctorProfile",
+                    "Patient" => "PatientProfile",
+                    "Lab" => "MedicalTestProviderProfile",
+                    "Scan" => "MedicalTestProviderProfile",
+                    _ => model.Role
+                };
+                await _roleRepository.AddUserToRoleAsync(user, roleName);
+                await transAction.CommitAsync();
                 return createUserResult;
             }
-            string verificationCode = new Random().Next(100000, 999999).ToString();
-            await _emailSender.SendEmailAsync(model.Email, "Verification Code", $"Your OTP is: <b>{verificationCode}</b>");
-            await _emailVerificationRepository.AddVerificationAsync(model.Email, verificationCode, TimeSpan.FromMinutes(5));
-            var roleName = model.Role switch
+            catch (Exception ex)
             {
-                "Doctor" => "DoctorProfile",
-                "Patient" => "PatientProfile",
-                "MedicalTestProvider" => "MedicalTestProviderProfile",
-                _ => model.Role
-            };
-            await _roleRepository.AddUserToRoleAsync(user, roleName);
-            return createUserResult;
+                await transAction.RollbackAsync();
+                return IdentityResult.Failed(new IdentityError
+                {
+                    Description = $"Registration failed: {ex.Message}"
+                });
+            }
         }
 
         public async Task<IEnumerable<ApplicationUser>> GetAllUsersAsync()
