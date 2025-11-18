@@ -25,7 +25,7 @@ namespace Dactra.Repositories.Implementation
                 .Where(t => t.Token == model.RefreshToken && !t.IsUsed)
                 .OrderByDescending(t => t.ExpireAt)
                 .FirstOrDefaultAsync();
-
+            
 
             if (tokenEntity == null || tokenEntity.ExpireAt < DateTime.UtcNow)
                 return false;

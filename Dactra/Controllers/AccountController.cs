@@ -94,6 +94,7 @@ namespace Dactra.Controllers
                         Email = user.Email,
                         Username = user.UserName,
                         Token = _tokenService.CreateToken(user),
+                        RefieshToken= _tokenService.CreateRefreshToken(user),
                         IsRegistrationComplete= user.IsRegistrationComplete,
                     }
             );
@@ -146,7 +147,7 @@ namespace Dactra.Controllers
             {
                 UserId = user.Id,
                 Token = refreshToken,
-                ExpireAt = DateTime.UtcNow.AddMinutes(10),
+                ExpireAt = DateTime.UtcNow.AddDays(20),
                 IsUsed = false
             };
             _context.UserRefreshTokens.Add(tokenEntity);
