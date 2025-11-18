@@ -38,9 +38,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         List<ApplicationRole> roles = new List<ApplicationRole>
         {
             new ApplicationRole { Name="Admin", NormalizedName="ADMIN" },
-            new ApplicationRole { Name="DoctorProfile", NormalizedName="DOCTORPROFILE" },
-            new ApplicationRole { Name="PatientProfile", NormalizedName="PATIENTPROFILE" },
-            new ApplicationRole { Name="MedicalTestProviderProfile", NormalizedName="MEDICALTESTPROVIDERPROFILE" }
+            new ApplicationRole { Name="Doctor", NormalizedName="DOCTOR" },
+            new ApplicationRole { Name="Patient", NormalizedName="PATIENT" },
+            new ApplicationRole { Name="MedicalTestProvider", NormalizedName="MEDICALTESTPROVIDER" }
         };
 
 

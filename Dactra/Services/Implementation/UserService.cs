@@ -77,6 +77,7 @@ namespace Dactra.Services.Implementation
                 model.Role = model.Role.ToLower();
                 var roleName = model.Role switch
                 {
+                    //doctor=>doctor
                     "doctor" => "DoctorProfile",
                     "patient" => "PatientProfile",
                     "lab" => "MedicalTestProviderProfile",
