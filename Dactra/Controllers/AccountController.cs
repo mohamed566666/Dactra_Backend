@@ -70,10 +70,11 @@ namespace Dactra.Controllers
                 return BadRequest(ModelState);
 
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == loginDto.Email.ToLower());
-            var role= await _roleRepository.GetUserRolesAsync(user);
-
             if (user == null)
                 return Unauthorized("invalid Email");
+            var role= await _roleRepository.GetUserRolesAsync(user);
+
+          
             if(!user.IsVerified)
                 return BadRequest(new { massage=" not verified",Email=user.Email,role=role });
             if(!user.IsRegistrationComplete)
