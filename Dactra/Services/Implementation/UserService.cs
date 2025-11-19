@@ -4,11 +4,14 @@ using Dactra.Models;
 using Dactra.Repositories.Implementation;
 using Dactra.Repositories.Interfaces;
 using Dactra.Services.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Security.Claims;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+
 
 namespace Dactra.Services.Implementation
 {
@@ -21,8 +24,9 @@ namespace Dactra.Services.Implementation
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IRoleRepository _roleRepository;
         private readonly ApplicationDbContext _context;
+        private readonly ITokenService _tokenService;
 
-        public UserService(IUserProfileFactory userProfileFactory, IUserRepository userRepository, IEmailSender emailSender, IEmailVerificationRepository emailVerificationRepository, UserManager<ApplicationUser> userManager , IRoleRepository roleRepository, ApplicationDbContext context)
+        public UserService(IUserProfileFactory userProfileFactory, IUserRepository userRepository, IEmailSender emailSender, IEmailVerificationRepository emailVerificationRepository, UserManager<ApplicationUser> userManager , IRoleRepository roleRepository, ApplicationDbContext context, ITokenService tokenService)
         {
             _UserProfileFactory = userProfileFactory;
             _userRepository = userRepository;
@@ -31,6 +35,7 @@ namespace Dactra.Services.Implementation
             _userManager = userManager;
             _roleRepository = roleRepository;
             _context = context;
+             _tokenService = tokenService;
         }
         public async Task<IdentityResult> SendDTOforVerficatio(SendOTPtoMailDTO model)
         {
@@ -105,6 +110,55 @@ namespace Dactra.Services.Implementation
         {
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<IResult> LoginWithGoogleAsync(ClaimsPrincipal? claimsPrincipal)
+        {
+            if (claimsPrincipal == null)
+            {
+                return Results.BadRequest(new { error = "Google", massage = "claimsPrincipal is null" });
+            }
+            var Email = claimsPrincipal.FindFirstValue(claimType: ClaimTypes.Email);
+            if (Email == null)
+            {
+                return Results.BadRequest(new { error = "Google", massage = "Email is null" });
+            }
+            var user = await _userManager.FindByEmailAsync(Email);
+            if (user == null)
+            {
+                var newuser = new ApplicationUser
+                {
+                    Email = Email,
+                    UserName = Email,
+                    IsVerified = false,
+                    PhoneNumber = null,
+                    EmailConfirmed = true,
+                    CreatedAt = DateTime.UtcNow,
+                    IsActive = false,
+                    IsRegistrationComplete = false
+
+                };
+    var result = await _userManager.CreateAsync(newuser);
+                if (!result.Succeeded) {
+                    return Results.BadRequest("unable to creat user");
+                }
+user = newuser;
+
+            }
+            var info = new UserLoginInfo("Google", providerKey: claimsPrincipal.FindFirstValue(claimType: Email) ?? string.Empty
+                , displayName: "Google");
+var loginresult = await _userManager.AddLoginAsync(user, info);
+if (!loginresult.Succeeded)
+{
+    return Results.BadRequest("unable to login user");
+}
+
+var Token = _tokenService.CreateToken(user);
+var refToken = _tokenService.CreateRefreshToken(user);
+
+return Results.Ok();
+            
+
         }
     }
 }
