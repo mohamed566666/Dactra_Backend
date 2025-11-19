@@ -70,10 +70,11 @@ namespace Dactra.Controllers
                 return BadRequest(ModelState);
 
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == loginDto.Email.ToLower());
-            var role= await _roleRepository.GetUserRolesAsync(user);
-
             if (user == null)
                 return Unauthorized("invalid Email");
+            var role= await _roleRepository.GetUserRolesAsync(user);
+
+          
             if(!user.IsVerified)
                 return BadRequest(new { massage=" not verified",Email=user.Email,role=role });
             if(!user.IsRegistrationComplete)
@@ -93,6 +94,7 @@ namespace Dactra.Controllers
                         Email = user.Email,
                         Username = user.UserName,
                         Token = _tokenService.CreateToken(user),
+                        RefieshToken= _tokenService.CreateRefreshToken(user),
                         IsRegistrationComplete= user.IsRegistrationComplete,
                     }
             );
@@ -145,7 +147,7 @@ namespace Dactra.Controllers
             {
                 UserId = user.Id,
                 Token = refreshToken,
-                ExpireAt = DateTime.UtcNow.AddMinutes(10),
+                ExpireAt = DateTime.UtcNow.AddDays(20),
                 IsUsed = false
             };
             _context.UserRefreshTokens.Add(tokenEntity);

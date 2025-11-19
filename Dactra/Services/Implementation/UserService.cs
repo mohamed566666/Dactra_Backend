@@ -77,10 +77,10 @@ namespace Dactra.Services.Implementation
                 model.Role = model.Role.ToLower();
                 var roleName = model.Role switch
                 {
-                    "doctor" => "DoctorProfile",
-                    "patient" => "PatientProfile",
-                    "lab" => "MedicalTestProviderProfile",
-                    "scan" => "MedicalTestProviderProfile",
+                    "doctor" => "Doctor",
+                    "patient" => "Patient",
+                    "lab" => "MedicalTestProvider",
+                    "scan" => "MedicalTestProvider",
                     _ => model.Role
                 };
                 await _roleRepository.AddUserToRoleAsync(user, roleName);
