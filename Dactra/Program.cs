@@ -7,6 +7,7 @@ using Dactra.Services.Implementation;
 using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -93,6 +94,8 @@ builder.Services.AddAuthentication(options =>
     options.ClientId = clientId;
     options.ClientSecret = clientSecret;
     options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.SignInScheme = IdentityConstants.ExternalScheme;
+    options.CallbackPath = "/api/account/login/google/callback";
 
 }).AddJwtBearer(options =>
 {
@@ -146,6 +149,16 @@ app.UseCors("AllowFrontend");
 
 app.UseSwagger();
     app.UseSwaggerUI();
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto |
+        ForwardedHeaders.XForwardedHost,
+
+    KnownNetworks = { },
+    KnownProxies = { }
+});
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {

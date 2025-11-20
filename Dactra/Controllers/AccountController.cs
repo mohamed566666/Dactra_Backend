@@ -285,25 +285,37 @@ namespace Dactra.Controllers
             var properties = _signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
             return Challenge(properties, "Google");
         }
-        [HttpGet("login/google/callback", Name = "GoogleLoginCallback")]
+        [HttpGet("login/google/callback")]
         public async Task<IActionResult> GoogleLoginCallback(
-           [FromQuery] string returnUrl,
-           IUserService userService)
+          [FromServices] IUserService userService,ITokenService tokenService)
         {
+            try
+            {
+                var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
 
-            var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+                if (result?.Principal == null)
+                    return Unauthorized(new { message = "Google authentication failed" });
 
+                var user = await userService.LoginWithGoogleAsync(result.Principal);
 
-            if (result?.Principal == null)
-                return Unauthorized();
+                if (user == null)
+                    return Unauthorized(new { message = "Login failed" });
 
-            await userService.LoginWithGoogleAsync(result.Principal);
+                var tokens = tokenService.CreateToken(user);
+                var reftoken = tokenService.CreateRefreshToken(user);
 
-            returnUrl = string.IsNullOrEmpty(returnUrl) || !Url.IsLocalUrl(returnUrl)
-                ? "/"
-                : returnUrl;
+                await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
-            return Redirect(returnUrl);
+                return Ok(new
+                {
+                    accessToken = tokens,
+                    refreshToken = reftoken,
+
+                });
+            }
+            catch (Exception ex) { return BadRequest(new { message = "Google login failed", detail = ex.Message }); }
+
         }
+
     }
 }
