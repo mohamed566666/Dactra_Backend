@@ -56,5 +56,10 @@ namespace Dactra.Services.Implementation
             await _majorsRepository.UpdateAsync(existingMajor);
             return existingMajor;
         }
+
+        public async Task UpdateMajorIconAsync(int id, string iconUrl)
+        {
+            await _majorsRepository.UpdateIcon(id, iconUrl);
+        }
     }
 }

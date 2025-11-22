@@ -10,5 +10,6 @@ namespace Dactra.Services.Interfaces
         Task<Majors> CreateMajorAsync(MajorBasicsDTO majordto);
         Task<Majors?> UpdateMajorAsync(int id , MajorBasicsDTO major);
         Task DeleteMajorAsync(int id);
+        Task UpdateMajorIconAsync(int id, string iconUrl);
     }
 }
