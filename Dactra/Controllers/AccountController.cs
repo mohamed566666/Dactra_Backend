@@ -252,24 +252,6 @@ namespace Dactra.Controllers
             return Ok(ret);
         }
 
-        [HttpDelete("DeleteUserByid/{id}")]
-        public async Task<IActionResult> DeleteUserByID(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null)
-                return NotFound(new { message = "User not found" });
-            var userRoles = await _userManager.GetRolesAsync(user);
-            if (userRoles.Any())
-            {
-                var removeResult = await _userManager.RemoveFromRolesAsync(user, userRoles);
-                if (!removeResult.Succeeded)
-                    return BadRequest(removeResult.Errors);
-            }
-            var result = await _userManager.DeleteAsync(user);
-            if (result.Succeeded)
-                return Ok(new { message = "User deleted successfully" });
-            return BadRequest(result.Errors);
-        }
         [HttpGet("login/google")]
         public async Task<IActionResult> GoogleLogin(
             [FromQuery] string returnUrl,
@@ -315,6 +297,24 @@ namespace Dactra.Controllers
             }
             catch (Exception ex) { return BadRequest(new { message = "Google login failed", detail = ex.Message }); }
 
+        }
+        [HttpDelete("DeleteUserByid/{id}")]
+        public async Task<IActionResult> DeleteUserByID(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+                return NotFound(new { message = "User not found" });
+            var userRoles = await _userManager.GetRolesAsync(user);
+            if (userRoles.Any())
+            {
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, userRoles);
+                if (!removeResult.Succeeded)
+                    return BadRequest(removeResult.Errors);
+            }
+            var result = await _userManager.DeleteAsync(user);
+            if (result.Succeeded)
+                return Ok(new { message = "User deleted successfully" });
+            return BadRequest(result.Errors);
         }
 
     }

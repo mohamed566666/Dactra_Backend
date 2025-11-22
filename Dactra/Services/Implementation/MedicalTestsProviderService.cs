@@ -1,4 +1,5 @@
 ﻿using Dactra.DTOs.ProfilesDTO;
+using Dactra.DTOs.ProfilesDTOs;
 using Dactra.Enums;
 using Dactra.Models;
 using Dactra.Repositories.Interfaces;
@@ -12,11 +13,22 @@ namespace Dactra.Services.Implementation
         private readonly IMedicalTestProviderProfileRepository _medicalTestProviderProfileRepository;
         private readonly IUserRepository _userRepository;
         private readonly ApplicationDbContext _context;
-        public MedicalTestsProviderService(IMedicalTestProviderProfileRepository medicalTestProviderProfileRepository,IUserRepository userRepository, ApplicationDbContext context)
+        public MedicalTestsProviderService(IMedicalTestProviderProfileRepository medicalTestProviderProfileRepository, IUserRepository userRepository, ApplicationDbContext context)
         {
             _medicalTestProviderProfileRepository = medicalTestProviderProfileRepository;
             _userRepository = userRepository;
             _context = context;
+        }
+
+        public async Task ApproveProfileAsync(int id)
+        {
+            var profile = await _medicalTestProviderProfileRepository.GetByIdAsync(id);
+            if (profile == null)
+            {
+                throw new ArgumentException("Medical Test Provider Profile Not Found");
+            }
+            profile.IsApproved = true;
+            await _medicalTestProviderProfileRepository.UpdateAsync(profile);
         }
 
         public async Task CompleteRegistrationAsync(MedicalTestProviderDTO medicalTestProviderDTO)
@@ -53,7 +65,8 @@ namespace Dactra.Services.Implementation
                 await _userRepository.UpdateUserAsync(user);
                 await transaction.CommitAsync();
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 await transaction.RollbackAsync();
                 throw new Exception("An error occurred while completing registration: " + ex.Message);
             }
@@ -71,7 +84,71 @@ namespace Dactra.Services.Implementation
 
         public async Task<IEnumerable<MedicalTestProviderProfile>> GetAllProfilesAsync()
         {
-            return await _medicalTestProviderProfileRepository.GetAllAsync();
+            var profiles = await _medicalTestProviderProfileRepository.GetAllAsync();
+            return profiles;
+        }
+
+        public async Task<IEnumerable<MedicalTestsProviderResponseDTP>> GetApprovedProfilesAsync(MedicalTestProviderType? type = null)
+        {
+            var profiles = await _medicalTestProviderProfileRepository.GetApprovedProfilesAsync(type);
+            var profileDTOs = profiles.Select(profile => new MedicalTestsProviderResponseDTP
+            {
+                Name = profile.Name,
+                LicenceNo = profile.LicenceNo,
+                Address = profile.Address,
+                About = profile.About
+            });
+            return profileDTOs;
+        }
+
+        public async Task<MedicalTestProviderProfile> GetProfileByIdAsync(int id)
+        {
+            var profile = await _medicalTestProviderProfileRepository.GetByIdAsync(id);
+            return profile;
+        }
+
+        public async Task<MedicalTestProviderProfile> GetProfileByUserIdAsync(string userId)
+        {
+            var profile = await _medicalTestProviderProfileRepository.GetByUserIdAsync(userId);
+            return profile;
+        }
+
+        public async Task<IEnumerable<MedicalTestsProviderResponseDTP>> GetProfilesByTypeAsync(MedicalTestProviderType type)
+        {
+            var profiles = await _medicalTestProviderProfileRepository.GetProfilesByTypeAsync(type);
+            var profileDTOs = profiles.Select(profile => new MedicalTestsProviderResponseDTP
+            {
+                Name = profile.Name,
+                LicenceNo = profile.LicenceNo,
+                Address = profile.Address,
+                About = profile.About
+            });
+            return profileDTOs;
+        }
+
+        public async Task RejectProfileAsync(int id)
+        {
+            var profile = await _medicalTestProviderProfileRepository.GetByIdAsync(id);
+            if (profile == null)
+            {
+                throw new ArgumentException("Medical Test Provider Profile Not Found");
+            }
+            profile.IsApproved = false;
+            await _medicalTestProviderProfileRepository.UpdateAsync(profile);
+        }
+
+        public async Task UpdateProfileAsync(int id, MedicalTestsProviderUpdateDTO dto)
+        {
+            var profile = await _medicalTestProviderProfileRepository.GetByIdAsync(id);
+            if (profile == null)
+            {
+                throw new ArgumentException("Medical Test Provider Profile Not Found");
+            }
+            profile.Name = dto.Name;
+            profile.LicenceNo = dto.LicenceNo;
+            profile.Address = dto.Address;
+            profile.About = dto.About;
+            await _medicalTestProviderProfileRepository.UpdateAsync(profile);
         }
     }
 }
