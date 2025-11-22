@@ -1,4 +1,5 @@
-﻿using Dactra.Models;
+﻿using Dactra.Enums;
+using Dactra.Models;
 
 namespace Dactra.Repositories.Interfaces
 {
@@ -10,5 +11,7 @@ namespace Dactra.Repositories.Interfaces
         Task AddAsync(MedicalTestProviderProfile profile);
         Task UpdateAsync(MedicalTestProviderProfile profile);
         Task DeleteAsync(MedicalTestProviderProfile profile);
+        Task<IEnumerable<MedicalTestProviderProfile>> GetApprovedProfilesAsync(MedicalTestProviderType? type = null);
+        Task<IEnumerable<MedicalTestProviderProfile>> GetProfilesByTypeAsync(MedicalTestProviderType type);
     }
 }

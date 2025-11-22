@@ -1,4 +1,5 @@
-﻿using Dactra.Models;
+﻿using Dactra.Enums;
+using Dactra.Models;
 using Dactra.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,6 +42,25 @@ namespace Dactra.Repositories.Implementation
         {
             _context.MedicalTestProviders.Remove(profile);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<MedicalTestProviderProfile>> GetApprovedProfilesAsync(MedicalTestProviderType? type = null)
+        {
+            var query =  _context.MedicalTestProviders
+                .Where(m => m.IsApproved);
+            if (type.HasValue)
+            {
+                query = query.Where(m => m.Type == type.Value);
+            }
+            return await query.OrderByDescending(M => M.Avg_Rating).ToListAsync();
+        }
+
+        public async Task<IEnumerable<MedicalTestProviderProfile>> GetProfilesByTypeAsync(MedicalTestProviderType type)
+        {
+            var profiles = await _context.MedicalTestProviders
+                .Where(m => m.Type == type)
+                .ToListAsync();
+            return profiles;
         }
     }
 }
