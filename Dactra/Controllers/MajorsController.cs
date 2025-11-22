@@ -60,6 +60,12 @@ namespace Dactra.Controllers
             await _majorsService.UpdateMajorAsync(id, major);
             return Ok("Major Updated successfully");
         }
+        [HttpPatch("UpdateIcon/{id}")]
+        public async Task<IActionResult> UpdateMajorIcon(int id, string iconUrl)
+        {
+            await _majorsService.UpdateMajorIconAsync(id, iconUrl);
+            return Ok("Major icon updated successfully");
+        }
         [HttpDelete("Delete/{id}")]
         public async Task<IActionResult> DeleteMajor(int id)
         {

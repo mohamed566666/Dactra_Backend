@@ -1,4 +1,5 @@
 ﻿using Dactra.DTOs.ProfilesDTO;
+using Dactra.DTOs.ProfilesDTOs;
 using Dactra.Models;
 using Dactra.Repositories.Interfaces;
 using Dactra.Services.Interfaces;
@@ -72,9 +73,22 @@ namespace Dactra.Services.Implementation
             await _doctorProfileRepository.DeleteAsync(profile);
         }
 
-        public async Task<IEnumerable<DoctorProfile>> GetAllProfileAsync()
+        public async Task<IEnumerable<DoctorProfileResponseDTO>> GetAllProfileAsync()
         {
-            return await _doctorProfileRepository.GetAllAsync();
+            var profiles = await _doctorProfileRepository.GetAllAsync();
+            return profiles.Select(profile => new DoctorProfileResponseDTO
+            {
+                Id = profile.Id,
+                FirstName = profile.FirstName,
+                LastName = profile.LastName,
+                About = profile.About,
+                Address = profile.Address,
+                age = DateTime.Now.Year - profile.DateOfBirth.Year,
+                AverageRating = profile.Avg_Rating,
+                YearsOfExperience = DateTime.Now.Year - profile.StartingCareerDate.Year,
+                SpecializationId = profile.SpecializationId,
+                gender = profile.Gender
+            });
         }
     }
 }

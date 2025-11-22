@@ -9,5 +9,6 @@ namespace Dactra.Repositories.Interfaces
         Task AddAsync(Majors major);
         Task UpdateAsync(Majors major);
         Task DeleteAsync(Majors major);
+        Task UpdateIcon(int id, string iconUrl);
     }
 }
