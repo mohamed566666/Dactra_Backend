@@ -5,6 +5,7 @@ using Dactra.Repositories.Implementation;
 using Dactra.Repositories.Interfaces;
 using Dactra.Services.Implementation;
 using Dactra.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
@@ -79,6 +80,20 @@ builder.Services.AddAuthentication(options =>
     options.DefaultSignInScheme =
     options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
 
+}).AddCookie().AddGoogle(options =>
+{
+    var clientId = builder.Configuration["Authentication:Google:ClientId"];
+    if (clientId == null)
+        throw new ArgumentNullException(nameof(clientId));
+
+    var clientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+
+    if (clientSecret == null)
+        throw new ArgumentNullException(nameof(clientSecret));
+    options.ClientId = clientId;
+    options.ClientSecret = clientSecret;
+    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+
 }).AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
@@ -141,6 +156,8 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
+app.UseDeveloperExceptionPage();
+
 
 app.MapControllers();
 

@@ -7,8 +7,11 @@ using Dactra.Repositories.Implementation;
 using Dactra.Repositories.Interfaces;
 using Dactra.Services.Implementation;
 using Dactra.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +32,7 @@ namespace Dactra.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IPasswordResetRepository _passwordResetRepository;
         private readonly IRoleRepository _roleRepository;
+      
 
         public AccountController(UserManager<ApplicationUser> usermanager, ITokenService tokenService, SignInManager<ApplicationUser> signInManager, IUserService userService, ApplicationDbContext context, IEmailSender emailSender, IUserRepository userRepository, IPasswordResetRepository passwordResetRepository, IRoleRepository roleRepository)
         {
@@ -41,6 +45,7 @@ namespace Dactra.Controllers
             _userRepository = userRepository;
             _passwordResetRepository = passwordResetRepository;
             _roleRepository = roleRepository;
+            
         }
         [HttpPost("Register")]
 
@@ -82,9 +87,9 @@ namespace Dactra.Controllers
             
 
 
-            var resulte = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+            var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
-            if (!resulte.Succeeded)
+            if (!result.Succeeded)
                 return Unauthorized(" Email or password Invalid");
             
 
@@ -264,6 +269,41 @@ namespace Dactra.Controllers
             if (result.Succeeded)
                 return Ok(new { message = "User deleted successfully" });
             return BadRequest(result.Errors);
+        }
+        [HttpGet("login/google")]
+        public async Task<IActionResult> GoogleLogin(
+            [FromQuery] string returnUrl,
+            LinkGenerator linkGenerator)
+        {
+            var redirectUrl = linkGenerator.GetUriByAction(
+                httpContext: HttpContext,
+                action: "GoogleLoginCallback",
+                controller: "Account",
+                values: new { returnUrl },
+                scheme: Request.Scheme);
+
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
+            return Challenge(properties, "Google");
+        }
+        [HttpGet("login/google/callback", Name = "GoogleLoginCallback")]
+        public async Task<IActionResult> GoogleLoginCallback(
+           [FromQuery] string returnUrl,
+           IUserService userService)
+        {
+
+            var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+
+
+            if (result?.Principal == null)
+                return Unauthorized();
+
+            await userService.LoginWithGoogleAsync(result.Principal);
+
+            returnUrl = string.IsNullOrEmpty(returnUrl) || !Url.IsLocalUrl(returnUrl)
+                ? "/"
+                : returnUrl;
+
+            return Redirect(returnUrl);
         }
     }
 }
