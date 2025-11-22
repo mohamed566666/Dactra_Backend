@@ -98,11 +98,11 @@ namespace Dactra.Services.Implementation
             if (user == null)
                 return (null, "User not found");
 
-            // Mark refresh token as used (One Time Use)
+            
             tokenEntity.IsUsed = true;
             await _context.SaveChangesAsync();
 
-            // Issue new access token
+          
             var newAccessToken = CreateToken(user);
 
             return (newAccessToken, "Token refreshed");

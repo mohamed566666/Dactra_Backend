@@ -26,7 +26,7 @@ namespace Dactra.Services.Implementation
         private readonly ApplicationDbContext _context;
         private readonly ITokenService _tokenService;
 
-        public UserService(IUserProfileFactory userProfileFactory, IUserRepository userRepository, IEmailSender emailSender, IEmailVerificationRepository emailVerificationRepository, UserManager<ApplicationUser> userManager , IRoleRepository roleRepository, ApplicationDbContext context, ITokenService tokenService)
+        public UserService(IUserProfileFactory userProfileFactory, IUserRepository userRepository, IEmailSender emailSender, IEmailVerificationRepository emailVerificationRepository, UserManager<ApplicationUser> userManager, IRoleRepository roleRepository, ApplicationDbContext context, ITokenService tokenService)
         {
             _UserProfileFactory = userProfileFactory;
             _userRepository = userRepository;
@@ -35,12 +35,12 @@ namespace Dactra.Services.Implementation
             _userManager = userManager;
             _roleRepository = roleRepository;
             _context = context;
-             _tokenService = tokenService;
+            _tokenService = tokenService;
         }
         public async Task<IdentityResult> SendDTOforVerficatio(SendOTPtoMailDTO model)
         {
             var user = await _userRepository.GetUserByEmailAsync(model.Email);
-            if (user == null) 
+            if (user == null)
             {
                 return IdentityResult.Failed(new IdentityError { Description = "User not found." });
             }
@@ -112,53 +112,48 @@ namespace Dactra.Services.Implementation
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IResult> LoginWithGoogleAsync(ClaimsPrincipal? claimsPrincipal)
+        public async Task<ApplicationUser> LoginWithGoogleAsync(ClaimsPrincipal? claimsPrincipal)
         {
             if (claimsPrincipal == null)
-            {
-                return Results.BadRequest(new { error = "Google", massage = "claimsPrincipal is null" });
-            }
-            var Email = claimsPrincipal.FindFirstValue(claimType: ClaimTypes.Email);
-            if (Email == null)
-            {
-                return Results.BadRequest(new { error = "Google", massage = "Email is null" });
-            }
-            var user = await _userManager.FindByEmailAsync(Email);
+                throw new ArgumentNullException(nameof(claimsPrincipal), "claimsPrincipal is null");
+
+            var email = claimsPrincipal.FindFirstValue(ClaimTypes.Email);
+            if (email == null)
+                throw new Exception("Email claim is null");
+
+            var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                var newuser = new ApplicationUser
+                var newUser = new ApplicationUser
                 {
-                    Email = Email,
-                    UserName = Email,
+                    Email = email,
+                    UserName = email,
                     IsVerified = false,
                     PhoneNumber = null,
                     EmailConfirmed = true,
                     CreatedAt = DateTime.UtcNow,
                     IsActive = false,
                     IsRegistrationComplete = false
-
                 };
-    var result = await _userManager.CreateAsync(newuser);
-                if (!result.Succeeded) {
-                    return Results.BadRequest("unable to creat user");
-                }
-user = newuser;
 
+                var result = await _userManager.CreateAsync(newUser);
+                if (!result.Succeeded)
+                    throw new Exception("Unable to create user");
+
+                user = newUser;
             }
-            var info = new UserLoginInfo("Google", providerKey: claimsPrincipal.FindFirstValue(claimType: Email) ?? string.Empty
-                , displayName: "Google");
-var loginresult = await _userManager.AddLoginAsync(user, info);
-if (!loginresult.Succeeded)
-{
-    return Results.BadRequest("unable to login user");
-}
 
-var Token = _tokenService.CreateToken(user);
-var refToken = _tokenService.CreateRefreshToken(user);
+            var info = new UserLoginInfo("Google",
+                providerKey: claimsPrincipal.FindFirstValue(ClaimTypes.Email) ?? string.Empty,
+                displayName: "Google");
 
-return Results.Ok();
-            
+            var loginResult = await _userManager.AddLoginAsync(user, info);
+            if (!loginResult.Succeeded)
+                throw new Exception("Unable to login user with Google");
 
+
+            return user;
         }
+
     }
 }
