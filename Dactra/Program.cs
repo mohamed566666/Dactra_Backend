@@ -89,7 +89,9 @@ builder.Services.AddAuthentication(options =>
     options.DefaultSignInScheme =
     options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
 
-<<<<<<< HEAD
+
+
+
 
 //}).AddGoogle(options =>
 //{
@@ -105,7 +107,7 @@ builder.Services.AddAuthentication(options =>
 
 //    var clientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 
-=======
+
 //}).AddGoogle(options =>
 //{
 //    var clientId = builder.Configuration["Authentication:Google:ClientId"];
@@ -114,14 +116,14 @@ builder.Services.AddAuthentication(options =>
 
 //    var clientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 
->>>>>>> b8b6a82 (repase)
+
 //    if (clientSecret == null)
 //        throw new ArgumentNullException(nameof(clientSecret));
 //    options.ClientId = clientId;
 //    options.ClientSecret = clientSecret;
 //    options.SignInScheme = IdentityConstants.ExternalScheme;
 //    options.CallbackPath = "/api/account/login/google/callback";
-<<<<<<< HEAD
+
 //=======
 //    if (clientSecret == null)
 //        throw new ArgumentNullException(nameof(clientSecret));
@@ -129,9 +131,8 @@ builder.Services.AddAuthentication(options =>
 //    options.ClientSecret = clientSecret;
 //    options.SignInScheme = IdentityConstants.ExternalScheme;
 //    options.CallbackPath = "/api/account/login/google/callback";
-//>>>>>>> b8b6a82bf0ec61cb83f9ed4dd669a2158163a179
-=======
->>>>>>> b8b6a82 (repase)
+//>>>>>>> b8b6a82bf0ec61cb83f9ed4dd669a2158163a179   
+
 
 }).AddJwtBearer(options =>
 {
