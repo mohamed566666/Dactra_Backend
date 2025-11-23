@@ -1,4 +1,5 @@
-﻿using Dactra.DTOs.AuthemticationDTOs;
+﻿using Dactra.Controllers;
+using Dactra.DTOs.AuthemticationDTOs;
 using Dactra.Factories.Interfaces;
 using Dactra.Models;
 using Dactra.Repositories.Implementation;
@@ -25,8 +26,9 @@ namespace Dactra.Services.Implementation
         private readonly IRoleRepository _roleRepository;
         private readonly ApplicationDbContext _context;
         private readonly ITokenService _tokenService;
+        private readonly ILogger<UserService> _logger;
 
-        public UserService(IUserProfileFactory userProfileFactory, IUserRepository userRepository, IEmailSender emailSender, IEmailVerificationRepository emailVerificationRepository, UserManager<ApplicationUser> userManager, IRoleRepository roleRepository, ApplicationDbContext context, ITokenService tokenService)
+        public UserService(IUserProfileFactory userProfileFactory, IUserRepository userRepository, IEmailSender emailSender, IEmailVerificationRepository emailVerificationRepository, UserManager<ApplicationUser> userManager, IRoleRepository roleRepository, ApplicationDbContext context, ITokenService tokenService, ILogger<UserService> logger)
         {
             _UserProfileFactory = userProfileFactory;
             _userRepository = userRepository;
@@ -36,6 +38,7 @@ namespace Dactra.Services.Implementation
             _roleRepository = roleRepository;
             _context = context;
             _tokenService = tokenService;
+            _logger=logger;
         }
         public async Task<IdentityResult> SendDTOforVerficatio(SendOTPtoMailDTO model)
         {
@@ -114,16 +117,30 @@ namespace Dactra.Services.Implementation
 
         public async Task<ApplicationUser> LoginWithGoogleAsync(ClaimsPrincipal? claimsPrincipal)
         {
+            _logger.LogInformation("LoginWithGoogleAsync started.");
+
             if (claimsPrincipal == null)
-                throw new ArgumentNullException(nameof(claimsPrincipal), "claimsPrincipal is null");
+            {
+                _logger.LogError("claimsPrincipal is NULL");
+                throw new ArgumentNullException(nameof(claimsPrincipal));
+            }
 
             var email = claimsPrincipal.FindFirstValue(ClaimTypes.Email);
+
             if (email == null)
+            {
+                _logger.LogWarning("Email claim not found in Google response");
                 throw new Exception("Email claim is null");
+            }
+
+            _logger.LogInformation("Google Email received: {Email}", email);
 
             var user = await _userManager.FindByEmailAsync(email);
+
             if (user == null)
             {
+                _logger.LogInformation("User not found. Creating new user...");
+
                 var newUser = new ApplicationUser
                 {
                     Email = email,
@@ -138,22 +155,38 @@ namespace Dactra.Services.Implementation
 
                 var result = await _userManager.CreateAsync(newUser);
                 if (!result.Succeeded)
-                    throw new Exception("Unable to create user");
+                {
+                    _logger.LogError("Failed to create new user. Errors: {Errors}",
+                        string.Join(", ", result.Errors.Select(e => e.Description)));
 
+                    throw new Exception("Unable to create user");
+                }
+
+                _logger.LogInformation("New user created successfully: {Email}", newUser.Email);
                 user = newUser;
             }
+            else
+            {
+                _logger.LogInformation("Existing user found: {Email}", user.Email);
+            }
 
-            var info = new UserLoginInfo("Google",
-                providerKey: claimsPrincipal.FindFirstValue(ClaimTypes.Email) ?? string.Empty,
-                displayName: "Google");
+            var providerKey = claimsPrincipal.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
+
+            var info = new UserLoginInfo("Google", providerKey, "Google");
 
             var loginResult = await _userManager.AddLoginAsync(user, info);
-            if (!loginResult.Succeeded)
-                throw new Exception("Unable to login user with Google");
 
+            if (!loginResult.Succeeded)
+            {
+                _logger.LogError("AddLoginAsync failed for user {Email}", user.Email);
+                throw new Exception("Unable to login user with Google");
+            }
+
+            _logger.LogInformation("Google login added successfully for {Email}", user.Email);
 
             return user;
         }
+
 
     }
 }

@@ -32,9 +32,10 @@ namespace Dactra.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IPasswordResetRepository _passwordResetRepository;
         private readonly IRoleRepository _roleRepository;
-      
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(UserManager<ApplicationUser> usermanager, ITokenService tokenService, SignInManager<ApplicationUser> signInManager, IUserService userService, ApplicationDbContext context, IEmailSender emailSender, IUserRepository userRepository, IPasswordResetRepository passwordResetRepository, IRoleRepository roleRepository)
+
+        public AccountController(UserManager<ApplicationUser> usermanager, ITokenService tokenService, SignInManager<ApplicationUser> signInManager, IUserService userService, ApplicationDbContext context, IEmailSender emailSender, IUserRepository userRepository, IPasswordResetRepository passwordResetRepository, IRoleRepository roleRepository, ILogger<AccountController> logger)
         {
             _userManager = usermanager;
             _tokenService = tokenService;
@@ -45,6 +46,7 @@ namespace Dactra.Controllers
             _userRepository = userRepository;
             _passwordResetRepository = passwordResetRepository;
             _roleRepository = roleRepository;
+            _logger = logger;
             
         }
         [HttpPost("Register")]
@@ -271,51 +273,47 @@ namespace Dactra.Controllers
             return BadRequest(result.Errors);
         }
         [HttpGet("login/google")]
-        public async Task<IActionResult> GoogleLogin(
-            [FromQuery] string returnUrl,
-            LinkGenerator linkGenerator)
+        public IActionResult GoogleLogin([FromQuery] string returnUrl = "/")
         {
-            var redirectUrl = linkGenerator.GetUriByAction(
-                httpContext: HttpContext,
-                action: "GoogleLoginCallback",
-                controller: "Account",
-                values: new { returnUrl },
-                scheme: Request.Scheme);
+            var redirectUrl = Url.Action(nameof(GoogleLoginCallback), "Account") + $"?returnUrl={Uri.EscapeDataString(returnUrl)}";
 
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(
+                "Google",
+                redirectUrl
+            );
+
             return Challenge(properties, "Google");
         }
         [HttpGet("login/google/callback")]
         public async Task<IActionResult> GoogleLoginCallback(
-          [FromServices] IUserService userService,ITokenService tokenService)
+    [FromServices] IUserService userService,
+    ITokenService tokenService)
         {
             try
             {
                 var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
 
                 if (result?.Principal == null)
+                {
                     return Unauthorized(new { message = "Google authentication failed" });
-
+                }
                 var user = await userService.LoginWithGoogleAsync(result.Principal);
-
-                if (user == null)
-                    return Unauthorized(new { message = "Login failed" });
-
                 var tokens = tokenService.CreateToken(user);
-                var reftoken = tokenService.CreateRefreshToken(user);
-
+                var refToken = tokenService.CreateRefreshToken(user);
                 await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
                 return Ok(new
                 {
                     accessToken = tokens,
-                    refreshToken = reftoken,
-
+                    refreshToken = refToken,
                 });
             }
-            catch (Exception ex) { return BadRequest(new { message = "Google login failed", detail = ex.Message }); }
-
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Google login failed", detail = ex.Message });
+            }
         }
+
 
     }
 }
