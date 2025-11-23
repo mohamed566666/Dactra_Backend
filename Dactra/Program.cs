@@ -55,7 +55,9 @@ builder.Services.AddScoped<ITestServiceService, TestServiceService>();
 builder.Services.AddScoped<ITestServiceRepository, TestServiceRepository>();
 builder.Services.AddScoped<IProviderOfferingRepository, ProviderOfferingRepository>();
 builder.Services.AddScoped<IProviderOfferingService, ProviderOfferingService>();
-//builder.Services.AddScoped<IAuthCoreService, AuthCoreService>();
+
+builder.Services.AddScoped<IAuthCoreService,AuthCoreService>();
+
 
 builder.Services.AddControllers();
 
@@ -87,20 +89,35 @@ builder.Services.AddAuthentication(options =>
     options.DefaultSignInScheme =
     options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
 
-}).AddGoogle(options =>
-{
-    var clientId = builder.Configuration["Authentication:Google:ClientId"];
-    if (clientId == null)
-        throw new ArgumentNullException(nameof(clientId));
 
-    var clientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+//}).AddGoogle(options =>
+//{
+//    var clientId = builder.Configuration["Authentication:Google:ClientId"];
+//    if (clientId == null)
+//        throw new ArgumentNullException(nameof(clientId));
+//=======
+//}).AddGoogle(options =>
+//{
+//    var clientId = builder.Configuration["Authentication:Google:ClientId"];
+//    if (clientId == null)
+//        throw new ArgumentNullException(nameof(clientId));
 
-    if (clientSecret == null)
-        throw new ArgumentNullException(nameof(clientSecret));
-    options.ClientId = clientId;
-    options.ClientSecret = clientSecret;
-    options.SignInScheme = IdentityConstants.ExternalScheme;
-    options.CallbackPath = "/api/account/login/google/callback";
+//    var clientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+
+//    if (clientSecret == null)
+//        throw new ArgumentNullException(nameof(clientSecret));
+//    options.ClientId = clientId;
+//    options.ClientSecret = clientSecret;
+//    options.SignInScheme = IdentityConstants.ExternalScheme;
+//    options.CallbackPath = "/api/account/login/google/callback";
+//=======
+//    if (clientSecret == null)
+//        throw new ArgumentNullException(nameof(clientSecret));
+//    options.ClientId = clientId;
+//    options.ClientSecret = clientSecret;
+//    options.SignInScheme = IdentityConstants.ExternalScheme;
+//    options.CallbackPath = "/api/account/login/google/callback";
+//>>>>>>> b8b6a82bf0ec61cb83f9ed4dd669a2158163a179
 
 }).AddJwtBearer(options =>
 {
