@@ -86,20 +86,20 @@ builder.Services.AddAuthentication(options =>
     options.DefaultSignInScheme =
     options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
 
-}).AddGoogle(options =>
-{
-    var clientId = builder.Configuration["Authentication:Google:ClientId"];
-    if (clientId == null)
-        throw new ArgumentNullException(nameof(clientId));
+//}).AddGoogle(options =>
+//{
+//    var clientId = builder.Configuration["Authentication:Google:ClientId"];
+//    if (clientId == null)
+//        throw new ArgumentNullException(nameof(clientId));
 
-    var clientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+//    var clientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 
-    if (clientSecret == null)
-        throw new ArgumentNullException(nameof(clientSecret));
-    options.ClientId = clientId;
-    options.ClientSecret = clientSecret;
-    options.SignInScheme = IdentityConstants.ExternalScheme;
-    options.CallbackPath = "/api/account/login/google/callback";
+//    if (clientSecret == null)
+//        throw new ArgumentNullException(nameof(clientSecret));
+//    options.ClientId = clientId;
+//    options.ClientSecret = clientSecret;
+//    options.SignInScheme = IdentityConstants.ExternalScheme;
+//    options.CallbackPath = "/api/account/login/google/callback";
 
 }).AddJwtBearer(options =>
 {
