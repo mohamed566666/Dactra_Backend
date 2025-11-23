@@ -146,7 +146,11 @@ namespace Dactra.Controllers
                 }
             }
 
+<<<<<<< HEAD
             var result = await _authCoreService.ExternalLoginAsync(user, deviceInfo, ipAddress);
+=======
+            var result = await _authCoreService.ExternalLoginAsync(user, deviceInfo, ipAddress, _emailService);
+>>>>>>> b8b6a82 (repase)
 
             return Ok(new
             {
