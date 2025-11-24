@@ -102,7 +102,7 @@ namespace Dactra.Controllers
                         Email = user.Email,
                         Username = user.UserName,
                         Token = _tokenService.CreateToken(user).ToString(),
-                        RefieshToken= _tokenService.CreateRefreshToken(user),
+                        //RefieshToken= _tokenService.CreateRefreshToken(user),
                         IsRegistrationComplete= user.IsRegistrationComplete,
                     }
             );

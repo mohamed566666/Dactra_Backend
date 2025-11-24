@@ -24,14 +24,14 @@ namespace Dactra.Services.Implementation
             _context = context;
             this.roleRepository = roleRepository;
         }
-        public async Task<string> CreateToken(ApplicationUser user)
+        public  string CreateToken(ApplicationUser user)
         {
-            var userRoles = await roleRepository.GetUserRolesAsync(user);
+            var userRoles =  roleRepository.GetUserRolesAsync(user).Result;
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Email,user.Email),
                 new Claim(JwtRegisteredClaimNames.GivenName,user.UserName),
-                new Claim(ClaimTypes.Role,userRoles.ToString()),
+                new Claim(ClaimTypes.Role,string.Join(",",userRoles)),
 
             };
             var creds= new SigningCredentials(_key ,SecurityAlgorithms.HmacSha512Signature);
