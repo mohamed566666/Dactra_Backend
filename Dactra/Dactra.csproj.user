@@ -4,4 +4,7 @@
     <NameOfLastUsedPublishProfile>C:\Users\Rashad\OneDrive\Desktop\GD2\Dactra_Backend\Dactra\Properties\PublishProfiles\site43892-WebDeploy1.pubxml</NameOfLastUsedPublishProfile>
     <ActiveDebugProfile>https</ActiveDebugProfile>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
+  </PropertyGroup>
 </Project>

@@ -8,6 +8,7 @@ using Dactra.Repositories.Interfaces;
 using Dactra.Services.Implementation;
 using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -100,7 +101,7 @@ namespace Dactra.Controllers
                     {
                         Email = user.Email,
                         Username = user.UserName,
-                        Token = _tokenService.CreateToken(user),
+                        Token = _tokenService.CreateToken(user).ToString(),
                         RefieshToken= _tokenService.CreateRefreshToken(user),
                         IsRegistrationComplete= user.IsRegistrationComplete,
                     }
@@ -255,46 +256,29 @@ namespace Dactra.Controllers
         }
 
         [HttpGet("login/google")]
-        public IActionResult GoogleLogin([FromQuery] string returnUrl = "/")
+        public IActionResult GoogleLogin(string returnUrl = "/")
         {
-            var redirectUrl = Url.Action(nameof(GoogleLoginCallback), "Account") + $"?returnUrl={Uri.EscapeDataString(returnUrl)}";
-
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(
-                "Google",
-                redirectUrl
-            );
-
-            return Challenge(properties, "Google");
+            var properties = new AuthenticationProperties { RedirectUri = Url.Action("GoogleResponse", new { returnUrl }) };
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
+
         [HttpGet("login/google/callback")]
-        public async Task<IActionResult> GoogleLoginCallback(
-    [FromServices] IUserService userService,
-    ITokenService tokenService)
+        public async Task<IActionResult> GoogleResponse(string returnUrl = "/")
         {
-            try
-            {
-                var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
 
-                if (result?.Principal == null)
-                {
-                    return Unauthorized(new { message = "Google authentication failed" });
-                }
-                var user = await userService.LoginWithGoogleAsync(result.Principal);
-                var tokens = tokenService.CreateToken(user);
-                var refToken = tokenService.CreateRefreshToken(user);
-                await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-
-                return Ok(new
-                {
-                    accessToken = tokens,
-                    refreshToken = refToken,
-                });
-            }
-            catch (Exception ex)
+            var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+            if (!result.Succeeded)
             {
-                return BadRequest(new { message = "Google login failed", detail = ex.Message });
+                return BadRequest("Google authentication failed");
             }
-        }
+
+
+            var claims = result.Principal.Identities.FirstOrDefault()?.Claims;
+            var email = claims?.FirstOrDefault(c => c.Type == "email")?.Value;
+            var name = claims?.FirstOrDefault(c => c.Type == "name")?.Value;
+
+            return Redirect(returnUrl);
+        } 
         [HttpDelete("DeleteUserByid/{id}")]
         public async Task<IActionResult> DeleteUserByID(string id)
         {

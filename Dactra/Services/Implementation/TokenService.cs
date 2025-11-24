@@ -1,4 +1,5 @@
 ﻿using Dactra.Models;
+using Dactra.Repositories.Interfaces;
 using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Dactra.Services.Implementation
 {
@@ -14,18 +16,22 @@ namespace Dactra.Services.Implementation
         private readonly IConfiguration _config;
         private readonly SymmetricSecurityKey _key;
         private readonly ApplicationDbContext _context;
-        public TokenService(IConfiguration config, ApplicationDbContext context)
+        private readonly IRoleRepository roleRepository;
+        public TokenService(IConfiguration config, ApplicationDbContext context, IRoleRepository roleRepository)
         {
             _config = config;
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SignInKey"]));
             _context = context;
+            this.roleRepository = roleRepository;
         }
-        public string CreateToken(ApplicationUser user)
+        public async Task<string> CreateToken(ApplicationUser user)
         {
+            var userRoles = await roleRepository.GetUserRolesAsync(user);
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Email,user.Email),
                 new Claim(JwtRegisteredClaimNames.GivenName,user.UserName),
+                new Claim(ClaimTypes.Role,userRoles.ToString()),
 
             };
             var creds= new SigningCredentials(_key ,SecurityAlgorithms.HmacSha512Signature);
@@ -105,8 +111,10 @@ namespace Dactra.Services.Implementation
           
             var newAccessToken = CreateToken(user);
 
-            return (newAccessToken, "Token refreshed");
+            return (newAccessToken.ToString(), "Token refreshed");
         }
+
+    
     }
 
 }

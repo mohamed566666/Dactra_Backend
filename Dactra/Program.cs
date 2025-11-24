@@ -6,6 +6,7 @@ using Dactra.Repositories.Interfaces;
 using Dactra.Services.Implementation;
 using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
@@ -56,7 +57,7 @@ builder.Services.AddScoped<ITestServiceRepository, TestServiceRepository>();
 builder.Services.AddScoped<IProviderOfferingRepository, ProviderOfferingRepository>();
 builder.Services.AddScoped<IProviderOfferingService, ProviderOfferingService>();
 
-builder.Services.AddScoped<IAuthCoreService,AuthCoreService>();
+//builder.Services.AddScoped<IAuthCoreService,AuthCoreService>();
 
 
 builder.Services.AddControllers();
@@ -89,51 +90,24 @@ builder.Services.AddAuthentication(options =>
     options.DefaultSignInScheme =
     options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
 
+}).AddCookie().AddGoogle(options =>
+{
+
+    var clientId = builder.Configuration["Authentication:Google:ClientId"];
+    if (clientId == null)
+        throw new ArgumentNullException(nameof(clientId));
+
+    var clientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 
 
-
-
-//}).AddGoogle(options =>
-//{
-//    var clientId = builder.Configuration["Authentication:Google:ClientId"];
-//    if (clientId == null)
-//        throw new ArgumentNullException(nameof(clientId));
-//=======
-//}).AddGoogle(options =>
-//{
-//    var clientId = builder.Configuration["Authentication:Google:ClientId"];
-//    if (clientId == null)
-//        throw new ArgumentNullException(nameof(clientId));
-
-//    var clientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-
-
-//}).AddGoogle(options =>
-//{
-//    var clientId = builder.Configuration["Authentication:Google:ClientId"];
-//    if (clientId == null)
-//        throw new ArgumentNullException(nameof(clientId));
-
-//    var clientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-
-
-//    if (clientSecret == null)
-//        throw new ArgumentNullException(nameof(clientSecret));
-//    options.ClientId = clientId;
-//    options.ClientSecret = clientSecret;
-//    options.SignInScheme = IdentityConstants.ExternalScheme;
-//    options.CallbackPath = "/api/account/login/google/callback";
-
-//=======
-//    if (clientSecret == null)
-//        throw new ArgumentNullException(nameof(clientSecret));
-//    options.ClientId = clientId;
-//    options.ClientSecret = clientSecret;
-//    options.SignInScheme = IdentityConstants.ExternalScheme;
-//    options.CallbackPath = "/api/account/login/google/callback";
-//>>>>>>> b8b6a82bf0ec61cb83f9ed4dd669a2158163a179   
-
-
+    if (clientSecret == null)
+        throw new ArgumentNullException(nameof(clientSecret));
+    options.ClientId = clientId;
+    options.ClientSecret = clientSecret;
+    options.SignInScheme = IdentityConstants.ExternalScheme;
+    options.Scope.Add("email");
+    options.Scope.Add("profile");
+    options.CallbackPath = "/api/account/login/google/callback";
 }).AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
@@ -149,6 +123,7 @@ builder.Services.AddAuthentication(options =>
 
     };
 });
+
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
@@ -204,7 +179,7 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
 });
-
+app.UseRouting();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 
