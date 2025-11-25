@@ -9,6 +9,7 @@ namespace Dactra.Services.Interfaces
         Task<string> CreateRefreshToken(ApplicationUser user);
         ClaimsPrincipal? ValidateAccessToken(string token);
         Task<(string? AccessToken, string? Message)> RefreshAccessTokenAsync(string refreshToken);
+        Task<ApplicationUser?> GetUserByRefreshToken(string refreshToken);
 
     }
 }

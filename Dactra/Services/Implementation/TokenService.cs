@@ -26,7 +26,7 @@ namespace Dactra.Services.Implementation
         }
         public  string CreateToken(ApplicationUser user)
         {
-            var userRoles =  roleRepository.GetUserRolesAsync(user).Result;
+            var userRoles = roleRepository.GetUserRolesAsync(user).Result;
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Email,user.Email),
@@ -34,7 +34,7 @@ namespace Dactra.Services.Implementation
                 new Claim(ClaimTypes.Role,string.Join(",",userRoles)),
 
             };
-            var creds= new SigningCredentials(_key ,SecurityAlgorithms.HmacSha512Signature);
+            var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
@@ -44,8 +44,8 @@ namespace Dactra.Services.Implementation
                 Audience = _config["JWT:Audience"],
 
             };
-            var tokenHandler =new  JwtSecurityTokenHandler();
-            var token=tokenHandler.CreateToken(tokenDescriptor);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
         public async Task<string> CreateRefreshToken(ApplicationUser user)
@@ -114,7 +114,26 @@ namespace Dactra.Services.Implementation
             return (newAccessToken.ToString(), "Token refreshed");
         }
 
-    
+        public async Task<ApplicationUser?> GetUserByRefreshToken(string refreshToken)
+        {
+            
+            var tokenEntity = await _context.UserRefreshTokens
+                .FirstOrDefaultAsync(x => x.Token == refreshToken);
+
+            if (tokenEntity == null)
+                return null;
+
+            
+            if (tokenEntity.ExpireAt < DateTime.UtcNow)
+                return null;
+
+           
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == tokenEntity.UserId);
+
+            return user;
+        }
+
     }
 
 }

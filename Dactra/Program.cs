@@ -25,9 +25,11 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.AllowAnyOrigin()
+            policy.WithOrigins("https://dactra1.vercel.app")
                   .AllowAnyHeader()
-                  .AllowAnyMethod();
+                  .AllowAnyMethod()
+                   .AllowCredentials();
+
         });
 });
 
@@ -158,6 +160,8 @@ builder.Services.AddSwaggerGen(option =>
 });
 
 var app = builder.Build();
+app.UseRouting();
+
 app.UseCors("AllowFrontend");
 
 // Configure the HTTP request pipeline.
@@ -179,7 +183,6 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
 });
-app.UseRouting();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 

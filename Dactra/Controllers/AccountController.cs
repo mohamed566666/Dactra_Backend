@@ -94,7 +94,18 @@ namespace Dactra.Controllers
 
             if (!result.Succeeded)
                 return Unauthorized(" Email or password Invalid");
-            
+
+            var refreshToken = await _tokenService.CreateRefreshToken(user);
+
+            Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Domain = null,
+                Path="/",
+                Expires = DateTime.UtcNow.AddDays(30)
+            }); 
 
             return Ok(
                     new NewUserDto
@@ -102,7 +113,7 @@ namespace Dactra.Controllers
                         Email = user.Email,
                         Username = user.UserName,
                         Token = _tokenService.CreateToken(user).ToString(),
-                        //RefieshToken= _tokenService.CreateRefreshToken(user),
+
                         IsRegistrationComplete= user.IsRegistrationComplete,
                     }
             );
@@ -299,6 +310,31 @@ namespace Dactra.Controllers
         }
 
 
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh()
+        {
+            var oldToken = Request.Cookies["refreshToken"];
+            if (oldToken == null) return Unauthorized();
+            
+
+            var user = await _tokenService.GetUserByRefreshToken(oldToken);
+            if (user == null) return Unauthorized();
+
+            var access = _tokenService.CreateToken(user);
+            var newRefresh = await _tokenService.CreateRefreshToken(user);
+
+            Response.Cookies.Append("refreshToken", newRefresh, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Domain = null,
+                Path = "/",
+                Expires = DateTime.UtcNow.AddDays(30)
+            });
+
+            return Ok(new { accessToken = access });
+        }
 
     }
 }
