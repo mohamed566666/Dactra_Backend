@@ -25,7 +25,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("https://dactrav1.vercel.app")
+            policy.WithOrigins("https://dactrav1.vercel.app" , 
+                "http://localhost:5173"
+                )
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                    .AllowCredentials();

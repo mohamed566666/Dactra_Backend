@@ -83,5 +83,10 @@ namespace Dactra.Services.Implementation
         {
             return await _patientProfileRepository.GetAllAsync();
         }
+
+        public async Task<PatientProfile> GetProfileByUserID(string userId)
+        {
+            return await _patientProfileRepository.GetByUserIdAsync(userId);
+        }
     }
 }
