@@ -79,6 +79,11 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
 
 
 builder.Services.AddControllers();
@@ -88,9 +93,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme =
-    options.DefaultChallengeScheme =
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
     options.DefaultForbidScheme =
-    options.DefaultScheme =
+     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultSignInScheme =
     options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
 
@@ -161,7 +166,12 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
+
 var app = builder.Build();
+app.UseCookiePolicy(new CookiePolicyOptions
+{
+    MinimumSameSitePolicy = SameSiteMode.None
+});
 app.UseDeveloperExceptionPage();
 
 app.UseRouting();

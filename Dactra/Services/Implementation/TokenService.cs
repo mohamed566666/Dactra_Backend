@@ -38,7 +38,7 @@ namespace Dactra.Services.Implementation
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddMinutes(7),
+                Expires = DateTime.Now.AddMinutes(2),
                 SigningCredentials = creds,
                 Issuer = _config["JWT:Issuer"],
                 Audience = _config["JWT:Audience"],
@@ -134,6 +134,18 @@ namespace Dactra.Services.Implementation
             return user;
         }
 
+        public async Task RemoveRefreshToken(ApplicationUser user)
+        {
+            var tokens = await _context.UserRefreshTokens
+             .Where(t => t.UserId == user.Id)
+              .ToListAsync();
+
+            if (tokens.Any())
+            {
+                _context.UserRefreshTokens.RemoveRange(tokens);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 
 }
