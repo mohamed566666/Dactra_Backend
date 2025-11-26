@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
+using static System.Net.WebRequestMethods;
 
 namespace Dactra.Controllers
 {
@@ -102,8 +103,7 @@ namespace Dactra.Controllers
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
-                Domain = null,
-                Path="/",
+                Path ="/",
                 Expires = DateTime.UtcNow.AddDays(30)
             }); 
 
@@ -323,12 +323,12 @@ namespace Dactra.Controllers
             var access = _tokenService.CreateToken(user);
             var newRefresh = await _tokenService.CreateRefreshToken(user);
 
+
             Response.Cookies.Append("refreshToken", newRefresh, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
-                Domain = null,
                 Path = "/",
                 Expires = DateTime.UtcNow.AddDays(30)
             });
