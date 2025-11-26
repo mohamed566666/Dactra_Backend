@@ -8,5 +8,6 @@ namespace Dactra.Services.Interfaces
         public Task CompleteRegistrationAsync(PatientCompleteDTO doctorComplateDTO);
         public Task<IEnumerable<PatientProfile>> GetAllProfileAsync();
         public Task DeletePatientProfileAsync(int patientProfileId);
+        public Task<PatientProfile> GetProfileByUserID(string userId);
     }
 }
