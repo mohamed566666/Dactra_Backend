@@ -221,6 +221,54 @@ namespace Dactra.Controllers
             return Ok("Password has been successfully reset.");
         }
 
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh()
+        {
+            var oldToken = Request.Cookies["refreshToken"];
+            if (oldToken == null) return Unauthorized();
+
+
+            var user = await _tokenService.GetUserByRefreshToken(oldToken);
+            if (user == null) return Unauthorized();
+
+            var access = _tokenService.CreateToken(user);
+            var newRefresh = await _tokenService.CreateRefreshToken(user);
+
+
+            Response.Cookies.Append("refreshToken", newRefresh, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Path = "/",
+                Expires = DateTime.UtcNow.AddDays(30)
+            });
+
+            return Ok(new { accessToken = access });
+        }
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+
+            var refreshToken = Request.Cookies["refreshToken"];
+            if (!string.IsNullOrEmpty(refreshToken))
+            {
+
+                var user = await _tokenService.GetUserByRefreshToken(refreshToken);
+                if (user != null)
+                {
+                    await _tokenService.RemoveRefreshToken(user);
+                }
+            }
+            Response.Cookies.Delete("refreshToken", new CookieOptions
+            {
+                Path = "/",
+                Secure = true,
+                SameSite = SameSiteMode.None
+            });
+            return Ok(new { message = "Logged out successfully" });
+        }
+
         [HttpGet("GetAllUsers")]
         public async Task<IActionResult> GetCurrentUsers()
         {
@@ -308,51 +356,5 @@ namespace Dactra.Controllers
                 return Ok(new { message = "User deleted successfully" });
             return BadRequest(result.Errors);
         }
-
-
-        [HttpPost("refresh")]
-        public async Task<IActionResult> Refresh()
-        {
-            var oldToken = Request.Cookies["refreshToken"];
-            if (oldToken == null) return Unauthorized();
-            
-
-            var user = await _tokenService.GetUserByRefreshToken(oldToken);
-            if (user == null) return Unauthorized();
-
-            var access = _tokenService.CreateToken(user);
-            var newRefresh = await _tokenService.CreateRefreshToken(user);
-
-
-            Response.Cookies.Append("refreshToken", newRefresh, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-                Path = "/",
-                Expires = DateTime.UtcNow.AddDays(30)
-            });
-
-            return Ok(new { accessToken = access });
-        }
-        [HttpPost("logout")]
-        public async Task<IActionResult> Logout()
-        {
-            
-            var refreshToken = Request.Cookies["refreshToken"];
-            if (!string.IsNullOrEmpty(refreshToken))
-            {
-                
-                var user = await _tokenService.GetUserByRefreshToken(refreshToken);
-                if (user != null)
-                {
-                    await _tokenService.RemoveRefreshToken(user);
-                }
-            }
-            Response.Cookies.Delete("refreshToken");
-
-            return Ok(new { message = "Logged out successfully" });
-        }
-
     }
 }

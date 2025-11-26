@@ -16,7 +16,9 @@ namespace Dactra.Repositories.Implementation
 
         public async Task<IEnumerable<MedicalTestProviderProfile>> GetAllAsync()
         {
-            return await _context.MedicalTestProviders.ToListAsync();
+            return await _context.MedicalTestProviders
+                .Include(m => m.User)
+                .ToListAsync();
         }
         public async Task<MedicalTestProviderProfile> GetByIdAsync(int id)
         {

@@ -1,5 +1,4 @@
-﻿using Dactra.DTOs.ProfilesDTO;
-using Dactra.DTOs.ProfilesDTOs;
+﻿using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
 using Dactra.Models;
 using Dactra.Repositories.Interfaces;
 using Dactra.Services.Interfaces;
@@ -89,6 +88,53 @@ namespace Dactra.Services.Implementation
                 SpecializationId = profile.SpecializationId,
                 gender = profile.Gender
             });
+        }
+
+        public async Task<DoctorProfileResponseDTO> GetProfileByIdAsync(int doctorProfileId)
+        {
+            var profile = await _doctorProfileRepository.GetByIdAsync(doctorProfileId);
+            if (profile == null)
+            {
+                throw new ArgumentException("Doctor Profile Not Found");
+            }
+            return new DoctorProfileResponseDTO
+            {
+                Id = profile.Id,
+                FirstName = profile.FirstName,
+                LastName = profile.LastName,
+                About = profile.About,
+                Address = profile.Address,
+                age = DateTime.Now.Year - profile.DateOfBirth.Year,
+                AverageRating = profile.Avg_Rating,
+                YearsOfExperience = DateTime.Now.Year - profile.StartingCareerDate.Year,
+                SpecializationId = profile.SpecializationId,
+            };
+        }
+
+        public async Task<DoctorProfileResponseDTO> GetProfileByUserEmail(string email)
+        {
+            var user = await _userRepository.GetUserByEmailAsync(email);
+            if (user == null)
+            {
+                throw new ArgumentException("User Not Found");
+            }
+            var profile = await _doctorProfileRepository.GetByUserIdAsync(user.Id);
+            if (profile == null)
+            {
+                throw new ArgumentException("Doctor Profile Not Found");
+            }
+            return new DoctorProfileResponseDTO
+            {
+                Id = profile.Id,
+                FirstName = profile.FirstName,
+                LastName = profile.LastName,
+                About = profile.About,
+                Address = profile.Address,
+                age = DateTime.Now.Year - profile.DateOfBirth.Year,
+                AverageRating = profile.Avg_Rating,
+                YearsOfExperience = DateTime.Now.Year - profile.StartingCareerDate.Year,
+                SpecializationId = profile.SpecializationId,
+            };
         }
     }
 }

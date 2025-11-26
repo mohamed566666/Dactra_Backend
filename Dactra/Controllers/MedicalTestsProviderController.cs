@@ -1,5 +1,4 @@
-﻿using Dactra.DTOs.ProfilesDTO;
-using Dactra.DTOs.ProfilesDTOs;
+﻿using Dactra.DTOs.ProfilesDTOs.MedicalTestsProviderDTOs;
 using Dactra.Enums;
 using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -18,53 +17,51 @@ namespace Dactra.Controllers
             _medicalTestsProviderService = medicalTestsProviderService;
         }
 
-        [HttpPost("CompleteRegister")]
-        public async Task<IActionResult> CompleteRegister(DTOs.ProfilesDTO.MedicalTestProviderDTO medicalTestProviderDTO)
-        {
-            await _medicalTestsProviderService.CompleteRegistrationAsync(medicalTestProviderDTO);
-            return Ok();
-        }
-
-        [HttpGet("GetAllProfiles")]
-        public async Task<IActionResult> GetAllProfiles()
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
             var MedicalTestProviderProfiles = await _medicalTestsProviderService.GetAllProfilesAsync();
             return Ok(MedicalTestProviderProfiles);
         }
-        [HttpGet("GetProfileById/{Id}")]
-        public async Task<IActionResult> GetProfileById(int Id)
+        [HttpGet("{Id}")]
+        public async Task<IActionResult> GetById(int Id)
         {
             var MedicalTestProviderProfile = await _medicalTestsProviderService.GetProfileByIdAsync(Id);
             return Ok(MedicalTestProviderProfile);
         }
-        [HttpGet ("GetProfileByUserId/{UserId}")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, MedicalTestsProviderUpdateDTO medicalTestProviderDTO)
+        {
+            await _medicalTestsProviderService.UpdateProfileAsync(id, medicalTestProviderDTO);
+            return Ok("Profile Updated Succesfully");
+        }
+        [HttpPost("CompleteRegister")]
+        public async Task<IActionResult> CompleteRegister(MedicalTestProviderDTO medicalTestProviderDTO)
+        {
+            await _medicalTestsProviderService.CompleteRegistrationAsync(medicalTestProviderDTO);
+            return Ok();
+        }
+        [HttpGet ("GetByUserId/{UserId}")]
         public async Task<IActionResult> GetProfileByUserId(string UserId)
         {
             var MedicalTestProviderProfile = await _medicalTestsProviderService.GetProfileByUserIdAsync(UserId);
             return Ok(MedicalTestProviderProfile);
         }
 
-        [HttpGet("GetApprovedProfiles")]
-        public async Task<IActionResult> GetApprovedProfiles()
+        [HttpGet("GetApproved")]
+        public async Task<IActionResult> GetApproved()
         {
             var MedicalTestProviderProfiles = await _medicalTestsProviderService.GetApprovedProfilesAsync();
             return Ok(MedicalTestProviderProfiles);
         }
 
-        [HttpGet("GetProfilesByType")]
-        public async Task<IActionResult> GetProfilesByType(MedicalTestProviderType type)
+        [HttpGet("GetByType{type}")]
+        public async Task<IActionResult> GetByType(MedicalTestProviderType type)
         {
             var MedicalTestProviderProfiles = await _medicalTestsProviderService.GetProfilesByTypeAsync(type);
             return Ok(MedicalTestProviderProfiles);
         }
-
-        [HttpPut("UpdateProfile/{id}")]
-        public async Task<IActionResult> UpdateProfile(int id,MedicalTestsProviderUpdateDTO medicalTestProviderDTO)
-        {
-            await _medicalTestsProviderService.UpdateProfileAsync(id, medicalTestProviderDTO);
-            return Ok("Profile Updated Succesfully");
-        }
-        [HttpPatch("ApproveProfile/{Id}")]
+        [HttpPatch("Approve/{Id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ChangeProfileStatus(int Id)
         {
@@ -72,7 +69,7 @@ namespace Dactra.Controllers
             return Ok("Profile Approved Succesfully");
         }
 
-        [HttpPatch("RejectProfile/{Id}")]
+        [HttpPatch("Reject/{Id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RejectProfile(int Id)
         {
@@ -80,7 +77,7 @@ namespace Dactra.Controllers
             return Ok("Profile Rejected Succesfully");
         }
 
-        [HttpDelete("DeleteProfile/{Id}")]
+        [HttpDelete("{Id}")]
         public async Task<IActionResult> DeleteProfile(int Id)
         {
             await _medicalTestsProviderService.DeleteMedicalTestProviderProfileAsync(Id);

@@ -1,6 +1,6 @@
 ﻿using Dactra.Enums;
 
-namespace Dactra.DTOs.ProfilesDTOs
+namespace Dactra.DTOs.ProfilesDTOs.DoctorDTOs
 {
     public class DoctorProfileResponseDTO
     {

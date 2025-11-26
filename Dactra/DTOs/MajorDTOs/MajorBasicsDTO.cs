@@ -1,4 +1,4 @@
-﻿namespace Dactra.DTOs
+﻿namespace Dactra.DTOs.MajorDTOs
 {
     public class MajorBasicsDTO
     {
