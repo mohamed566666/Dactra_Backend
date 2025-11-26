@@ -1,4 +1,4 @@
-﻿using Dactra.DTOs;
+﻿using Dactra.DTOs.MajorDTOs;
 using Dactra.Models;
 using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -15,59 +15,45 @@ namespace Dactra.Controllers
         {
             _majorsService = majorsService;
         }
-        
-        [HttpPost("AddMajor")]
-        public async Task<IActionResult> CreateMajor([FromBody] MajorBasicsDTO major)
+
+        [HttpPost]
+        public async Task<IActionResult> Add([FromBody] MajorBasicsDTO major)
         {
-            var createdMajor = await _majorsService.CreateMajorAsync(major);
-            return CreatedAtAction(nameof(GetMajorById), new { id = createdMajor.Id }, createdMajor);
+            await _majorsService.CreateMajorAsync(major);
+            return Ok("Major created successfully");
         }
 
         [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAllMajors()
+        public async Task<IActionResult> GetAll()
         {
             var majors = await _majorsService.GetAllMajorsAsync();
-            var ret = majors.Select(m => new MajorsResponseDTO
-            {
-                Id = m.Id,
-                Name = m.Name,
-                IconPath = m.Iconpath,
-                Description = m.Description
-            }).ToList();
-            return Ok(ret);
+            return Ok(majors);
         }
-        [HttpGet("GetById/{id}")]
-        public async Task<IActionResult> GetMajorById(int id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
         {
             var major = await _majorsService.GetMajorByIdAsync(id);
             if (major == null)
             {
-                return NotFound();
+                return NotFound("Major Not Found");
             }
-            var ret = new MajorsResponseDTO
-            {
-                Id = major.Id,
-                Name = major.Name,
-                IconPath = major.Iconpath,
-                Description = major.Description
-            };
             return Ok(major);
         }
 
-        [HttpPut("Update/{id}")]
-        public async Task<IActionResult> UpdateMajor(int id, [FromBody] MajorBasicsDTO major)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] MajorBasicsDTO major)
         {
             await _majorsService.UpdateMajorAsync(id, major);
             return Ok("Major Updated successfully");
         }
-        [HttpPatch("UpdateIcon/{id}")]
-        public async Task<IActionResult> UpdateMajorIcon(int id, string iconUrl)
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> UpdateIcon(int id, string iconUrl)
         {
             await _majorsService.UpdateMajorIconAsync(id, iconUrl);
             return Ok("Major icon updated successfully");
         }
-        [HttpDelete("Delete/{id}")]
-        public async Task<IActionResult> DeleteMajor(int id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
         {
             await _majorsService.DeleteMajorAsync(id);
             return Ok("Major deleted successfully");

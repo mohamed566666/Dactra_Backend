@@ -1,5 +1,4 @@
-﻿using Dactra.DTOs.ProfilesDTO;
-using Dactra.DTOs.ProfilesDTOs;
+﻿using Dactra.DTOs.ProfilesDTOs.MedicalTestsProviderDTOs;
 using Dactra.Enums;
 using Dactra.Models;
 using Dactra.Repositories.Interfaces;
@@ -82,16 +81,26 @@ namespace Dactra.Services.Implementation
             await _medicalTestProviderProfileRepository.DeleteAsync(profile);
         }
 
-        public async Task<IEnumerable<MedicalTestProviderProfile>> GetAllProfilesAsync()
+        public async Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetAllProfilesAsync()
         {
             var profiles = await _medicalTestProviderProfileRepository.GetAllAsync();
-            return profiles;
+            var profileDTOs = profiles.Select(profile => new MedicalTestsProviderResponseDTO
+            {
+                Id = profile.Id,
+                Name = profile.Name,
+                LicenceNo = profile.LicenceNo,
+                Address = profile.Address,
+                About = profile.About,
+                Avg_Rating = profile.Avg_Rating,
+                Type = profile.Type
+            });
+            return profileDTOs;
         }
 
-        public async Task<IEnumerable<MedicalTestsProviderResponseDTP>> GetApprovedProfilesAsync(MedicalTestProviderType? type = null)
+        public async Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetApprovedProfilesAsync(MedicalTestProviderType? type = null)
         {
             var profiles = await _medicalTestProviderProfileRepository.GetApprovedProfilesAsync(type);
-            var profileDTOs = profiles.Select(profile => new MedicalTestsProviderResponseDTP
+            var profileDTOs = profiles.Select(profile => new MedicalTestsProviderResponseDTO
             {
                 Name = profile.Name,
                 LicenceNo = profile.LicenceNo,
@@ -101,27 +110,58 @@ namespace Dactra.Services.Implementation
             return profileDTOs;
         }
 
-        public async Task<MedicalTestProviderProfile> GetProfileByIdAsync(int id)
+        public async Task<MedicalTestsProviderResponseDTO> GetProfileByIdAsync(int id)
         {
             var profile = await _medicalTestProviderProfileRepository.GetByIdAsync(id);
-            return profile;
-        }
-
-        public async Task<MedicalTestProviderProfile> GetProfileByUserIdAsync(string userId)
-        {
-            var profile = await _medicalTestProviderProfileRepository.GetByUserIdAsync(userId);
-            return profile;
-        }
-
-        public async Task<IEnumerable<MedicalTestsProviderResponseDTP>> GetProfilesByTypeAsync(MedicalTestProviderType type)
-        {
-            var profiles = await _medicalTestProviderProfileRepository.GetProfilesByTypeAsync(type);
-            var profileDTOs = profiles.Select(profile => new MedicalTestsProviderResponseDTP
+            if (profile == null)
             {
+                throw new ArgumentException("Medical Test Provider Profile Not Found");
+            }
+            var profileDTO = new MedicalTestsProviderResponseDTO
+            {
+                Id = profile.Id,
                 Name = profile.Name,
                 LicenceNo = profile.LicenceNo,
                 Address = profile.Address,
-                About = profile.About
+                About = profile.About,
+                Avg_Rating = profile.Avg_Rating,
+                Type = profile.Type
+            };
+            return profileDTO;
+        }
+
+        public async Task<MedicalTestsProviderResponseDTO> GetProfileByUserIdAsync(string userId)
+        {
+            var profile = await _medicalTestProviderProfileRepository.GetByUserIdAsync(userId);
+            if (profile == null)
+            {
+                throw new ArgumentException("Medical Test Provider Profile Not Found");
+            }
+            var profileDTO = new MedicalTestsProviderResponseDTO
+            {
+                Id = profile.Id,
+                Name = profile.Name,
+                LicenceNo = profile.LicenceNo,
+                Address = profile.Address,
+                About = profile.About,
+                Avg_Rating = profile.Avg_Rating,
+                Type = profile.Type
+            };
+            return profileDTO;
+        }
+
+        public async Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetProfilesByTypeAsync(MedicalTestProviderType type)
+        {
+            var profiles = await _medicalTestProviderProfileRepository.GetProfilesByTypeAsync(type);
+            var profileDTOs = profiles.Select(profile => new MedicalTestsProviderResponseDTO
+            {
+                Id = profile.Id,
+                Name = profile.Name,
+                LicenceNo = profile.LicenceNo,
+                Address = profile.Address,
+                About = profile.About,
+                Avg_Rating = profile.Avg_Rating,
+                Type = profile.Type
             });
             return profileDTOs;
         }

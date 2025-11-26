@@ -1,4 +1,4 @@
-﻿using Dactra.DTOs.ProfilesDTO;
+﻿using Dactra.DTOs.ProfilesDTOs.PatientDTOs;
 using Dactra.Models;
 using Dactra.Repositories.Interfaces;
 using Dactra.Services.Interfaces;
@@ -15,12 +15,30 @@ namespace Dactra.Controllers
     public class PatientController : ControllerBase
     {
         private readonly IPatientService _patientService;
-        private readonly UserManager<ApplicationUser> _userManager;
-        public PatientController(IPatientService patientService , UserManager<ApplicationUser> userManager)
+        public PatientController(IPatientService patientService)
         {
             _patientService = patientService;
-            _userManager = userManager;
         }
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var PatientProfiles = await _patientService.GetAllProfileAsync();
+            return Ok(PatientProfiles);
+        }
+        [HttpGet("{Id}")]
+        public async Task<IActionResult> GetById(int Id)
+        {
+            var PatientProfile = await _patientService.GetProfileByIdAsync(Id);
+            return PatientProfile == null ? NotFound("Patient Profile Not Found") : Ok(PatientProfile);
+        }
+
+        [HttpDelete("{patientId}")]
+        public async Task<IActionResult> DeletePatient(int patientId)
+        {
+            await _patientService.DeletePatientProfileAsync(patientId);
+            return Ok("Profile Deleted Succesfully");
+        }
+
         [HttpPost("CompleteRegister")]
         public async Task<IActionResult> CompleteRegister(PatientCompleteDTO patientComplateDTO)
         {
@@ -28,31 +46,13 @@ namespace Dactra.Controllers
             return Ok();
         }
 
-        [HttpGet("GetAllProfiles")]
-        public async Task<IActionResult> GetAllProfiles()
-        {
-            var PatientProfiles = await _patientService.GetAllProfileAsync();
-            return Ok(PatientProfiles);
-        }
         [HttpGet("GetMe")]
         [Authorize]
         public async Task<IActionResult> GetMe()
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
-            if (string.IsNullOrEmpty(email))
-                return Unauthorized(new { message = "Invalid token" });
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user == null)
-                return Unauthorized(new { message = "User not found" });
-            var profile = await _patientService.GetProfileByUserID(user.Id);
-            return Ok(profile);
-        }
-
-        [HttpDelete("DeletePatient/{patientId}")]
-        public async Task<IActionResult> DeletePatient(int patientId)
-        {
-            await _patientService.DeletePatientProfileAsync(patientId);
-            return Ok("Profile Deleted Succesfully");
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            var PatientProfile = await _patientService.GetProfileByUserEmail(userEmail);
+            return PatientProfile == null ? NotFound("Patient Profile Not Found") : Ok(PatientProfile);
         }
     }
 }

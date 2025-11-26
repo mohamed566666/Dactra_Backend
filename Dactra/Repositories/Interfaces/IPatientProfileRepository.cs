@@ -7,6 +7,7 @@ namespace Dactra.Repositories.Interfaces
         Task<PatientProfile> GetByIdAsync(int id);
         Task<IEnumerable<PatientProfile>> GetAllAsync();
         Task<PatientProfile> GetByUserIdAsync(string userId);
+        Task<PatientProfile> GetByUserEmail(string email);
         Task AddAsync(PatientProfile profile);
         Task UpdateAsync(PatientProfile profile);
         Task DeleteAsync(PatientProfile profile);

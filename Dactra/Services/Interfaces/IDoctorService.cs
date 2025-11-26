@@ -1,5 +1,4 @@
-﻿using Dactra.DTOs.ProfilesDTO;
-using Dactra.DTOs.ProfilesDTOs;
+﻿using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
 using Dactra.Models;
 using Dactra.Repositories.Interfaces;
 
@@ -9,6 +8,8 @@ namespace Dactra.Services.Interfaces
     {
         public Task CompleteRegistrationAsync(DoctorCompleteDTO doctorComplateDTO);
         public Task<IEnumerable<DoctorProfileResponseDTO>> GetAllProfileAsync();
+        public Task<DoctorProfileResponseDTO> GetProfileByIdAsync(int doctorProfileId);
+        public Task<DoctorProfileResponseDTO> GetProfileByUserEmail(string email);
         public Task DeleteDoctorProfileAsync(int doctorProfileId);
     }
 }

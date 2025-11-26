@@ -1,14 +1,14 @@
-﻿using Dactra.DTOs;
+﻿using Dactra.DTOs.MajorDTOs;
 using Dactra.Models;
 
 namespace Dactra.Services.Interfaces
 {
     public interface IMajorsService
     {
-        Task<IEnumerable<Majors>> GetAllMajorsAsync();
-        Task<Majors?> GetMajorByIdAsync(int id);
-        Task<Majors> CreateMajorAsync(MajorBasicsDTO majordto);
-        Task<Majors?> UpdateMajorAsync(int id , MajorBasicsDTO major);
+        Task<IEnumerable<MajorsResponseDTO>> GetAllMajorsAsync();
+        Task<MajorsResponseDTO> GetMajorByIdAsync(int id);
+        Task CreateMajorAsync(MajorBasicsDTO majordto);
+        Task UpdateMajorAsync(int id , MajorBasicsDTO major);
         Task DeleteMajorAsync(int id);
         Task UpdateMajorIconAsync(int id, string iconUrl);
     }

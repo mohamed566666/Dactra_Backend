@@ -1,4 +1,4 @@
-﻿using Dactra.DTOs.ProfilesDTO;
+﻿using Dactra.DTOs.ProfilesDTOs.PatientDTOs;
 using Dactra.Models;
 using Dactra.Repositories.Implementation;
 using Dactra.Repositories.Interfaces;
@@ -71,22 +71,124 @@ namespace Dactra.Services.Implementation
 
         public async Task DeletePatientProfileAsync(int patientProfileId)
         {
-            var profile =  await _patientProfileRepository.GetByIdAsync(patientProfileId);
+            var profile = await _patientProfileRepository.GetByIdAsync(patientProfileId);
             if (profile == null)
             {
                 throw new ArgumentException("Patient Profile Not Found");
             }
             await _patientProfileRepository.DeleteAsync(profile);
         }
-
-        public async Task<IEnumerable<PatientProfile>> GetAllProfileAsync()
+        public async Task<IEnumerable<PatientProfileResponseDTO>> GetAllProfileAsync()
         {
-            return await _patientProfileRepository.GetAllAsync();
+            var profiles = await _patientProfileRepository.GetAllAsync();
+            return profiles.Select(p => new PatientProfileResponseDTO
+            {
+                Id = p.Id,
+                FirstName = p.FirstName,
+                LastName = p.LastName,
+                Height = p.Height,
+                Weight = p.Weight,
+                DateOfBirth = p.DateOfBirth,
+                IS_Smoking = p.IS_Smoking,
+                Gender = p.Gender,
+                MaritalStatus = p.MaritalStatus,
+                BloodType = p.BloodType,
+                Allergies = p.Allergies,
+                ChronicDisease = p.ChronicDisease
+            });
         }
 
-        public async Task<PatientProfile> GetProfileByUserID(string userId)
+        public async Task<PatientProfileResponseDTO> GetProfileByIdAsync(int patientProfileId)
         {
-            return await _patientProfileRepository.GetByUserIdAsync(userId);
+            var profile = await _patientProfileRepository.GetByIdAsync(patientProfileId);
+            if (profile == null)
+            {
+                throw new ArgumentException("Patient Profile Not Found");
+            }
+            return new PatientProfileResponseDTO
+            {
+                Id = profile.Id,
+                FirstName = profile.FirstName,
+                LastName = profile.LastName,
+                Height = profile.Height,
+                Weight = profile.Weight,
+                DateOfBirth = profile.DateOfBirth,
+                IS_Smoking = profile.IS_Smoking,
+                Gender = profile.Gender,
+                MaritalStatus = profile.MaritalStatus,
+                BloodType = profile.BloodType,
+                Allergies = profile.Allergies,
+                ChronicDisease = profile.ChronicDisease
+            };
+        }
+
+        public async Task<PatientProfileResponseDTO> GetProfileByUserEmail(string email)
+        {
+            var profile = await _patientProfileRepository.GetByUserEmail(email);
+            if (profile == null)
+            {
+                throw new ArgumentException("Patient Profile Not Found");
+            }
+            return new PatientProfileResponseDTO
+            {
+                Id = profile.Id,
+                FirstName = profile.FirstName,
+                LastName = profile.LastName,
+                Height = profile.Height,
+                Weight = profile.Weight,
+                DateOfBirth = profile.DateOfBirth,
+                IS_Smoking = profile.IS_Smoking,
+                Gender = profile.Gender,
+                MaritalStatus = profile.MaritalStatus,
+                BloodType = profile.BloodType,
+                Allergies = profile.Allergies,
+                ChronicDisease = profile.ChronicDisease
+            };
+        }
+
+        public async Task<PatientProfileResponseDTO> GetProfileByUserID(string userId)
+        {
+            var profile = await _patientProfileRepository.GetByUserIdAsync(userId);
+            if (profile == null)
+            {
+                throw new ArgumentException("Patient Profile Not Found");
+            }
+            return new PatientProfileResponseDTO
+            {
+                Id = profile.Id,
+                FirstName = profile.FirstName,
+                LastName = profile.LastName,
+                Height = profile.Height,
+                Weight = profile.Weight,
+                DateOfBirth = profile.DateOfBirth,
+                IS_Smoking = profile.IS_Smoking,
+                Gender = profile.Gender,
+                MaritalStatus = profile.MaritalStatus,
+                BloodType = profile.BloodType,
+                Allergies = profile.Allergies,
+                ChronicDisease = profile.ChronicDisease
+            };
+        }
+
+        public async Task UpdateProfileAsync(int patientProfileId, PatientProfile updatedProfile)
+        {
+            var existingProfile = await _patientProfileRepository.GetByIdAsync(patientProfileId);
+            if (existingProfile == null)
+            {
+                throw new ArgumentException("Patient Profile Not Found");
+            }
+            existingProfile.FirstName = updatedProfile.FirstName;
+            existingProfile.LastName = updatedProfile.LastName;
+            existingProfile.Gender = updatedProfile.Gender;
+            existingProfile.Height = updatedProfile.Height;
+            existingProfile.Weight = updatedProfile.Weight;
+            existingProfile.DateOfBirth = updatedProfile.DateOfBirth;
+            existingProfile.BloodType = updatedProfile.BloodType;
+            existingProfile.IS_Smoking = updatedProfile.IS_Smoking;
+            existingProfile.Allergies = updatedProfile.Allergies;
+            existingProfile.MaritalStatus = updatedProfile.MaritalStatus;
+            existingProfile.ChronicDisease = updatedProfile.ChronicDisease;
+            await _patientProfileRepository.UpdateAsync(existingProfile);
         }
     }
 }

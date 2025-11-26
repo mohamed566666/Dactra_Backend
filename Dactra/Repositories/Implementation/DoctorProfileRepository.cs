@@ -24,12 +24,22 @@ namespace Dactra.Repositories.Implementation
         }
         public async Task<IEnumerable<DoctorProfile>> GetAllAsync()
         {
-            return await _context.Doctors.ToListAsync();
+            return await _context.Doctors
+                .Include(d => d.User)
+                .ToListAsync();
         }
         public async Task<DoctorProfile> GetByIdAsync(int id)
         {
             return await _context.Doctors.FindAsync(id);
         }
+
+        public async Task<DoctorProfile> GetByUserEmail(string email)
+        {
+            return await _context.Doctors
+                .Include(d => d.User)
+                .FirstOrDefaultAsync(d => d.User.Email == email);
+        }
+
         public async Task<DoctorProfile> GetByUserIdAsync(string userId)
         {
             return await _context.Doctors

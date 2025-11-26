@@ -1,4 +1,4 @@
-﻿using Dactra.DTOs;
+﻿using Dactra.DTOs.MajorDTOs;
 using Dactra.Models;
 using Dactra.Repositories.Interfaces;
 using Dactra.Services.Interfaces;
@@ -14,7 +14,7 @@ namespace Dactra.Services.Implementation
             _majorsRepository = majorsRepository;
         }
 
-        public async Task<Majors> CreateMajorAsync(MajorBasicsDTO majorDto)
+        public async Task CreateMajorAsync(MajorBasicsDTO majorDto)
         {
            var major = new Majors
            {
@@ -23,7 +23,6 @@ namespace Dactra.Services.Implementation
                Description = majorDto.Description
            };
             await _majorsRepository.AddAsync(major);
-            return major;
         }
 
         public async Task DeleteMajorAsync(int id)
@@ -31,34 +30,52 @@ namespace Dactra.Services.Implementation
             await _majorsRepository.DeleteAsync(new Majors { Id = id });
         }
 
-        public async Task<IEnumerable<Majors>> GetAllMajorsAsync()
+        public async Task<IEnumerable<MajorsResponseDTO>> GetAllMajorsAsync()
         {
             var majors = await _majorsRepository.GetAllAsync();
-            return majors;
+            var majorDtos = majors.Select(m => new MajorsResponseDTO
+            {
+                Id = m.Id,
+                Name = m.Name,
+                IconPath = m.Iconpath,
+                Description = m.Description
+            });
+            return majorDtos;
         }
 
-        public async Task<Majors?> GetMajorByIdAsync(int id)
+        public async Task<MajorsResponseDTO> GetMajorByIdAsync(int id)
         {
             var major = await _majorsRepository.GetByIdAsync(id);
-            return major;
+            var majorDto = new MajorsResponseDTO
+            {
+                Id = major.Id,
+                Name = major.Name,
+                IconPath = major.Iconpath,
+                Description = major.Description
+            };
+            return majorDto;
         }
 
-        public async Task<Majors?> UpdateMajorAsync(int id , MajorBasicsDTO major)
+        public async Task UpdateMajorAsync(int id , MajorBasicsDTO major)
         {
             var existingMajor = await _majorsRepository.GetByIdAsync(id);
             if (existingMajor == null)
             {
-                return null;
+                throw new KeyNotFoundException($"Major with ID {id} not found.");
             }
             existingMajor.Name = major.Name;
             existingMajor.Iconpath = major.Iconpath;
             existingMajor.Description = major.Description;
             await _majorsRepository.UpdateAsync(existingMajor);
-            return existingMajor;
         }
 
         public async Task UpdateMajorIconAsync(int id, string iconUrl)
         {
+            var existingMajor = await _majorsRepository.GetByIdAsync(id);
+            if (existingMajor == null)
+            {
+                throw new KeyNotFoundException($"Major with ID {id} not found.");
+            }
             await _majorsRepository.UpdateIcon(id, iconUrl);
         }
     }

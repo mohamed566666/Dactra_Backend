@@ -7,13 +7,6 @@ namespace Dactra.Models
     public class PatientProfile : ProfileBase
     {
         public int Id { get; set; }
-
-        [Required]
-        public string UserId { get; set; } = null!;
-
-        [ForeignKey(nameof(UserId))]
-        public ApplicationUser User { get; set; } = null!;
-
         [Required]
         [MaxLength(50)]
         public string FirstName { get; set; } = string.Empty;

@@ -1,7 +1,7 @@
 ﻿using Dactra.Enums;
 using Dactra.Models;
 
-namespace Dactra.DTOs.ProfilesDTO
+namespace Dactra.DTOs.ProfilesDTOs.DoctorDTOs
 {
     public class DoctorCompleteDTO
     {
