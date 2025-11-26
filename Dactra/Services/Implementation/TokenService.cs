@@ -1,4 +1,5 @@
 ﻿using Dactra.Models;
+using Dactra.Repositories.Interfaces;
 using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Dactra.Services.Implementation
 {
@@ -14,21 +16,25 @@ namespace Dactra.Services.Implementation
         private readonly IConfiguration _config;
         private readonly SymmetricSecurityKey _key;
         private readonly ApplicationDbContext _context;
-        public TokenService(IConfiguration config, ApplicationDbContext context)
+        private readonly IRoleRepository roleRepository;
+        public TokenService(IConfiguration config, ApplicationDbContext context, IRoleRepository roleRepository)
         {
             _config = config;
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SignInKey"]));
             _context = context;
+            this.roleRepository = roleRepository;
         }
-        public string CreateToken(ApplicationUser user)
+        public  string CreateToken(ApplicationUser user)
         {
+            var userRoles = roleRepository.GetUserRolesAsync(user).Result;
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Email,user.Email),
                 new Claim(JwtRegisteredClaimNames.GivenName,user.UserName),
+                new Claim(ClaimTypes.Role,string.Join(",",userRoles)),
 
             };
-            var creds= new SigningCredentials(_key ,SecurityAlgorithms.HmacSha512Signature);
+            var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
@@ -38,8 +44,8 @@ namespace Dactra.Services.Implementation
                 Audience = _config["JWT:Audience"],
 
             };
-            var tokenHandler =new  JwtSecurityTokenHandler();
-            var token=tokenHandler.CreateToken(tokenDescriptor);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
         public async Task<string> CreateRefreshToken(ApplicationUser user)
@@ -105,8 +111,29 @@ namespace Dactra.Services.Implementation
           
             var newAccessToken = CreateToken(user);
 
-            return (newAccessToken, "Token refreshed");
+            return (newAccessToken.ToString(), "Token refreshed");
         }
+
+        public async Task<ApplicationUser?> GetUserByRefreshToken(string refreshToken)
+        {
+            
+            var tokenEntity = await _context.UserRefreshTokens
+                .FirstOrDefaultAsync(x => x.Token == refreshToken);
+
+            if (tokenEntity == null)
+                return null;
+
+            
+            if (tokenEntity.ExpireAt < DateTime.UtcNow)
+                return null;
+
+           
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == tokenEntity.UserId);
+
+            return user;
+        }
+
     }
 
 }

@@ -8,6 +8,7 @@ using Dactra.Repositories.Interfaces;
 using Dactra.Services.Implementation;
 using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -32,9 +33,10 @@ namespace Dactra.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IPasswordResetRepository _passwordResetRepository;
         private readonly IRoleRepository _roleRepository;
-      
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(UserManager<ApplicationUser> usermanager, ITokenService tokenService, SignInManager<ApplicationUser> signInManager, IUserService userService, ApplicationDbContext context, IEmailSender emailSender, IUserRepository userRepository, IPasswordResetRepository passwordResetRepository, IRoleRepository roleRepository)
+
+        public AccountController(UserManager<ApplicationUser> usermanager, ITokenService tokenService, SignInManager<ApplicationUser> signInManager, IUserService userService, ApplicationDbContext context, IEmailSender emailSender, IUserRepository userRepository, IPasswordResetRepository passwordResetRepository, IRoleRepository roleRepository, ILogger<AccountController> logger)
         {
             _userManager = usermanager;
             _tokenService = tokenService;
@@ -45,6 +47,7 @@ namespace Dactra.Controllers
             _userRepository = userRepository;
             _passwordResetRepository = passwordResetRepository;
             _roleRepository = roleRepository;
+            _logger = logger;
             
         }
         [HttpPost("Register")]
@@ -91,15 +94,26 @@ namespace Dactra.Controllers
 
             if (!result.Succeeded)
                 return Unauthorized(" Email or password Invalid");
-            
+
+            var refreshToken = await _tokenService.CreateRefreshToken(user);
+
+            Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Domain = null,
+                Path="/",
+                Expires = DateTime.UtcNow.AddDays(30)
+            }); 
 
             return Ok(
                     new NewUserDto
                     {
                         Email = user.Email,
                         Username = user.UserName,
-                        Token = _tokenService.CreateToken(user),
-                        RefieshToken= _tokenService.CreateRefreshToken(user),
+                        Token = _tokenService.CreateToken(user).ToString(),
+
                         IsRegistrationComplete= user.IsRegistrationComplete,
                     }
             );
@@ -253,51 +267,29 @@ namespace Dactra.Controllers
         }
 
         [HttpGet("login/google")]
-        public async Task<IActionResult> GoogleLogin(
-            [FromQuery] string returnUrl,
-            LinkGenerator linkGenerator)
+        public IActionResult GoogleLogin(string returnUrl = "/")
         {
-            var redirectUrl = linkGenerator.GetUriByAction(
-                httpContext: HttpContext,
-                action: "GoogleLoginCallback",
-                controller: "Account",
-                values: new { returnUrl },
-                scheme: Request.Scheme);
-
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
-            return Challenge(properties, "Google");
+            var properties = new AuthenticationProperties { RedirectUri = Url.Action("GoogleResponse", new { returnUrl }) };
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
+
         [HttpGet("login/google/callback")]
-        public async Task<IActionResult> GoogleLoginCallback(
-          [FromServices] IUserService userService,ITokenService tokenService)
+        public async Task<IActionResult> GoogleResponse(string returnUrl = "/")
         {
-            try
+
+            var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+            if (!result.Succeeded)
             {
-                var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
-
-                if (result?.Principal == null)
-                    return Unauthorized(new { message = "Google authentication failed" });
-
-                var user = await userService.LoginWithGoogleAsync(result.Principal);
-
-                if (user == null)
-                    return Unauthorized(new { message = "Login failed" });
-
-                var tokens = tokenService.CreateToken(user);
-                var reftoken = tokenService.CreateRefreshToken(user);
-
-                await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-
-                return Ok(new
-                {
-                    accessToken = tokens,
-                    refreshToken = reftoken,
-
-                });
+                return BadRequest("Google authentication failed");
             }
-            catch (Exception ex) { return BadRequest(new { message = "Google login failed", detail = ex.Message }); }
 
-        }
+
+            var claims = result.Principal.Identities.FirstOrDefault()?.Claims;
+            var email = claims?.FirstOrDefault(c => c.Type == "email")?.Value;
+            var name = claims?.FirstOrDefault(c => c.Type == "name")?.Value;
+
+            return Redirect(returnUrl);
+        } 
         [HttpDelete("DeleteUserByid/{id}")]
         public async Task<IActionResult> DeleteUserByID(string id)
         {
@@ -315,6 +307,33 @@ namespace Dactra.Controllers
             if (result.Succeeded)
                 return Ok(new { message = "User deleted successfully" });
             return BadRequest(result.Errors);
+        }
+
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh()
+        {
+            var oldToken = Request.Cookies["refreshToken"];
+            if (oldToken == null) return Unauthorized();
+            
+
+            var user = await _tokenService.GetUserByRefreshToken(oldToken);
+            if (user == null) return Unauthorized();
+
+            var access = _tokenService.CreateToken(user);
+            var newRefresh = await _tokenService.CreateRefreshToken(user);
+
+            Response.Cookies.Append("refreshToken", newRefresh, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Domain = null,
+                Path = "/",
+                Expires = DateTime.UtcNow.AddDays(30)
+            });
+
+            return Ok(new { accessToken = access });
         }
 
     }

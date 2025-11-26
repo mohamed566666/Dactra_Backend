@@ -6,6 +6,7 @@ using Dactra.Repositories.Interfaces;
 using Dactra.Services.Implementation;
 using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
@@ -14,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,9 +25,11 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.AllowAnyOrigin()
+            policy.WithOrigins("https://dactra1.vercel.app")
                   .AllowAnyHeader()
-                  .AllowAnyMethod();
+                  .AllowAnyMethod()
+                   .AllowCredentials();
+
         });
 });
 
@@ -50,8 +54,13 @@ builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IMedicalTestsProviderService, MedicalTestsProviderService>();
 builder.Services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
 builder.Services.AddScoped<IMajorsService, MajorsService>();
-builder.Services.AddScoped<IHomeRepository, HomeRepository>();
-builder.Services.AddScoped<IHomeService, HomeService>();
+builder.Services.AddScoped<ITestServiceService, TestServiceService>();
+builder.Services.AddScoped<ITestServiceRepository, TestServiceRepository>();
+builder.Services.AddScoped<IProviderOfferingRepository, ProviderOfferingRepository>();
+builder.Services.AddScoped<IProviderOfferingService, ProviderOfferingService>();
+
+//builder.Services.AddScoped<IAuthCoreService,AuthCoreService>();
+
 
 builder.Services.AddControllers();
 
@@ -85,20 +94,22 @@ builder.Services.AddAuthentication(options =>
 
 }).AddCookie().AddGoogle(options =>
 {
+
     var clientId = builder.Configuration["Authentication:Google:ClientId"];
     if (clientId == null)
         throw new ArgumentNullException(nameof(clientId));
 
     var clientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 
+
     if (clientSecret == null)
         throw new ArgumentNullException(nameof(clientSecret));
     options.ClientId = clientId;
     options.ClientSecret = clientSecret;
-    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.SignInScheme = IdentityConstants.ExternalScheme;
+    options.Scope.Add("email");
+    options.Scope.Add("profile");
     options.CallbackPath = "/api/account/login/google/callback";
-
 }).AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
@@ -115,6 +126,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
 builder.Services.AddScoped<ITokenService,TokenService>();
 builder.Services.AddSwaggerGen(option =>
 {
@@ -145,6 +160,8 @@ builder.Services.AddSwaggerGen(option =>
 });
 
 var app = builder.Build();
+app.UseRouting();
+
 app.UseCors("AllowFrontend");
 
 // Configure the HTTP request pipeline.
@@ -166,7 +183,6 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
 });
-
 app.UseHttpsRedirection();
 app.UseAuthentication();
 
