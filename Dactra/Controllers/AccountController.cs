@@ -335,6 +335,24 @@ namespace Dactra.Controllers
 
             return Ok(new { accessToken = access });
         }
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            
+            var refreshToken = Request.Cookies["refreshToken"];
+            if (!string.IsNullOrEmpty(refreshToken))
+            {
+                
+                var user = await _tokenService.GetUserByRefreshToken(refreshToken);
+                if (user != null)
+                {
+                    await _tokenService.RemoveRefreshToken(user);
+                }
+            }
+            Response.Cookies.Delete("refreshToken");
+
+            return Ok(new { message = "Logged out successfully" });
+        }
 
     }
 }
