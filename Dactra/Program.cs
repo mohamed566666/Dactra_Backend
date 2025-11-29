@@ -8,6 +8,7 @@ using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
@@ -79,11 +80,7 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.Cookie.SameSite = SameSiteMode.None;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-});
+
 
 
 builder.Services.AddControllers();
@@ -93,9 +90,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme =
-    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme =
     options.DefaultForbidScheme =
-     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+     options.DefaultScheme = 
     options.DefaultSignInScheme =
     options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
 
@@ -113,7 +110,7 @@ builder.Services.AddAuthentication(options =>
         throw new ArgumentNullException(nameof(clientSecret));
     options.ClientId = clientId;
     options.ClientSecret = clientSecret;
-    options.SignInScheme = IdentityConstants.ExternalScheme;
+    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.Scope.Add("email");
     options.Scope.Add("profile");
     options.CallbackPath = "/api/account/login/google/callback";
@@ -167,11 +164,10 @@ builder.Services.AddSwaggerGen(option =>
 });
 
 
+
 var app = builder.Build();
-app.UseCookiePolicy(new CookiePolicyOptions
-{
-    MinimumSameSitePolicy = SameSiteMode.None
-});
+
+
 app.UseDeveloperExceptionPage();
 
 app.UseRouting();
