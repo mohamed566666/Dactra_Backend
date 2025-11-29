@@ -15,8 +15,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Security.Cryptography;
+using static Google.Apis.Auth.OAuth2.Web.AuthorizationCodeWebApp;
 using static System.Net.WebRequestMethods;
 
 namespace Dactra.Controllers
@@ -35,6 +38,7 @@ namespace Dactra.Controllers
         private readonly IPasswordResetRepository _passwordResetRepository;
         private readonly IRoleRepository _roleRepository;
         private readonly ILogger<AccountController> _logger;
+        private readonly HttpContext _httpContext;
 
 
         public AccountController(UserManager<ApplicationUser> usermanager, ITokenService tokenService, SignInManager<ApplicationUser> signInManager, IUserService userService, ApplicationDbContext context, IEmailSender emailSender, IUserRepository userRepository, IPasswordResetRepository passwordResetRepository, IRoleRepository roleRepository, ILogger<AccountController> logger)
@@ -315,29 +319,85 @@ namespace Dactra.Controllers
         }
 
         [HttpGet("login/google")]
-        public IActionResult GoogleLogin(string returnUrl = "/")
+        public IActionResult GoogleLogin([FromQuery]string returnUrl , LinkGenerator linkGenerator, SignInManager<ApplicationUser> signInManager)
         {
-            var properties = new AuthenticationProperties { RedirectUri = Url.Action("GoogleResponse", new { returnUrl }) };
-            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+            var properties = signInManager.ConfigureExternalAuthenticationProperties(provider: "Google", redirectUrl: linkGenerator.GetPathByName(HttpContext, endpointName: "GoogleResponse")
+                + $"?returnUrl={returnUrl}");
+            return Challenge(properties, authenticationSchemes:"Google");
         }
 
         [HttpGet("login/google/callback")]
         public async Task<IActionResult> GoogleResponse(string returnUrl = "/")
         {
-
+            // Get the info from the external login provider
             var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
             if (!result.Succeeded)
             {
-                return BadRequest("Google authentication failed");
+                return BadRequest(new { error = "External authentication error" });
             }
 
+            var externalPrincipal = result.Principal;
+            var email = externalPrincipal?.FindFirst(c => c.Type == ClaimTypes.Email)?.Value;
+            var name = externalPrincipal?.FindFirst(c => c.Type == ClaimTypes.Name)?.Value;
+            var providerKey = externalPrincipal?.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var provider = result.Properties?.Items[".AuthScheme"] ?? GoogleDefaults.AuthenticationScheme;
 
-            var claims = result.Principal.Identities.FirstOrDefault()?.Claims;
-            var email = claims?.FirstOrDefault(c => c.Type == "email")?.Value;
-            var name = claims?.FirstOrDefault(c => c.Type == "name")?.Value;
+            if (string.IsNullOrEmpty(email))
+                return BadRequest(new { error = "Email not provided by external provider" });
 
-            return Redirect(returnUrl);
-        } 
+            // Try find user
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                // create user
+                user = new ApplicationUser
+                {
+                    UserName = email,
+                    Email = email,
+                    // set other fields if you have
+                };
+
+                var createResult = await _userManager.CreateAsync(user);
+                if (!createResult.Succeeded)
+                    return StatusCode(500, new { error = "Failed to create local user", details = createResult.Errors });
+
+                // you may want to add external login info too
+            }
+
+            // Sign in the user (local cookie)
+            await _signInManager.SignInAsync(user, isPersistent: false);
+
+            // create tokens
+            var roles = await _userManager.GetRolesAsync(user);
+            var accessToken = _tokenService.CreateToken(user);
+            var refreshToken = _tokenService.CreateRefreshToken(user);
+            var refreshExpires = DateTime.UtcNow.AddDays(30);
+
+            // Save refresh token in DB
+           
+
+            // Set refresh token cookie
+            Response.Cookies.Append("refreshToken",await refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Path = "/",
+                Expires = refreshExpires
+            });
+
+            // Option A: redirect to front-end with access token in query (less secure)
+            // string redirectUrl = $"{returnUrl}?accessToken={accessToken}";
+
+            // Option B: return JSON with access token (if callback is called by frontend)
+         
+
+            // Clear the external cookie
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+
+            return Ok(accessToken);
+        }
+
         [HttpDelete("DeleteUserByid/{id}")]
         public async Task<IActionResult> DeleteUserByID(string id)
         {
