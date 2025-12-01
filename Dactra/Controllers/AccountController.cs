@@ -86,22 +86,38 @@ namespace Dactra.Controllers
             if (user == null)
                 return Unauthorized("invalid Email");
             var role= await _roleRepository.GetUserRolesAsync(user);
-
-          
-            if(!user.IsVerified)
-                return BadRequest(new { massage=" not verified",Email=user.Email,role=role });
-            if(!user.IsRegistrationComplete)
-                return BadRequest(new { massage = "Registration not Completed", Email = user.Email, role = role } );
-            
-
-
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
             if (!result.Succeeded)
                 return Unauthorized(" Email or password Invalid");
+            if (role.Contains("Admin")) {
 
+                var refreshToken1 = await _tokenService.CreateRefreshToken(user);
+
+                Response.Cookies.Append("refreshToken", refreshToken1, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
+                    Path = "/",
+                    Expires = DateTime.UtcNow.AddDays(30)
+                });
+                return Ok(new AdminDto
+                {
+                    Email = user.Email,
+                    Username = user.UserName,
+                    Token = _tokenService.CreateToken(user).ToString(),
+                    massage= "Admin Login Successful"
+                }
+                );
+            }
+          
+
+            if (!user.IsVerified)
+                return BadRequest(new { massage=" not verified",Email=user.Email,role=role });
+            if(!user.IsRegistrationComplete)
+                return BadRequest(new { massage = "Registration not Completed", Email = user.Email, role = role } );
             var refreshToken = await _tokenService.CreateRefreshToken(user);
-
             Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
             {
                 HttpOnly = true,
