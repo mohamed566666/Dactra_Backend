@@ -66,14 +66,14 @@ namespace Dactra.Controllers
             if (user == null) return NotFound("Admin not found");
             return Ok(user);
         }
-        [HttpPost("makeAdmin/{id}")]
-        public async Task<IActionResult> MakeAdmin(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound("User not found");
+        //[HttpPost("makeAdmin/{id}")]
+        //public async Task<IActionResult> MakeAdmin(string id)
+        //{
+        //    var user = await _userManager.FindByIdAsync(id);
+        //    if (user == null) return NotFound("User not found");
 
-            await _service.AddToAdminRole(user);
-            return Ok("User is now Admin");
-        }
+        //    await _service.AddToAdminRole(user);
+        //    return Ok("User is now Admin");
+        //}
     }
 }
