@@ -3,6 +3,8 @@
   <PropertyGroup>
     <NameOfLastUsedPublishProfile>C:\Users\Rashad\OneDrive\Desktop\GD2\Dactra_Backend\Dactra\Properties\PublishProfiles\site43892-WebDeploy3.pubxml</NameOfLastUsedPublishProfile>
     <ActiveDebugProfile>https</ActiveDebugProfile>
+    <Controller_SelectedScaffolderID>ApiControllerEmptyScaffolder</Controller_SelectedScaffolderID>
+    <Controller_SelectedScaffolderCategoryPath>root/Common/Api</Controller_SelectedScaffolderCategoryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>

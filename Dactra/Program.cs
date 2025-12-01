@@ -61,6 +61,9 @@ builder.Services.AddScoped<ITestServiceService, TestServiceService>();
 builder.Services.AddScoped<ITestServiceRepository, TestServiceRepository>();
 builder.Services.AddScoped<IProviderOfferingRepository, ProviderOfferingRepository>();
 builder.Services.AddScoped<IProviderOfferingService, ProviderOfferingService>();
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+
 
 //builder.Services.AddScoped<IAuthCoreService,AuthCoreService>();
 
