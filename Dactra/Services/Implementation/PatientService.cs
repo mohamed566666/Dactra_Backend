@@ -1,9 +1,12 @@
-﻿using Dactra.DTOs.ProfilesDTOs.PatientDTOs;
+﻿using AutoMapper;
+using Dactra.DTOs.ProfilesDTOs.PatientDTOs;
+using Dactra.Mappings;
 using Dactra.Models;
 using Dactra.Repositories.Implementation;
 using Dactra.Repositories.Interfaces;
 using Dactra.Services.Interfaces;
 using System.Data;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Dactra.Services.Implementation
 {
@@ -12,12 +15,14 @@ namespace Dactra.Services.Implementation
         private readonly IPatientProfileRepository _patientProfileRepository;
         private readonly IUserRepository _userRepository;
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public PatientService(IPatientProfileRepository patientProfileRepository, IUserRepository userRepository, ApplicationDbContext context)
+        public PatientService(IPatientProfileRepository patientProfileRepository, IUserRepository userRepository, ApplicationDbContext context , IMapper mapper )
         {
             _patientProfileRepository = patientProfileRepository;
             _userRepository = userRepository;
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task CompleteRegistrationAsync(PatientCompleteDTO PatientCompleteDTO)
@@ -50,7 +55,7 @@ namespace Dactra.Services.Implementation
                     Weight = PatientCompleteDTO.Weight,
                     DateOfBirth = PatientCompleteDTO.DateOfBirth,
                     BloodType = PatientCompleteDTO.BloodType,
-                    IS_Smoking = PatientCompleteDTO.IS_Smoking,
+                    SmokingStatus = PatientCompleteDTO.SmokingStatus,
                     Allergies = PatientCompleteDTO.Allergies,
                     MaritalStatus = PatientCompleteDTO.MaritalStatus,
                     ChronicDisease = PatientCompleteDTO.ChronicDisease,
@@ -81,21 +86,7 @@ namespace Dactra.Services.Implementation
         public async Task<IEnumerable<PatientProfileResponseDTO>> GetAllProfileAsync()
         {
             var profiles = await _patientProfileRepository.GetAllAsync();
-            return profiles.Select(p => new PatientProfileResponseDTO
-            {
-                Id = p.Id,
-                FirstName = p.FirstName,
-                LastName = p.LastName,
-                Height = p.Height,
-                Weight = p.Weight,
-                DateOfBirth = p.DateOfBirth,
-                IS_Smoking = p.IS_Smoking,
-                Gender = p.Gender,
-                MaritalStatus = p.MaritalStatus,
-                BloodType = p.BloodType,
-                Allergies = p.Allergies,
-                ChronicDisease = p.ChronicDisease
-            });
+            return _mapper.Map<IEnumerable<PatientProfileResponseDTO>>(profiles);
         }
 
         public async Task<PatientProfileResponseDTO> GetProfileByIdAsync(int patientProfileId)
@@ -105,21 +96,7 @@ namespace Dactra.Services.Implementation
             {
                 throw new ArgumentException("Patient Profile Not Found");
             }
-            return new PatientProfileResponseDTO
-            {
-                Id = profile.Id,
-                FirstName = profile.FirstName,
-                LastName = profile.LastName,
-                Height = profile.Height,
-                Weight = profile.Weight,
-                DateOfBirth = profile.DateOfBirth,
-                IS_Smoking = profile.IS_Smoking,
-                Gender = profile.Gender,
-                MaritalStatus = profile.MaritalStatus,
-                BloodType = profile.BloodType,
-                Allergies = profile.Allergies,
-                ChronicDisease = profile.ChronicDisease
-            };
+            return _mapper.Map<PatientProfileResponseDTO>(profile);
         }
 
         public async Task<PatientProfileResponseDTO> GetProfileByUserEmail(string email)
@@ -129,21 +106,7 @@ namespace Dactra.Services.Implementation
             {
                 throw new ArgumentException("Patient Profile Not Found");
             }
-            return new PatientProfileResponseDTO
-            {
-                Id = profile.Id,
-                FirstName = profile.FirstName,
-                LastName = profile.LastName,
-                Height = profile.Height,
-                Weight = profile.Weight,
-                DateOfBirth = profile.DateOfBirth,
-                IS_Smoking = profile.IS_Smoking,
-                Gender = profile.Gender,
-                MaritalStatus = profile.MaritalStatus,
-                BloodType = profile.BloodType,
-                Allergies = profile.Allergies,
-                ChronicDisease = profile.ChronicDisease
-            };
+            return _mapper.Map<PatientProfileResponseDTO>(profile);
         }
 
         public async Task<PatientProfileResponseDTO> GetProfileByUserID(string userId)
@@ -153,21 +116,7 @@ namespace Dactra.Services.Implementation
             {
                 throw new ArgumentException("Patient Profile Not Found");
             }
-            return new PatientProfileResponseDTO
-            {
-                Id = profile.Id,
-                FirstName = profile.FirstName,
-                LastName = profile.LastName,
-                Height = profile.Height,
-                Weight = profile.Weight,
-                DateOfBirth = profile.DateOfBirth,
-                IS_Smoking = profile.IS_Smoking,
-                Gender = profile.Gender,
-                MaritalStatus = profile.MaritalStatus,
-                BloodType = profile.BloodType,
-                Allergies = profile.Allergies,
-                ChronicDisease = profile.ChronicDisease
-            };
+            return _mapper.Map<PatientProfileResponseDTO>(profile);
         }
 
         public async Task UpdateProfileAsync(int patientProfileId, PatientProfile updatedProfile)
@@ -184,7 +133,7 @@ namespace Dactra.Services.Implementation
             existingProfile.Weight = updatedProfile.Weight;
             existingProfile.DateOfBirth = updatedProfile.DateOfBirth;
             existingProfile.BloodType = updatedProfile.BloodType;
-            existingProfile.IS_Smoking = updatedProfile.IS_Smoking;
+            existingProfile.SmokingStatus = updatedProfile.SmokingStatus;
             existingProfile.Allergies = updatedProfile.Allergies;
             existingProfile.MaritalStatus = updatedProfile.MaritalStatus;
             existingProfile.ChronicDisease = updatedProfile.ChronicDisease;

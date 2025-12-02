@@ -17,7 +17,7 @@ namespace Dactra.DTOs.ProfilesDTOs.PatientDTOs
         public int Weight { get; set; }
         public DateTime DateOfBirth { get; set; }
         public BloodTypes BloodType { get; set; }
-        public bool IS_Smoking { get; set; }
+        public SmokingStatus SmokingStatus { get; set; }
         public MaritalStatus MaritalStatus { get; set; }
         public string ChronicDisease { get; set; }
         public string Allergies { get; set; }

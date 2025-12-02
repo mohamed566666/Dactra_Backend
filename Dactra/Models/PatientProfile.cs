@@ -28,7 +28,7 @@ namespace Dactra.Models
         public int Age{get => CalculateAge(DateOfBirth);}
         public BloodTypes BloodType { get; set; }
         public ICollection<Medicines> Current_Medications { get; set; } = new List<Medicines>();
-        public bool IS_Smoking { get; set; }
+        public SmokingStatus SmokingStatus { get; set; }
         public string Allergies { get; set; } = string.Empty;
         public MaritalStatus MaritalStatus { get; set; }
         public string ChronicDisease { get; set; } = string.Empty;
