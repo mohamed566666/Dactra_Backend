@@ -30,7 +30,9 @@ namespace Dactra.Repositories.Implementation
         }
         public async Task<PatientProfile> GetByIdAsync(int id)
         {
-            return await _context.Patients.FindAsync(id);
+            return await _context.Patients
+                .Include (p => p.User)
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<PatientProfile> GetByUserEmail(string email)

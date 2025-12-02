@@ -1,9 +1,12 @@
 ﻿using Dactra.DTOs.ProfilesDTOs.MedicalTestsProviderDTOs;
 using Dactra.Enums;
+using Dactra.Services.Implementation;
 using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Dactra.Controllers
 {
@@ -60,6 +63,28 @@ namespace Dactra.Controllers
         {
             var MedicalTestProviderProfiles = await _medicalTestsProviderService.GetProfilesByTypeAsync(type);
             return Ok(MedicalTestProviderProfiles);
+        }
+        [HttpGet("GetMe")]
+        [Authorize]
+        public async Task<IActionResult> GetMe()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                  ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID not found");
+            }
+
+            try
+            {
+                var profile = await _medicalTestsProviderService.GetProfileByUserIdAsync(userId);
+                return Ok(profile);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
         [HttpPatch("Approve/{Id}")]
         [Authorize(Roles = "Admin")]

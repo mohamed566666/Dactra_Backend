@@ -11,6 +11,6 @@ namespace Dactra.Services.Interfaces
         public Task<PatientProfileResponseDTO> GetProfileByUserID(string userId);
         public Task<PatientProfileResponseDTO> GetProfileByUserEmail(string email);
         public Task<PatientProfileResponseDTO> GetProfileByIdAsync(int patientProfileId);
-        public Task UpdateProfileAsync(int patientProfileId, PatientProfile updatedProfile);
+        public Task UpdateProfileAsync(int patientProfileId, PatientUpdateDTO updatedProfile);
     }
 }

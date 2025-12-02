@@ -1,9 +1,13 @@
 ﻿using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
 using Dactra.Repositories.Interfaces;
+using Dactra.Services.Implementation;
 using Dactra.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Dactra.Controllers
 {
@@ -48,6 +52,29 @@ namespace Dactra.Controllers
         {
             var DoctorProfile = await _doctorService.GetProfileByUserEmail(email);
             return DoctorProfile == null ? NotFound("Doctor Profile Not Found") : Ok(DoctorProfile);
+        }
+
+        [HttpGet("GetMe")]
+        [Authorize]
+        public async Task<IActionResult> GetMe()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                  ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID not found");
+            }
+
+            try
+            {
+                var profile = await _doctorService.GetProfileByUserIdAsync(userId);
+                return Ok(profile);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }
