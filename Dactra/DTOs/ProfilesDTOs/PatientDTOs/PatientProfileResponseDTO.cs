@@ -8,16 +8,19 @@ namespace Dactra.DTOs.ProfilesDTOs.PatientDTOs
     public class PatientProfileResponseDTO
     {
         public int Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+        public string FirstName { get; set;}
+        public string LastName { get; set;}
+        public string PhoneNumber { get; set;}
+        public string Email { get; set; }
         public int Height { get; set; }
         public int Weight { get; set; }
-        public DateTime DateOfBirth { get; set; }
+        public int Age { get; set; }
         public Gender Gender { get; set; }
         public MaritalStatus MaritalStatus { get; set; }
         public BloodTypes BloodType { get; set; }
-        public bool IS_Smoking { get; set; }
+        public SmokingStatus SmokingStatus { get; set; }
         public string Allergies { get; set; }
         public string ChronicDisease { get; set; }
+        public string RoleName { get; set; }
     }
 }

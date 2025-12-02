@@ -1,5 +1,6 @@
 ﻿using Dactra.Factories.Implementation;
 using Dactra.Factories.Interfaces;
+using Dactra.Mappings;
 using Dactra.Models;
 using Dactra.Repositories.Implementation;
 using Dactra.Repositories.Interfaces;
@@ -16,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -63,6 +65,7 @@ builder.Services.AddScoped<IProviderOfferingRepository, ProviderOfferingReposito
 builder.Services.AddScoped<IProviderOfferingService, ProviderOfferingService>();
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
 
 //builder.Services.AddScoped<IAuthCoreService,AuthCoreService>();

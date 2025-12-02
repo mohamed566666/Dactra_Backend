@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251201211341_edit smokingStatus")]
+    partial class editsmokingStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,7 +51,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.ToTable("Answers", (string)null);
+                    b.ToTable("Answers");
                 });
 
             modelBuilder.Entity("Dactra.Models.ApplicationRole", b =>
@@ -202,7 +205,7 @@ namespace Dactra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EmailVerifications", (string)null);
+                    b.ToTable("EmailVerifications");
                 });
 
             modelBuilder.Entity("Dactra.Models.Majors", b =>
@@ -227,7 +230,7 @@ namespace Dactra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Majors", (string)null);
+                    b.ToTable("Majors");
                 });
 
             modelBuilder.Entity("Dactra.Models.Medicines", b =>
@@ -257,7 +260,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("PatientProfileId");
 
-                    b.ToTable("Medicines", (string)null);
+                    b.ToTable("Medicines");
                 });
 
             modelBuilder.Entity("Dactra.Models.PatientAppointment", b =>
@@ -296,7 +299,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("ScheduleTableId");
 
-                    b.ToTable("PatientAppointments", (string)null);
+                    b.ToTable("PatientAppointments");
                 });
 
             modelBuilder.Entity("Dactra.Models.PatientProfile", b =>
@@ -354,7 +357,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Patients", (string)null);
+                    b.ToTable("Patients");
                 });
 
             modelBuilder.Entity("Dactra.Models.Payment", b =>
@@ -384,7 +387,7 @@ namespace Dactra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Payments", (string)null);
+                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("Dactra.Models.Post", b =>
@@ -414,7 +417,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("MajorsId");
 
-                    b.ToTable("Posts", (string)null);
+                    b.ToTable("Posts");
                 });
 
             modelBuilder.Entity("Dactra.Models.Prescription", b =>
@@ -431,7 +434,7 @@ namespace Dactra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Prescriptions", (string)null);
+                    b.ToTable("Prescriptions");
                 });
 
             modelBuilder.Entity("Dactra.Models.PrescriptionWithMedicin", b =>
@@ -455,7 +458,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("MedicinesId");
 
-                    b.ToTable("PrescriptionWithMedicin", (string)null);
+                    b.ToTable("PrescriptionWithMedicin");
                 });
 
             modelBuilder.Entity("Dactra.Models.ProviderOffering", b =>
@@ -484,7 +487,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("TestServiceId");
 
-                    b.ToTable("ProviderOfferings", (string)null);
+                    b.ToTable("ProviderOfferings");
                 });
 
             modelBuilder.Entity("Dactra.Models.Questions", b =>
@@ -514,7 +517,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("Questions", (string)null);
+                    b.ToTable("Questions");
                 });
 
             modelBuilder.Entity("Dactra.Models.Rating", b =>
@@ -547,7 +550,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("ProviderId");
 
-                    b.ToTable("Ratings", (string)null);
+                    b.ToTable("Ratings");
                 });
 
             modelBuilder.Entity("Dactra.Models.ScheduleTable", b =>
@@ -571,7 +574,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("ScheduleTables", (string)null);
+                    b.ToTable("ScheduleTables");
                 });
 
             modelBuilder.Entity("Dactra.Models.ServiceProviderProfile", b =>
@@ -637,7 +640,7 @@ namespace Dactra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TestServices", (string)null);
+                    b.ToTable("TestServices");
                 });
 
             modelBuilder.Entity("Dactra.Models.UserRefreshToken", b =>
@@ -664,7 +667,7 @@ namespace Dactra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserRefreshTokens", (string)null);
+                    b.ToTable("UserRefreshTokens");
                 });
 
             modelBuilder.Entity("Dactra.Models.VitalSign", b =>
@@ -693,7 +696,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("VitalSigns", (string)null);
+                    b.ToTable("VitalSigns");
                 });
 
             modelBuilder.Entity("MedicinesPrescription", b =>
@@ -708,7 +711,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("prescriptionsId");
 
-                    b.ToTable("MedicinesPrescription", (string)null);
+                    b.ToTable("MedicinesPrescription");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

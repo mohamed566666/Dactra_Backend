@@ -32,10 +32,10 @@ namespace Dactra.Controllers
             return PatientProfile == null ? NotFound("Patient Profile Not Found") : Ok(PatientProfile);
         }
 
-        [HttpDelete("{patientId}")]
-        public async Task<IActionResult> DeletePatient(int patientId)
+        [HttpDelete("{Id}")]
+        public async Task<IActionResult> DeletePatient(int Id)
         {
-            await _patientService.DeletePatientProfileAsync(patientId);
+            await _patientService.DeletePatientProfileAsync(Id);
             return Ok("Profile Deleted Succesfully");
         }
 
