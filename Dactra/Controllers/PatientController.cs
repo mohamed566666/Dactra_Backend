@@ -36,15 +36,27 @@ namespace Dactra.Controllers
         [HttpDelete("{Id}")]
         public async Task<IActionResult> DeletePatient(int Id)
         {
-            await _patientService.DeletePatientProfileAsync(Id);
-            return Ok("Profile Deleted Succesfully");
+            try
+            {
+                await _patientService.DeletePatientProfileAsync(Id);
+                return Ok("Profile Deleted Succesfully");
+            }
+            catch (Exception ex) {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpPost("CompleteRegister")]
         public async Task<IActionResult> CompleteRegister(PatientCompleteDTO patientComplateDTO)
         {
-            await _patientService.CompleteRegistrationAsync(patientComplateDTO);
-            return Ok();
+            try
+            {
+                await _patientService.CompleteRegistrationAsync(patientComplateDTO);
+                return Ok();
+            }
+            catch (Exception ex) {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpGet("GetMe")]

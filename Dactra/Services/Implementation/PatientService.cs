@@ -33,7 +33,7 @@ namespace Dactra.Services.Implementation
                 var user = await _userRepository.GetUserByEmailAsync(PatientCompleteDTO.Email);
                 if (user == null)
                 {
-                    throw new ArgumentException("User Not Found");
+                    throw new KeyNotFoundException("User Not Found");
                 }
                 if (!user.IsVerified)
                 {
@@ -79,7 +79,7 @@ namespace Dactra.Services.Implementation
             var profile = await _patientProfileRepository.GetByIdAsync(patientProfileId);
             if (profile == null)
             {
-                throw new ArgumentException("Patient Profile Not Found");
+                throw new KeyNotFoundException("Patient Profile Not Found");
             }
             await _patientProfileRepository.DeleteAsync(profile);
         }
@@ -94,7 +94,7 @@ namespace Dactra.Services.Implementation
             var profile = await _patientProfileRepository.GetByIdAsync(patientProfileId);
             if (profile == null)
             {
-                throw new ArgumentException("Patient Profile Not Found");
+                return null;
             }
             return _mapper.Map<PatientProfileResponseDTO>(profile);
         }
@@ -104,7 +104,7 @@ namespace Dactra.Services.Implementation
             var profile = await _patientProfileRepository.GetByUserEmail(email);
             if (profile == null)
             {
-                throw new ArgumentException("Patient Profile Not Found");
+                return null;
             }
             return _mapper.Map<PatientProfileResponseDTO>(profile);
         }
