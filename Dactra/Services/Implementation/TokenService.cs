@@ -29,6 +29,7 @@ namespace Dactra.Services.Implementation
             var userRoles = roleRepository.GetUserRolesAsync(user).Result;
             var claims = new List<Claim>
             {
+                new Claim(JwtRegisteredClaimNames.NameId, user.Id),
                 new Claim(JwtRegisteredClaimNames.Email,user.Email),
                 new Claim(JwtRegisteredClaimNames.GivenName,user.UserName),
                 new Claim(ClaimTypes.Role,string.Join(",",userRoles)),
@@ -38,7 +39,7 @@ namespace Dactra.Services.Implementation
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddMinutes(2),
+                Expires = DateTime.Now.AddMinutes(15),
                 SigningCredentials = creds,
                 Issuer = _config["JWT:Issuer"],
                 Audience = _config["JWT:Audience"],

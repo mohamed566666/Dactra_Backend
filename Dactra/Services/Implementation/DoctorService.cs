@@ -26,7 +26,7 @@ namespace Dactra.Services.Implementation
                 var user = await _userRepository.GetUserByEmailAsync(doctorComplateDTO.Email);
                 if (user == null)
                 {
-                    throw new ArgumentException("User Not Found");
+                    throw new KeyNotFoundException("User Not Found");
                 }
                 if (!user.IsVerified)
                 {
@@ -67,7 +67,7 @@ namespace Dactra.Services.Implementation
             var profile = await _doctorProfileRepository.GetByIdAsync(doctorProfileId);
             if (profile == null)
             {
-                throw new ArgumentException("Doctor Profile Not Found");
+                throw new KeyNotFoundException("Doctor Profile Not Found");
             }
             await _doctorProfileRepository.DeleteAsync(profile);
         }
@@ -85,8 +85,9 @@ namespace Dactra.Services.Implementation
                 age = DateTime.Now.Year - profile.DateOfBirth.Year,
                 AverageRating = profile.Avg_Rating,
                 YearsOfExperience = DateTime.Now.Year - profile.StartingCareerDate.Year,
-                SpecializationId = profile.SpecializationId,
-                gender = profile.Gender
+                SpecializationName = profile.specialization.Name,
+                PhoneNumber = profile.User.PhoneNumber,
+                Email = profile.User.Email
             });
         }
 
@@ -95,7 +96,7 @@ namespace Dactra.Services.Implementation
             var profile = await _doctorProfileRepository.GetByIdAsync(doctorProfileId);
             if (profile == null)
             {
-                throw new ArgumentException("Doctor Profile Not Found");
+                throw new KeyNotFoundException("Doctor Profile Not Found");
             }
             return new DoctorProfileResponseDTO
             {
@@ -107,7 +108,9 @@ namespace Dactra.Services.Implementation
                 age = DateTime.Now.Year - profile.DateOfBirth.Year,
                 AverageRating = profile.Avg_Rating,
                 YearsOfExperience = DateTime.Now.Year - profile.StartingCareerDate.Year,
-                SpecializationId = profile.SpecializationId,
+                SpecializationName = profile.specialization.Name,
+                PhoneNumber = profile.User.PhoneNumber,
+                Email = profile.User.Email
             };
         }
 
@@ -116,12 +119,12 @@ namespace Dactra.Services.Implementation
             var user = await _userRepository.GetUserByEmailAsync(email);
             if (user == null)
             {
-                throw new ArgumentException("User Not Found");
+                throw new KeyNotFoundException("User Not Found");
             }
             var profile = await _doctorProfileRepository.GetByUserIdAsync(user.Id);
             if (profile == null)
             {
-                throw new ArgumentException("Doctor Profile Not Found");
+                throw new KeyNotFoundException("Doctor Profile Not Found");
             }
             return new DoctorProfileResponseDTO
             {
@@ -133,8 +136,51 @@ namespace Dactra.Services.Implementation
                 age = DateTime.Now.Year - profile.DateOfBirth.Year,
                 AverageRating = profile.Avg_Rating,
                 YearsOfExperience = DateTime.Now.Year - profile.StartingCareerDate.Year,
-                SpecializationId = profile.SpecializationId,
+                SpecializationName = profile.specialization.Name,
+                PhoneNumber = profile.User.PhoneNumber,
+                Email = profile.User.Email
             };
+        }
+
+        public async Task<DoctorProfileResponseDTO> GetProfileByUserIdAsync(string userId)
+        {
+            var profile = await _doctorProfileRepository.GetByUserIdAsync(userId);
+            if (profile == null)
+            {
+                throw new KeyNotFoundException("Profile Not Found");
+            }
+            return new DoctorProfileResponseDTO
+            {
+                Id = profile.Id,
+                FirstName = profile.FirstName,
+                LastName = profile.LastName,
+                About = profile.About,
+                Address = profile.Address,
+                age = DateTime.Now.Year - profile.DateOfBirth.Year,
+                AverageRating = profile.Avg_Rating,
+                YearsOfExperience = DateTime.Now.Year - profile.StartingCareerDate.Year,
+                SpecializationName = profile.specialization.Name,
+                PhoneNumber = profile.User.PhoneNumber,
+                Email = profile.User.Email
+            };
+        }
+
+        public async Task UpdateProfileAsync(int doctorProfileId, DoctorUpdateDTO updatedProfile)
+        {
+            var existingProfile = await _doctorProfileRepository.GetByIdAsync(doctorProfileId);
+            if (existingProfile == null)
+            {
+                throw new KeyNotFoundException("Profile Not Found");
+            }
+            existingProfile.FirstName = updatedProfile.FirstName;
+            existingProfile.LastName = updatedProfile.LastName;
+            existingProfile.Name = updatedProfile.FirstName + " " + updatedProfile.LastName;
+            existingProfile.Address = updatedProfile.Address;
+            existingProfile.DateOfBirth = updatedProfile.DateOfBirth;
+            existingProfile.Gender = updatedProfile.Gender;
+            existingProfile.SpecializationId = updatedProfile.SpecializationId;
+            existingProfile.specialization = updatedProfile.specialization;
+            await _doctorProfileRepository.UpdateAsync(existingProfile);
         }
     }
 }

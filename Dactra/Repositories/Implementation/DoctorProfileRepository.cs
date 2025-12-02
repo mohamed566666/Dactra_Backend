@@ -26,17 +26,22 @@ namespace Dactra.Repositories.Implementation
         {
             return await _context.Doctors
                 .Include(d => d.User)
+                .Include(d => d.specialization)
                 .ToListAsync();
         }
         public async Task<DoctorProfile> GetByIdAsync(int id)
         {
-            return await _context.Doctors.FindAsync(id);
+            return await _context.Doctors
+                .Include(d => d.User)
+                .Include(d => d.specialization)
+                .FirstOrDefaultAsync(d => d.Id == id);
         }
 
         public async Task<DoctorProfile> GetByUserEmail(string email)
         {
             return await _context.Doctors
                 .Include(d => d.User)
+                .Include(d => d.specialization)
                 .FirstOrDefaultAsync(d => d.User.Email == email);
         }
 
@@ -44,6 +49,7 @@ namespace Dactra.Repositories.Implementation
         {
             return await _context.Doctors
                 .Include(d => d.User)
+                .Include(d => d.specialization)
                 .FirstOrDefaultAsync(d => d.UserId == userId);
         }
         public async Task UpdateAsync(DoctorProfile profile)

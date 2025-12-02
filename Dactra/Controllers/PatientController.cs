@@ -1,4 +1,5 @@
-﻿using Dactra.DTOs.ProfilesDTOs.PatientDTOs;
+﻿using AutoMapper;
+using Dactra.DTOs.ProfilesDTOs.PatientDTOs;
 using Dactra.Models;
 using Dactra.Repositories.Interfaces;
 using Dactra.Services.Interfaces;
@@ -53,6 +54,33 @@ namespace Dactra.Controllers
             var userEmail = User.FindFirstValue(ClaimTypes.Email);
             var PatientProfile = await _patientService.GetProfileByUserEmail(userEmail);
             return PatientProfile == null ? NotFound("Patient Profile Not Found") : Ok(PatientProfile);
+        }
+
+        [HttpGet("ByUserId/{Id}")]
+        public async Task<IActionResult> GetById(string Id)
+        {
+            try
+            {
+                var profile = await _patientService.GetProfileByUserID(Id);
+                return Ok(profile);
+            }
+            catch (Exception ex) {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpPut("{Id}")]
+        public async Task<IActionResult> Update(int Id , PatientUpdateDTO updateDTO)
+        {
+            try
+            {
+                await _patientService.UpdateProfileAsync(Id, updateDTO);
+                return Ok("Profile Updated Succesfully");
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }
