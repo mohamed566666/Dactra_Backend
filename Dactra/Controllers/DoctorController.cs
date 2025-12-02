@@ -38,20 +38,38 @@ namespace Dactra.Controllers
         [HttpDelete("{Id}")]
         public async Task<IActionResult> DeleteDoctor(int Id)
         {
-            await _doctorService.DeleteDoctorProfileAsync(Id);
-            return Ok("Profile Deleted Succesfully");
+            try
+            {
+                await _doctorService.DeleteDoctorProfileAsync(Id);
+                return Ok("Profile Deleted Succesfully");
+            }
+            catch (Exception ex) {
+                return NotFound(ex.Message);
+            }
         }
         [HttpPost("CompleteRegister")]
         public async Task<IActionResult> CompleteRegister(DoctorCompleteDTO doctorComplateDTO)
         {
-            await _doctorService.CompleteRegistrationAsync(doctorComplateDTO);
-            return Ok();
+            try
+            {
+                await _doctorService.CompleteRegistrationAsync(doctorComplateDTO);
+                return Ok();
+            }
+            catch(Exception ex) {
+                return NotFound(ex.Message);
+            }
         }
         [HttpGet("GetByEmail/{email}")]
         public async Task<IActionResult> GetByEmail(string email)
         {
-            var DoctorProfile = await _doctorService.GetProfileByUserEmail(email);
-            return DoctorProfile == null ? NotFound("Doctor Profile Not Found") : Ok(DoctorProfile);
+            try
+            {
+                var DoctorProfile = await _doctorService.GetProfileByUserEmail(email);
+                return DoctorProfile == null ? NotFound("Doctor Profile Not Found") : Ok(DoctorProfile);
+            }
+            catch (Exception ex) {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpGet("GetMe")]

@@ -65,6 +65,8 @@ builder.Services.AddScoped<IProviderOfferingRepository, ProviderOfferingReposito
 builder.Services.AddScoped<IProviderOfferingService, ProviderOfferingService>();
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IHomeRepository, HomeRepository>();
+builder.Services.AddScoped<IHomeService, HomeService>();
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
 

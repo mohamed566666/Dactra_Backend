@@ -24,7 +24,7 @@ namespace Dactra.Services.Implementation
             var profile = await _medicalTestProviderProfileRepository.GetByIdAsync(id);
             if (profile == null)
             {
-                throw new ArgumentException("Medical Test Provider Profile Not Found");
+                throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
             profile.IsApproved = true;
             await _medicalTestProviderProfileRepository.UpdateAsync(profile);
@@ -38,7 +38,7 @@ namespace Dactra.Services.Implementation
                 var user = await _userRepository.GetUserByEmailAsync(medicalTestProviderDTO.Email);
                 if (user == null)
                 {
-                    throw new ArgumentException("User Not Found");
+                    throw new KeyNotFoundException("User Not Found");
                 }
                 if (!user.IsVerified)
                 {
@@ -76,7 +76,7 @@ namespace Dactra.Services.Implementation
             var profile = await _medicalTestProviderProfileRepository.GetByIdAsync(medicalTestProviderProfileId);
             if (profile == null)
             {
-                throw new ArgumentException("Medical Test Provider Profile Not Found");
+                throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
             await _medicalTestProviderProfileRepository.DeleteAsync(profile);
         }
@@ -115,7 +115,7 @@ namespace Dactra.Services.Implementation
             var profile = await _medicalTestProviderProfileRepository.GetByIdAsync(id);
             if (profile == null)
             {
-                throw new ArgumentException("Medical Test Provider Profile Not Found");
+                throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
             var profileDTO = new MedicalTestsProviderResponseDTO
             {
@@ -135,7 +135,7 @@ namespace Dactra.Services.Implementation
             var profile = await _medicalTestProviderProfileRepository.GetByUserIdAsync(userId);
             if (profile == null)
             {
-                throw new ArgumentException("Medical Test Provider Profile Not Found");
+                throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
             var profileDTO = new MedicalTestsProviderResponseDTO
             {
@@ -171,7 +171,7 @@ namespace Dactra.Services.Implementation
             var profile = await _medicalTestProviderProfileRepository.GetByIdAsync(id);
             if (profile == null)
             {
-                throw new ArgumentException("Medical Test Provider Profile Not Found");
+                throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
             profile.IsApproved = false;
             await _medicalTestProviderProfileRepository.UpdateAsync(profile);
@@ -182,7 +182,7 @@ namespace Dactra.Services.Implementation
             var profile = await _medicalTestProviderProfileRepository.GetByIdAsync(id);
             if (profile == null)
             {
-                throw new ArgumentException("Medical Test Provider Profile Not Found");
+                throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
             profile.Name = dto.Name;
             profile.LicenceNo = dto.LicenceNo;

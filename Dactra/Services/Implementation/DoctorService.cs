@@ -96,7 +96,7 @@ namespace Dactra.Services.Implementation
             var profile = await _doctorProfileRepository.GetByIdAsync(doctorProfileId);
             if (profile == null)
             {
-                throw new KeyNotFoundException("Doctor Profile Not Found");
+                return null;
             }
             return new DoctorProfileResponseDTO
             {
