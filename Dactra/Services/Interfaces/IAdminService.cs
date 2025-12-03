@@ -11,5 +11,8 @@ namespace Dactra.Services.Interfaces
         Task<ApplicationUser> GetById(string id);
         Task<ApplicationUser> GetByEmail(string email);
         Task AddToAdminRole(ApplicationUser user);
+        Task<string> DeleteAppUser(string id);
+        Task<bool> DeleteQuestions(string id);
+        Task<bool> DeletePosts(string id);
     }
 }

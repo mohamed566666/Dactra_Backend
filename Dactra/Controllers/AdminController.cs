@@ -46,11 +46,7 @@ namespace Dactra.Controllers
         }
 
         
-        [HttpDelete("Delete/{id}")]
-        public async Task<IActionResult> Delete(string id)
-        {
-            return Ok(await _service.DeleteAdmin(id));
-        }
+     
         [HttpGet("getById/{id}")]
         public async Task<IActionResult> GetById(string id)
         {
@@ -65,6 +61,36 @@ namespace Dactra.Controllers
             var user = await _service.GetByEmail(email);
             if (user == null) return NotFound("Admin not found");
             return Ok(user);
+        }
+        [HttpDelete("DeleteAdmin/{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            return Ok(await _service.DeleteAdmin(id));
+        }
+        [HttpDelete("DeleteAppUser/{id}")]
+        public async Task<IActionResult> DeleteAppUser(string id)
+        {
+            return Ok(await _service.DeleteAppUser(id));
+        }
+        [HttpDelete("DeleteQuestion{id}")]
+        public async Task<IActionResult> DeleteQuestions(string id)
+        {
+            var result = await _service.DeleteQuestions(id);
+
+            if (!result)
+                return NotFound(new { message = "Question not found" });
+
+            return Ok(new { message = "Question deleted successfully" });
+        }
+        [HttpDelete("DeletePost{id}")]
+        public async Task<IActionResult> DeletePost(string id)
+        {
+            var result = await _service.DeletePosts(id);
+
+            if (!result)
+                return NotFound(new { message = "Post not found" });
+
+            return Ok(new { message = "Post deleted successfully" });
         }
         //[HttpPost("makeAdmin/{id}")]
         //public async Task<IActionResult> MakeAdmin(string id)
