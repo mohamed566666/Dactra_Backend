@@ -3,6 +3,7 @@ using Dactra.Models;
 using Dactra.Repositories.Interfaces;
 using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 namespace Dactra.Services.Implementation
 {
     public class AdminService : IAdminService
@@ -48,6 +49,14 @@ namespace Dactra.Services.Implementation
 
             await _repo.DeleteUser(user);
             return "Admin deleted";
+        }
+        public async Task<string> DeleteAppUser(string id)
+        {
+            var user = await _repo.GetById(id);
+            if (user == null) return "user not found";
+
+            await _repo.DeleteUser(user);
+            return "user deleted";
         }
 
         public async Task<IList<ApplicationUser>> GetAdmins()
@@ -101,6 +110,29 @@ namespace Dactra.Services.Implementation
             {
                 await _userManager.AddToRoleAsync(user, "Admin");
             }
+        }
+
+        public async Task<bool> DeleteQuestions(string id)
+        {
+            var questions =await  _repo.GetQuestionsById(id);
+            if ( questions ==null)
+            {
+                return false;
+            }
+            await _repo.DeleteQuestions(questions);
+            
+            return true;
+        }
+
+        public async Task<bool> DeletePosts(string id)
+        {
+            var post = await  _repo.GetPostById(id);
+            if (post == null)
+            {
+                return false ;
+            }
+            await _repo.DeletePost(post);
+            return true;
         }
     }
 }
