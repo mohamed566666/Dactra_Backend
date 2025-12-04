@@ -19,8 +19,8 @@ namespace Dactra.Repositories.Interfaces
          Task DeletePost(Post questions);
         Task<int> GetDoctorsCount();
         Task<int> GetPatientsCount();
-        Task<int> GetPostsCount();
-        Task<int> GetQuestionsCount();
+        Task<int> GetLabCount();
+        Task<int> GetScanCount();
         Task<Dictionary<string, int>> GetWeeklyAppointmentsCount();
 
         Task<List< patientinfoDto>> patientinfo();
