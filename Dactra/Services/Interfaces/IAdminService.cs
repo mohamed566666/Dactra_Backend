@@ -14,5 +14,10 @@ namespace Dactra.Services.Interfaces
         Task<string> DeleteAppUser(string id);
         Task<bool> DeleteQuestions(string id);
         Task<bool> DeletePosts(string id);
+        Task<StatsDto> GetSummary();
+        Task<Dictionary<string, int>> GetWeeklyAppointmentsCount();
+        Task<List<patientinfoDto>> GetAllPatientsAsync();
+        Task<List<questionInfoDto>> GetAllquestionAsync();
+        Task<List<postInfoDto>> GetAllpostAsync();
     }
 }

@@ -10,6 +10,8 @@ namespace Dactra.Models
 
         [Required]
         public string Content { get; set; } = string.Empty;
+        [Required]
+        public string title { get; set; } = string.Empty;
 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -25,6 +27,7 @@ namespace Dactra.Models
 
         [ForeignKey(nameof(DoctorId))]
         public DoctorProfile Doctor { get; set; } = null!;
+        public bool isDeleted { get; set; } = false;
 
     }
 }

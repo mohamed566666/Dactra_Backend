@@ -4,6 +4,7 @@ using Dactra.Repositories.Interfaces;
 using Dactra.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+
 namespace Dactra.Services.Implementation
 {
     public class AdminService : IAdminService
@@ -133,6 +134,37 @@ namespace Dactra.Services.Implementation
             }
             await _repo.DeletePost(post);
             return true;
+        }
+
+        public async Task<StatsDto> GetSummary()
+        {
+            return new StatsDto
+            {
+                DoctorsCount = await _repo.GetDoctorsCount(),
+                PatientsCount = await _repo.GetPatientsCount(),
+                PostsCount = await _repo.GetPostsCount(),
+                QuestionsCount = await _repo.GetQuestionsCount()
+            };
+        }
+
+        public async Task<Dictionary<string, int>> GetWeeklyAppointmentsCount()
+        {
+            return await _repo.GetWeeklyAppointmentsCount();
+        }
+
+        public async Task<List<patientinfoDto>> GetAllPatientsAsync()
+        {
+           return await _repo.patientinfo();
+        }
+
+        public Task<List<questionInfoDto>> GetAllquestionAsync()
+        {
+            return _repo.questioninfo();
+        }
+
+        public Task<List<postInfoDto>> GetAllpostAsync()
+        {
+            return _repo.postinfo();
         }
     }
 }
