@@ -112,9 +112,9 @@ namespace Dactra.Repositories.Implementation
            return _context.Posts.FirstOrDefaultAsync(s=>s.Id==int.Parse(id));   
         }
 
-        public async Task<int> GetPostsCount()
+        public async Task<int> GetLabCount()
         {
-            return await _context.Posts.CountAsync();
+            return await _context.MedicalTestProviders.Where(p => p.Type==Enums.MedicalTestProviderType.Lab).CountAsync();
         }
 
         public async Task<Questions>? GetQuestionsById(string id)
@@ -122,9 +122,9 @@ namespace Dactra.Repositories.Implementation
            return  await _context.Questions.FirstOrDefaultAsync(s=>s.Id==int.Parse(id));
         }
 
-        public async Task<int> GetQuestionsCount()
+        public async Task<int> GetScanCount()
         {
-            return await _context.Questions.CountAsync();
+            return await _context.MedicalTestProviders.Where(p => p.Type == Enums.MedicalTestProviderType.Scan).CountAsync();
         }
 
         public async Task<Dictionary<string, int>> GetWeeklyAppointmentsCount()

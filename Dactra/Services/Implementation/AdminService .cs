@@ -142,8 +142,8 @@ namespace Dactra.Services.Implementation
             {
                 DoctorsCount = await _repo.GetDoctorsCount(),
                 PatientsCount = await _repo.GetPatientsCount(),
-                PostsCount = await _repo.GetPostsCount(),
-                QuestionsCount = await _repo.GetQuestionsCount()
+                LabCount = await _repo.GetLabCount(),
+                ScanCount = await _repo.GetScanCount()
             };
         }
 
