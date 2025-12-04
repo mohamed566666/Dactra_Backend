@@ -1,7 +1,9 @@
-﻿using Dactra.Models;
+﻿using Dactra.DTOs.Admin;
+using Dactra.Models;
 using Dactra.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace Dactra.Repositories.Implementation
 {
@@ -39,24 +41,24 @@ namespace Dactra.Repositories.Implementation
 
         }
 
-        public async Task DeletePost(Post questions)
+        public async Task DeletePost(Post post)
         {
-            _context.Posts.Remove(questions);
+            post.isDeleted = true;
             await _context.SaveChangesAsync();
         }
 
         public async Task DeleteQuestions(Questions questions)
         {
-           _context.Questions.Remove(questions);
+            questions.isDeleted = true;
+            _context.Questions.Update(questions);
               await _context.SaveChangesAsync();
         }
 
         public async Task DeleteUser(ApplicationUser user)
         {
-            var roles = await _userManager.GetRolesAsync(user);
-            if (roles.Any())
-            await _userManager.RemoveFromRolesAsync(user, roles);
-            await _userManager.DeleteAsync(user);
+           user.isDeleted = true;
+            await _userManager.UpdateAsync(user);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<IList<ApplicationUser>> GetAdmins()
@@ -74,9 +76,45 @@ namespace Dactra.Repositories.Implementation
            return await _userManager.FindByIdAsync(id);
         }
 
+        public async Task<int> GetDoctorsCount()
+        {
+            var doctorRoleId = await _context.Roles
+                .Where(r => r.Name == "Doctor")
+                .Select(r => r.Id)
+                .FirstOrDefaultAsync();
+
+            var doctorsCount = await _context.UserRoles
+                .Where(ur => ur.RoleId == doctorRoleId)
+                .Select(ur => ur.UserId)
+                .Distinct()
+                .CountAsync();
+            return doctorsCount;
+        }
+
+        public async Task<int> GetPatientsCount()
+        {
+            var patientRoleId = await _context.Roles
+              .Where(r => r.Name == "Patient")
+              .Select(r => r.Id)
+              .FirstOrDefaultAsync();
+
+            var patientCount = await _context.UserRoles
+                .Where(ur => ur.RoleId == patientRoleId)
+                .Select(ur => ur.UserId)
+                .Distinct()
+                .CountAsync();
+            return patientCount;
+
+        }
+
         public Task<Post>? GetPostById(string id)
         {
            return _context.Posts.FirstOrDefaultAsync(s=>s.Id==int.Parse(id));   
+        }
+
+        public async Task<int> GetPostsCount()
+        {
+            return await _context.Posts.CountAsync();
         }
 
         public async Task<Questions>? GetQuestionsById(string id)
@@ -84,9 +122,74 @@ namespace Dactra.Repositories.Implementation
            return  await _context.Questions.FirstOrDefaultAsync(s=>s.Id==int.Parse(id));
         }
 
+        public async Task<int> GetQuestionsCount()
+        {
+            return await _context.Questions.CountAsync();
+        }
+
+        public async Task<Dictionary<string, int>> GetWeeklyAppointmentsCount()
+        {
+            var today = DateTime.UtcNow.Date;
+
+            var startOfWeek = today.AddDays(-(int)today.DayOfWeek + 6); 
+            var endOfWeek = startOfWeek.AddDays(6);
+
+            var appointments = await _context.PatientAppointments
+                .Where(a => a.BookedAt.Date >= startOfWeek && a.BookedAt.Date <= endOfWeek)
+                .ToListAsync();
+
+            var countsByDay = appointments
+                .GroupBy(a => a.BookedAt.DayOfWeek)
+                .ToDictionary(
+                    g => CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(g.Key),
+                    g => g.Count()
+                );
+
+           
+            var orderedDays = new[] { "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
+            var result = orderedDays.ToDictionary(day => day, day => countsByDay.ContainsKey(day) ? countsByDay[day] : 0);
+            return result;
+        }
+
         public async Task<bool> IsAdmin(ApplicationUser user)
         {
            return await _userManager.IsInRoleAsync(user, "Admin");
+        }
+
+        public async Task<List< patientinfoDto>> patientinfo()
+        {
+           var result =await _context.Patients.Select(p=> new patientinfoDto
+            {
+                fullName = p.FirstName+" "+p.LastName,
+                Email = p.User.Email,
+                isDeleted = p.User.isDeleted
+            }).ToListAsync();
+
+            return  result;
+        }
+
+        public async Task<List<postInfoDto>> postinfo()
+        {
+           var result= await _context.Posts.Select(p=> new postInfoDto
+            {
+                title = p.title,
+                FullName = p.Doctor.FirstName+" "+p.Doctor.LastName,
+                createdAt = p.CreatedAt,
+                isDeleted = p.isDeleted
+            }).ToListAsync();
+            return result;
+        }
+
+        public async Task<List<questionInfoDto>> questioninfo()
+        {
+            var result=await _context.Questions.Select(q=> new questionInfoDto
+            {
+                Content = q.Text,
+                Pname = q.Patient.FirstName+" "+q.Patient.LastName,
+                createdAt = q.CreatedAt,
+                isDeleted = q.isDeleted
+            }).ToListAsync();
+            return result;
         }
     }
 }

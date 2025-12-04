@@ -43,6 +43,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             new ApplicationRole { Name="MedicalTestProvider", NormalizedName="MEDICALTESTPROVIDER" }
         };
 
+        modelBuilder.Entity<ApplicationUser>().HasQueryFilter(u => !u.isDeleted);
+        modelBuilder.Entity<Questions>().HasQueryFilter(q => !q.isDeleted);
+        modelBuilder.Entity<Post>().HasQueryFilter(p => !p.isDeleted);
 
         modelBuilder.Entity<ApplicationRole>().HasData(roles);
 
