@@ -26,6 +26,8 @@ namespace Dactra.Models
         [ForeignKey(nameof(PatientId))]
         public PatientProfile Patient { get; set; } = null!;
         public List<Answer> Answers { get; set; } = new List<Answer>();
+        public bool isDeleted { get; set; } = false;
+
 
     }
 }

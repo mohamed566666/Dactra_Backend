@@ -10,5 +10,6 @@ namespace Dactra.Models
         public bool IsActive { get; set; } = true;
         public bool IsVerified { get; set; } = false;
         public bool IsRegistrationComplete { get; set; } = false;
+        public bool isDeleted { get; set; } = false;
     }
 }

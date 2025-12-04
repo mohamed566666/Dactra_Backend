@@ -1,4 +1,5 @@
-﻿using Dactra.Models;
+﻿using Dactra.DTOs.Admin;
+using Dactra.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace Dactra.Repositories.Interfaces
@@ -16,6 +17,14 @@ namespace Dactra.Repositories.Interfaces
         Task DeleteQuestions(Questions questions);
         Task<Post>? GetPostById(string id);
          Task DeletePost(Post questions);
+        Task<int> GetDoctorsCount();
+        Task<int> GetPatientsCount();
+        Task<int> GetPostsCount();
+        Task<int> GetQuestionsCount();
+        Task<Dictionary<string, int>> GetWeeklyAppointmentsCount();
 
+        Task<List< patientinfoDto>> patientinfo();
+        Task<List< questionInfoDto>> questioninfo();
+        Task<List< postInfoDto>> postinfo();
     }
 }

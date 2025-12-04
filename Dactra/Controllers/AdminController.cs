@@ -92,6 +92,37 @@ namespace Dactra.Controllers
 
             return Ok(new { message = "Post deleted successfully" });
         }
+
+        [HttpGet("summary")]
+        public async Task<IActionResult> GetSummary()
+        {
+            var result = await _service.GetSummary();
+            return Ok(result);
+        }
+        [HttpGet("weekly-summary")]
+        public async Task<IActionResult> GetWeeklySummary()
+        {
+            var result = await _service.GetWeeklyAppointmentsCount();
+            return Ok(result);
+        }
+        [HttpGet("allPetientInfo")]
+        public async Task<IActionResult> GetAllPatients()
+        {
+            var patients = await _service.GetAllPatientsAsync();
+            return Ok(patients);
+        }
+        [HttpGet("allquestionsInfo")]
+        public async Task<IActionResult> GetAllquestions()
+        {
+            var questions = await _service.GetAllquestionAsync();
+            return Ok(questions);
+        }
+        [HttpGet("allArticlesInfo")]
+        public async Task<IActionResult> GetAllArticels()
+        {
+            var post = await _service.GetAllpostAsync();
+            return Ok(post);
+        }
         //[HttpPost("makeAdmin/{id}")]
         //public async Task<IActionResult> MakeAdmin(string id)
         //{
