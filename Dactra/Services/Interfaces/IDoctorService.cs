@@ -13,6 +13,6 @@ namespace Dactra.Services.Interfaces
         public Task<DoctorProfileResponseDTO> GetProfileByUserEmail(string email);
         public Task<DoctorProfileResponseDTO> GetProfileByUserIdAsync(string userId);
         public Task DeleteDoctorProfileAsync(int doctorProfileId);
-        public Task UpdateProfileAsync(int doctorProfileId, DoctorUpdateDTO updatedProfile);
+        public Task UpdateProfileAsync(string userId, DoctorUpdateDTO updatedProfile);
     }
 }

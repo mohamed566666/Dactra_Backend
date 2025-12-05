@@ -32,6 +32,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<ComplaintAttachment> ComplaintAttachments { get; set; }
     public DbSet<Complaint> Complaints { get; set; }
     public DbSet<City> Cities { get; set; }
+    public DbSet<SiteReview> SiteReviews { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -86,6 +87,21 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         modelBuilder.Entity<ComplaintAttachment>()
             .HasIndex(a => a.ComplaintId);
 
-        
+        modelBuilder.Entity<SiteReview>()
+        .HasIndex(r => r.ReviewerUserId)
+        .IsUnique();
+        modelBuilder.Entity<PatientProfile>()
+            .HasIndex(p => p.UserId)
+            .IsUnique();
+        modelBuilder.Entity<DoctorProfile>()
+           .HasIndex(p => p.UserId)
+           .IsUnique();
+        modelBuilder.Entity<MedicalTestProviderProfile>()
+           .HasIndex(p => p.UserId)
+           .IsUnique();
+        modelBuilder.Entity<SiteReview>()
+            .HasIndex(r => r.Score);
+
+
     }
 }

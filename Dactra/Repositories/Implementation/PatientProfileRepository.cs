@@ -26,12 +26,14 @@ namespace Dactra.Repositories.Implementation
         {
             return await _context.Patients
                 .Include(p => p.User)
+                .Include(p => p.Address)
                 .ToListAsync();
         }
         public async Task<PatientProfile> GetByIdAsync(int id)
         {
             return await _context.Patients
                 .Include (p => p.User)
+                .Include(p => p.Address)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
@@ -39,6 +41,7 @@ namespace Dactra.Repositories.Implementation
         {
             return await _context.Patients
                 .Include(p => p.User)
+                .Include(p => p.Address)
                 .FirstOrDefaultAsync(p => p.User.Email == email);
         }
 
@@ -46,6 +49,7 @@ namespace Dactra.Repositories.Implementation
         {
             return await _context.Patients
                 .Include(p => p.User)
+                .Include(p => p.Address)
                 .FirstOrDefaultAsync(p => p.UserId == userId);
         }
         public async Task UpdateAsync(PatientProfile profile)

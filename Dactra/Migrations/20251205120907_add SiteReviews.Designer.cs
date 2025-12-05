@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251205120907_add SiteReviews")]
+    partial class addSiteReviews
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,25 +83,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "d458c365-f0b9-40df-8f54-b6097da4bd6e",
+                            Id = "c9b5c1cc-0341-4e02-8929-3b7b0c8cf0fb",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "acb7b7cb-8ce1-4ebb-8fcd-f7e3d0bea811",
+                            Id = "0f6e2cdb-6575-4a29-8829-0428b9abfe1c",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "8c6db0e1-412a-4395-a50c-4619c5a05f6d",
+                            Id = "2b1b1c90-ba9f-4d3e-bd45-c194ce7bcc34",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "4eb8ae5a-80de-4518-8f24-546578e9ba8e",
+                            Id = "89f5c2d5-9409-471c-8760-ea2a2dc2d604",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -405,9 +408,6 @@ namespace Dactra.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AddressId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Allergies")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -453,10 +453,7 @@ namespace Dactra.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AddressId");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("Patients");
                 });
@@ -726,8 +723,7 @@ namespace Dactra.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("ServiceProviders", (string)null);
 
@@ -1102,18 +1098,11 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Dactra.Models.PatientProfile", b =>
                 {
-                    b.HasOne("Dactra.Models.City", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.HasOne("Dactra.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-
-                    b.Navigation("Address");
 
                     b.Navigation("User");
                 });

@@ -20,11 +20,11 @@ namespace Dactra.Repositories.Implementation
                 .Include(m => m.User)
                 .ToListAsync();
         }
-        public async Task<MedicalTestProviderProfile> GetByIdAsync(int id)
+        public async Task<MedicalTestProviderProfile?> GetByIdAsync(int id)
         {
             return await _context.MedicalTestProviders.FindAsync(id);
         }
-        public async Task<MedicalTestProviderProfile> GetByUserIdAsync(string userId)
+        public async Task<MedicalTestProviderProfile?> GetByUserIdAsync(string userId)
         {
             return await _context.MedicalTestProviders
                 .Include(m => m.User)

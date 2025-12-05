@@ -55,7 +55,7 @@ namespace Dactra.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _majorsService.DeleteMajorAsync(id);
+            await _majorsService.DeleteMajorByIdAsync(id);
             return Ok("Major deleted successfully");
         }
     }

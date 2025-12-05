@@ -23,13 +23,13 @@ namespace Dactra.Repositories.Implementation
             _context.EmailVerifications.Add(verification);
             await _context.SaveChangesAsync();
         }
-        public async Task<EmailVerification> GetByEmailAndCodeAsync(string email, string code)
+        public async Task<EmailVerification?> GetByEmailAndCodeAsync(string email, string code)
         {
             return await _context.EmailVerifications
                 .FirstOrDefaultAsync(ev => ev.Email == email && ev.OTP == code);
         }
 
-        public async Task<EmailVerification> GetVerificationAsync(string email)
+        public async Task<EmailVerification?> GetVerificationAsync(string email)
         {
             return await _context.EmailVerifications
                 .FirstOrDefaultAsync(ev => ev.Email == email);

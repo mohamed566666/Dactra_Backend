@@ -11,7 +11,7 @@ namespace Dactra.Services.Interfaces
         public Task DeleteMedicalTestProviderProfileAsync(int medicalTestProviderProfileId);
         public Task<MedicalTestsProviderResponseDTO> GetProfileByUserIdAsync(string userId);
         public Task<MedicalTestsProviderResponseDTO> GetProfileByIdAsync(int id);
-        public Task UpdateProfileAsync(int id, MedicalTestsProviderUpdateDTO dto);
+        public Task UpdateProfileAsync(string id, MedicalTestsProviderUpdateDTO dto);
         public Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetApprovedProfilesAsync(MedicalTestProviderType? type = null);
         public Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetProfilesByTypeAsync(MedicalTestProviderType type);
         public Task ApproveProfileAsync(int id);

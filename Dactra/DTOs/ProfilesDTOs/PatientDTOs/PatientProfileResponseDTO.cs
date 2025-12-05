@@ -19,6 +19,8 @@ namespace Dactra.DTOs.ProfilesDTOs.PatientDTOs
         public MaritalStatus MaritalStatus { get; set; }
         public BloodTypes BloodType { get; set; }
         public SmokingStatus SmokingStatus { get; set; }
+        public int? AddressId { get; set; }
+        public string? address { get; set; }
         public string Allergies { get; set; }
         public string ChronicDisease { get; set; }
         public string RoleName { get; set; }

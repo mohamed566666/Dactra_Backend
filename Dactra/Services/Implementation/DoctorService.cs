@@ -69,7 +69,8 @@ namespace Dactra.Services.Implementation
             {
                 throw new KeyNotFoundException("Doctor Profile Not Found");
             }
-            await _doctorProfileRepository.DeleteAsync(profile);
+            _doctorProfileRepository.Delete(profile);
+            await _doctorProfileRepository.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<DoctorProfileResponseDTO>> GetAllProfileAsync()
@@ -165,9 +166,9 @@ namespace Dactra.Services.Implementation
             };
         }
 
-        public async Task UpdateProfileAsync(int doctorProfileId, DoctorUpdateDTO updatedProfile)
+        public async Task UpdateProfileAsync(string userId, DoctorUpdateDTO updatedProfile)
         {
-            var existingProfile = await _doctorProfileRepository.GetByIdAsync(doctorProfileId);
+            var existingProfile = await _doctorProfileRepository.GetByUserIdAsync(userId);
             if (existingProfile == null)
             {
                 throw new KeyNotFoundException("Profile Not Found");
@@ -180,7 +181,8 @@ namespace Dactra.Services.Implementation
             existingProfile.Gender = updatedProfile.Gender;
             existingProfile.SpecializationId = updatedProfile.SpecializationId;
             existingProfile.specialization = updatedProfile.specialization;
-            await _doctorProfileRepository.UpdateAsync(existingProfile);
+            _doctorProfileRepository.Update(existingProfile);
+            await _doctorProfileRepository.SaveChangesAsync();
         }
     }
 }

@@ -25,9 +25,15 @@ namespace Dactra.Services.Implementation
             await _majorsRepository.AddAsync(major);
         }
 
-        public async Task DeleteMajorAsync(int id)
+        public async Task DeleteMajorByIdAsync(int id)
         {
-            await _majorsRepository.DeleteAsync(new Majors { Id = id });
+            var major = await _majorsRepository.GetByIdAsync(id);
+            if (major == null)
+            {
+                throw new KeyNotFoundException($"Major with ID {id} not found.");
+            }
+            _majorsRepository.Delete(major);
+            await _majorsRepository.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<MajorsResponseDTO>> GetAllMajorsAsync()
@@ -66,7 +72,8 @@ namespace Dactra.Services.Implementation
             existingMajor.Name = major.Name;
             existingMajor.Iconpath = major.Iconpath;
             existingMajor.Description = major.Description;
-            await _majorsRepository.UpdateAsync(existingMajor);
+            _majorsRepository.Update(existingMajor);
+            await _majorsRepository.SaveChangesAsync();
         }
 
         public async Task UpdateMajorIconAsync(int id, string iconUrl)
@@ -77,6 +84,7 @@ namespace Dactra.Services.Implementation
                 throw new KeyNotFoundException($"Major with ID {id} not found.");
             }
             await _majorsRepository.UpdateIcon(id, iconUrl);
+            await _majorsRepository.SaveChangesAsync();
         }
     }
 }

@@ -119,25 +119,22 @@ namespace Dactra.Services.Implementation
             return _mapper.Map<PatientProfileResponseDTO>(profile);
         }
 
-        public async Task UpdateProfileAsync(int patientProfileId, PatientUpdateDTO updatedProfile)
+        public async Task UpdateProfileAsync(string userId, PatientUpdateDTO updatedProfile)
         {
-            var existingProfile = await _patientProfileRepository.GetByIdAsync(patientProfileId);
+            var existingProfile = await _patientProfileRepository.GetByUserIdAsync(userId);
             if (existingProfile == null)
             {
                 throw new KeyNotFoundException("Patient Profile Not Found");
             }
             existingProfile.FirstName = updatedProfile.FirstName;
             existingProfile.LastName = updatedProfile.LastName;
-            existingProfile.Gender = updatedProfile.gender;
             existingProfile.Height = updatedProfile.Height;
             existingProfile.Weight = updatedProfile.Weight;
-            existingProfile.DateOfBirth = updatedProfile.DateOfBirth;
             existingProfile.BloodType = updatedProfile.BloodType;
             existingProfile.SmokingStatus = updatedProfile.SmokingStatus;
-            existingProfile.Allergies = updatedProfile.Allergies;
             existingProfile.MaritalStatus = updatedProfile.MaritalStatus;
-            existingProfile.ChronicDisease = updatedProfile.ChronicDisease;
             existingProfile.User.PhoneNumber = updatedProfile.PhoneNamber;
+            existingProfile.AddressId = updatedProfile.AddressId;
             await _patientProfileRepository.UpdateAsync(existingProfile);
         }
     }
