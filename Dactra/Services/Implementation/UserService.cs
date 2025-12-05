@@ -1,4 +1,5 @@
 ﻿using Dactra.Controllers;
+using Dactra.DTOs.AccountDTOs;
 using Dactra.DTOs.AuthemticationDTOs;
 using Dactra.Factories.Interfaces;
 using Dactra.Models;
@@ -38,7 +39,7 @@ namespace Dactra.Services.Implementation
             _roleRepository = roleRepository;
             _context = context;
             _tokenService = tokenService;
-            _logger=logger;
+            _logger = logger;
         }
         public async Task<IdentityResult> SendDTOforVerficatio(SendOTPtoMailDTO model)
         {
@@ -187,6 +188,17 @@ namespace Dactra.Services.Implementation
             return user;
         }
 
-
+        public async Task ChangePasswordAsync(string userId, ChangePasswordRequestDto model)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+                throw new KeyNotFoundException("User not found");
+            if (model.NewPassword != model.ConfirmNewPassword)
+                throw new ArgumentException("New password and confirm password misMatch.");
+            var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+            if (!result.Succeeded)
+                throw new InvalidOperationException("Password change failed: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+            await _emailSender.SendEmailAsync(user.Email, "Password Changed", "Your password has been changed successfully.");
+        }
     }
 }

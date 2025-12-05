@@ -245,6 +245,39 @@ namespace Dactra.Controllers
             return Ok("Password has been successfully reset.");
         }
 
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto model)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User not authenticated.");
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+
+                return BadRequest(new { success = false, message = "Validation failed", errors });
+            }
+            try
+            {
+                await _userService.ChangePasswordAsync(userId, model);
+                return Ok("Password changed successfully.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh()
         {

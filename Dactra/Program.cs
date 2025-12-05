@@ -22,15 +22,15 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
+
 // Add services to the container.
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("https://dactrav1.vercel.app" , 
-                "http://localhost:5173"
-                )
+            policy.WithOrigins(allowedOrigins!)
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                    .AllowCredentials();
@@ -67,6 +67,9 @@ builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IHomeRepository, HomeRepository>();
 builder.Services.AddScoped<IHomeService, HomeService>();
+builder.Services.AddScoped<IComplaintRepository, ComplaintRepository>();
+builder.Services.AddScoped<ICityRepository, CityRepository>();
+builder.Services.AddScoped<ICityService, CityService>();
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
 

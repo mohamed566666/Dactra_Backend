@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251204213002_add Complaints")]
+    partial class addComplaints
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,25 +83,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "d458c365-f0b9-40df-8f54-b6097da4bd6e",
+                            Id = "cb92be77-5e9a-49a5-b26e-eeb2f261edee",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "acb7b7cb-8ce1-4ebb-8fcd-f7e3d0bea811",
+                            Id = "2d00dd82-46f6-4781-8962-430711ab5d77",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "8c6db0e1-412a-4395-a50c-4619c5a05f6d",
+                            Id = "c9bf8d67-eb0c-43d1-80bb-40679fc6616d",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "4eb8ae5a-80de-4518-8f24-546578e9ba8e",
+                            Id = "110aca00-c5e3-4630-9d24-651fc0e311e7",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -182,24 +185,6 @@ namespace Dactra.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("Dactra.Models.City", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Cities");
                 });
 
             modelBuilder.Entity("Dactra.Models.Complaint", b =>

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251204233630_add city")]
+    partial class addcity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,25 +83,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "d458c365-f0b9-40df-8f54-b6097da4bd6e",
+                            Id = "6ccd49f3-c7d5-4f23-b6fb-bfa2b635f378",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "acb7b7cb-8ce1-4ebb-8fcd-f7e3d0bea811",
+                            Id = "92b86542-8295-495a-8af0-7d8690bf26cc",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "8c6db0e1-412a-4395-a50c-4619c5a05f6d",
+                            Id = "f3fc578b-5439-4cbf-895d-431f97905ee7",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "4eb8ae5a-80de-4518-8f24-546578e9ba8e",
+                            Id = "8fc4a35c-7f8a-41d8-8a57-369360b98940",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });

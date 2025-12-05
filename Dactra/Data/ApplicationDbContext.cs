@@ -29,6 +29,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<Medicines> Medicines { get; set; }
     public DbSet<EmailVerification> EmailVerifications { get; set; }
     public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
+    public DbSet<ComplaintAttachment> ComplaintAttachments { get; set; }
+    public DbSet<Complaint> Complaints { get; set; }
+    public DbSet<City> Cities { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -68,8 +71,21 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             .HasOne(pm => pm.Medicines)
             .WithMany(m => m.PrescriptionWithMedicins)
             .HasForeignKey(pm => pm.MedicinesId);
-
         foreach (var fk in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
             fk.DeleteBehavior = DeleteBehavior.NoAction;
+
+        modelBuilder.Entity<Complaint>()
+                .HasMany(c => c.Attachments)
+                .WithOne(a => a.Complaint)
+                .HasForeignKey(a => a.ComplaintId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Complaint>()
+            .HasIndex(c => c.UserId);
+
+        modelBuilder.Entity<ComplaintAttachment>()
+            .HasIndex(a => a.ComplaintId);
+
+        
     }
 }
