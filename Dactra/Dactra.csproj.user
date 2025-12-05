@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <NameOfLastUsedPublishProfile>C:\Users\Rashad\OneDrive\Desktop\GD2\Dactra_Backend\Dactra\Properties\PublishProfiles\site43892-WebDeploy4.pubxml</NameOfLastUsedPublishProfile>
+    <NameOfLastUsedPublishProfile>D:\FSCI\Level 4\Semester 1\Graduation Project\Dactra_Backend\Dactra\Properties\PublishProfiles\site43892-WebDeploy.pubxml</NameOfLastUsedPublishProfile>
     <ActiveDebugProfile>https</ActiveDebugProfile>
     <Controller_SelectedScaffolderID>ApiControllerEmptyScaffolder</Controller_SelectedScaffolderID>
     <Controller_SelectedScaffolderCategoryPath>root/Common/Api</Controller_SelectedScaffolderCategoryPath>

@@ -1,4 +1,5 @@
-﻿using Dactra.DTOs.AuthemticationDTOs;
+﻿using Dactra.DTOs.AccountDTOs;
+using Dactra.DTOs.AuthemticationDTOs;
 using Dactra.Models;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
@@ -12,6 +13,7 @@ namespace Dactra.Services.Interfaces
         public Task<IEnumerable<ApplicationUser>> GetAllUsersAsync();
         Task UpdateAsync(ApplicationUser user);
         Task <ApplicationUser> LoginWithGoogleAsync(ClaimsPrincipal? claimsPrincipal);
+        public Task ChangePasswordAsync(string userId , ChangePasswordRequestDto model);
 
     }
 }
