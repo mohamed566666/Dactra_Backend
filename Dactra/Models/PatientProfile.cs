@@ -26,6 +26,8 @@ namespace Dactra.Models
 
         [NotMapped]
         public int Age{get => CalculateAge(DateOfBirth);}
+        public int? AddressId { get; set; }
+        public City? Address { get; set; }
         public BloodTypes BloodType { get; set; }
         public ICollection<Medicines> Current_Medications { get; set; } = new List<Medicines>();
         public SmokingStatus SmokingStatus { get; set; }

@@ -81,9 +81,14 @@ namespace Dactra.Controllers
             }
         }
 
-        [HttpPut("{Id}")]
-        public async Task<IActionResult> Update(int Id , PatientUpdateDTO updateDTO)
+        [HttpPut]
+        public async Task<IActionResult> Update(PatientUpdateDTO updateDTO)
         {
+            var Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Id == null)
+            {
+                return Unauthorized("User Not Logged In");
+            }
             try
             {
                 await _patientService.UpdateProfileAsync(Id, updateDTO);

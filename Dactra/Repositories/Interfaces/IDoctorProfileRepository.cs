@@ -2,14 +2,9 @@
 
 namespace Dactra.Repositories.Interfaces
 {
-    public interface IDoctorProfileRepository
+    public interface IDoctorProfileRepository : IGenericRepository<DoctorProfile>
     {
-        Task<DoctorProfile> GetByIdAsync(int id);
-        Task<IEnumerable<DoctorProfile>> GetAllAsync();
-        Task<DoctorProfile> GetByUserIdAsync(string userId);
-        Task<DoctorProfile> GetByUserEmail(string email);
-        Task AddAsync(DoctorProfile profile);
-        Task UpdateAsync(DoctorProfile profile);
-        Task DeleteAsync(DoctorProfile profile);
+        Task<DoctorProfile?> GetByUserIdAsync(string userId);
+        Task<DoctorProfile?> GetByUserEmail(string email);
     }
 }

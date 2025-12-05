@@ -177,9 +177,9 @@ namespace Dactra.Services.Implementation
             await _medicalTestProviderProfileRepository.UpdateAsync(profile);
         }
 
-        public async Task UpdateProfileAsync(int id, MedicalTestsProviderUpdateDTO dto)
+        public async Task UpdateProfileAsync(string id, MedicalTestsProviderUpdateDTO dto)
         {
-            var profile = await _medicalTestProviderProfileRepository.GetByIdAsync(id);
+            var profile = await _medicalTestProviderProfileRepository.GetByUserIdAsync(id);
             if (profile == null)
             {
                 throw new KeyNotFoundException("Medical Test Provider Profile Not Found");

@@ -21,7 +21,12 @@ namespace Dactra.Mappings
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName ?? string.Empty))
                 .ForMember(dest => dest.Allergies, opt => opt.MapFrom(src => src.Allergies ?? string.Empty))
                 .ForMember(dest => dest.ChronicDisease, opt => opt.MapFrom(src => src.ChronicDisease ?? string.Empty))
-                ;
+                .ForMember(dest => dest.address,
+                    opt => opt.MapFrom(src => src.Address != null
+                        ? $"{src.Address.Name}"
+                        : null))
+                .ForMember(dest => dest.AddressId,
+                    opt => opt.MapFrom(src => src.AddressId));
         }
     }
 }

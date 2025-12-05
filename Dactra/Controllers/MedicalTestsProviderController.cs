@@ -39,11 +39,13 @@ namespace Dactra.Controllers
             }
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, MedicalTestsProviderUpdateDTO medicalTestProviderDTO)
+        public async Task<IActionResult> Update(MedicalTestsProviderUpdateDTO medicalTestProviderDTO)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                  ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
             try
             {
-                await _medicalTestsProviderService.UpdateProfileAsync(id, medicalTestProviderDTO);
+                await _medicalTestsProviderService.UpdateProfileAsync(userId, medicalTestProviderDTO);
                 return Ok("Profile Updated Succesfully");
             }
             catch (Exception ex) {

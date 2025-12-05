@@ -2,10 +2,8 @@
 
 namespace Dactra.Repositories.Interfaces
 {
-    public interface ICityRepository
+    public interface ICityRepository : IGenericRepository<City>
     {
-        public Task AddCityAsync(City city);
-        public Task<IEnumerable<City>> GetAllCitiesAsync();
-        public Task<City?> GetCityByIdAsync(int id);
+        
     }
 }

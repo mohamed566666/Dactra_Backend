@@ -34,7 +34,7 @@ namespace Dactra.Controllers
             var DoctorProfile = await _doctorService.GetProfileByIdAsync(Id);
             return DoctorProfile == null ? NotFound("Doctor Profile Not Found") : Ok(DoctorProfile);
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{Id}")]
         public async Task<IActionResult> DeleteDoctor(int Id)
         {
@@ -88,6 +88,25 @@ namespace Dactra.Controllers
             {
                 var profile = await _doctorService.GetProfileByUserIdAsync(userId);
                 return Ok(profile);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+        [HttpPut]
+        public async Task<IActionResult> UpdateDoctor(DoctorUpdateDTO doctorUpdateDTO)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                  ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID not found");
+            }
+            try
+            {
+                await _doctorService.UpdateProfileAsync(userId , doctorUpdateDTO);
+                return Ok("Profile Updated Successfully");
             }
             catch (Exception ex)
             {

@@ -19,18 +19,18 @@ namespace Dactra.Services.Implementation
             {
                 Name = cityName
             };
-            await _cityRepository.AddCityAsync(city);
+            await _cityRepository.AddAsync(city);
         }
 
         public async Task<IEnumerable<City>> GetAllCitiesAsync()
         {
-            var cities = await _cityRepository.GetAllCitiesAsync();
+            var cities = await _cityRepository.GetAllAsync();
             return cities;
         }
 
         public async Task<City?> GetCityByIdAsync(int id)
         {
-            var city = await _cityRepository.GetCityByIdAsync(id);
+            var city = await _cityRepository.GetByIdAsync(id);
             return city;
         }
     }
