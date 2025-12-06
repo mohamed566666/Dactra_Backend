@@ -44,24 +44,8 @@ namespace Dactra.Services.Implementation
                 {
                     throw new InvalidOperationException("This User Already has an Profile");
                 }
-                var PatientProfile = new PatientProfile
-                {
-                    UserId = user.Id,
-                    User = user,
-                    FirstName = PatientCompleteDTO.FirstName,
-                    LastName = PatientCompleteDTO.LastName,
-                    Gender = PatientCompleteDTO.Gender,
-                    Height = PatientCompleteDTO.Height,
-                    Weight = PatientCompleteDTO.Weight,
-                    DateOfBirth = PatientCompleteDTO.DateOfBirth,
-                    BloodType = PatientCompleteDTO.BloodType,
-                    SmokingStatus = PatientCompleteDTO.SmokingStatus,
-                    Allergies = PatientCompleteDTO.Allergies,
-                    MaritalStatus = PatientCompleteDTO.MaritalStatus,
-                    ChronicDisease = PatientCompleteDTO.ChronicDisease,
-
-                };
-
+                var PatientProfile = _mapper.Map<PatientProfile>(PatientCompleteDTO);
+                PatientProfile.UserId = user.Id;
                 await _patientProfileRepository.AddAsync(PatientProfile);
                 user.IsRegistrationComplete = true;
                 await _userRepository.UpdateUserAsync(user);
@@ -81,7 +65,8 @@ namespace Dactra.Services.Implementation
             {
                 throw new KeyNotFoundException("Patient Profile Not Found");
             }
-            await _patientProfileRepository.DeleteAsync(profile);
+            _patientProfileRepository.Delete(profile);
+            await _patientProfileRepository.SaveChangesAsync();
         }
         public async Task<IEnumerable<PatientProfileResponseDTO>> GetAllProfileAsync()
         {
@@ -126,16 +111,9 @@ namespace Dactra.Services.Implementation
             {
                 throw new KeyNotFoundException("Patient Profile Not Found");
             }
-            existingProfile.FirstName = updatedProfile.FirstName;
-            existingProfile.LastName = updatedProfile.LastName;
-            existingProfile.Height = updatedProfile.Height;
-            existingProfile.Weight = updatedProfile.Weight;
-            existingProfile.BloodType = updatedProfile.BloodType;
-            existingProfile.SmokingStatus = updatedProfile.SmokingStatus;
-            existingProfile.MaritalStatus = updatedProfile.MaritalStatus;
-            existingProfile.User.PhoneNumber = updatedProfile.PhoneNamber;
-            existingProfile.AddressId = updatedProfile.AddressId;
-            await _patientProfileRepository.UpdateAsync(existingProfile);
+            _mapper.Map(updatedProfile, existingProfile);
+            _patientProfileRepository.Update(existingProfile);
+            await _patientProfileRepository.SaveChangesAsync();
         }
     }
 }
