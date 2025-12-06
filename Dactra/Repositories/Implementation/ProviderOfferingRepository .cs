@@ -4,25 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dactra.Repositories.Implementation
 {
-    public class ProviderOfferingRepository : IProviderOfferingRepository
+    public class ProviderOfferingRepository : GenericRepository<ProviderOffering>  , IProviderOfferingRepository
     {
-        private readonly ApplicationDbContext _context;
-
-        public ProviderOfferingRepository(ApplicationDbContext context)
+        public ProviderOfferingRepository(ApplicationDbContext context) : base(context)
         {
-            _context = context;
-        }
-        public  async Task AddAsync(ProviderOffering entity)
-        {
-            await _context.ProviderOfferings.AddAsync(entity);
         }
 
-        public void Delete(ProviderOffering entity)
-        {
-            _context.ProviderOfferings.Remove(entity);
-        }
-
-        public async Task<IEnumerable<ProviderOffering>> GetAllAsync()
+        public override async Task<IEnumerable<ProviderOffering>> GetAllAsync()
         {
             return await _context.ProviderOfferings
          .Include(x => x.Provider)
@@ -30,12 +18,12 @@ namespace Dactra.Repositories.Implementation
          .ToListAsync();
         }
 
-        public async Task<ProviderOffering?> GetByIdAsync(int id)
+        public override async Task<ProviderOffering?> GetByIdAsync(int id)
         {
             return await _context.ProviderOfferings
-         .Include(x => x.Provider)
-         .Include(x => x.TestService)
-         .FirstOrDefaultAsync(x => x.Id == id);
+            .Include(x => x.Provider)
+            .Include(x => x.TestService)
+            .FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<IEnumerable<ProviderOffering>> GetByProviderIdAsync(int providerId)
@@ -52,16 +40,6 @@ namespace Dactra.Repositories.Implementation
           .Where(x => x.TestServiceId == serviceId)
           .Include(x => x.Provider)
           .ToListAsync();
-        }
-
-        public async Task SaveAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
-
-        public void Update(ProviderOffering entity)
-        {
-            _context.ProviderOfferings.Update(entity);
         }
     }
 }

@@ -4,23 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dactra.Repositories.Implementation
 {
-    public class SiteReviewRepository : ISiteReviewRepository
+    public class SiteReviewRepository : GenericRepository<SiteReview> , ISiteReviewRepository
     {
-        private readonly ApplicationDbContext _context;
-        public SiteReviewRepository(ApplicationDbContext context) => _context = context;
-
-        public async Task AddAsync(SiteReview review)
+        public SiteReviewRepository(ApplicationDbContext context) : base(context)
         {
-            await _context.SiteReviews.AddAsync(review);
-            await _context.SaveChangesAsync();
+
         }
 
-        public async Task<SiteReview?> GetByIdAsync(int id)
-        {
-            return await _context.SiteReviews
-                .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.Id == id);
-        }
 
         public async Task<SiteReview?> GetByUserIdAsync(string userId)
         {
@@ -29,7 +19,7 @@ namespace Dactra.Repositories.Implementation
                 .FirstOrDefaultAsync(r => r.ReviewerUserId == userId);
         }
 
-        public async Task<IEnumerable<SiteReview>> GetAllAsync()
+        public override async Task<IEnumerable<SiteReview>> GetAllAsync()
         {
             return await _context.SiteReviews
                 .AsNoTracking()
@@ -37,13 +27,7 @@ namespace Dactra.Repositories.Implementation
                 .ToListAsync();
         }
 
-        public async Task UpdateAsync(SiteReview review)
-        {
-            _context.SiteReviews.Update(review);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(int id)
+        public async Task DeleteByIdAsync(int id)
         {
             var existing = await _context.SiteReviews.FindAsync(id);
             if (existing != null)

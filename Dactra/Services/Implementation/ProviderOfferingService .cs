@@ -24,7 +24,7 @@ namespace Dactra.Services.Implementation
             };
 
             await _repo.AddAsync(entity);
-            await _repo.SaveAsync();
+            await _repo.SaveChangesAsync();
 
             return entity;
         }
@@ -35,7 +35,7 @@ namespace Dactra.Services.Implementation
             if (entity == null) return false;
 
             _repo.Delete(entity);
-            await _repo.SaveAsync();
+            await _repo.SaveChangesAsync();
 
             return true;
         }
@@ -71,8 +71,7 @@ namespace Dactra.Services.Implementation
             entity.Duration = dto.Duration;
 
             _repo.Update(entity);
-            await _repo.SaveAsync();
-
+            await _repo.SaveChangesAsync();
             return entity;
         }
     }

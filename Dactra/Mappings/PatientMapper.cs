@@ -8,6 +8,16 @@ namespace Dactra.Mappings
     {
         public PatientMapper()
         {
+            CreateMap<PatientCompleteDTO, PatientProfile>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.User, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.Address, opt => opt.Ignore())
+                .ForAllMembers(opt =>
+                {
+                    opt.Condition((src, dest, srcMember) => srcMember != null);
+                });
+
             CreateMap<PatientProfile, PatientProfileResponseDTO>()
                 .ForMember(dest => dest.PhoneNumber,
                     opt => opt.MapFrom(src => src.User != null ? src.User.PhoneNumber : string.Empty))
@@ -27,6 +37,23 @@ namespace Dactra.Mappings
                         : null))
                 .ForMember(dest => dest.AddressId,
                     opt => opt.MapFrom(src => src.AddressId));
+
+            CreateMap<PatientUpdateDTO, PatientProfile>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.User, opt => opt.Ignore())
+                .ForMember(dest => dest.Address, opt => opt.Ignore())
+                .ForAllMembers(opt =>
+                {
+                    opt.Condition((src, dest, srcMember) =>
+                    {
+                        if (srcMember == null) return false;
+
+                        if (srcMember is string s)
+                            return !string.IsNullOrWhiteSpace(s);
+
+                        return true;
+                    });
+                });
         }
     }
 }
