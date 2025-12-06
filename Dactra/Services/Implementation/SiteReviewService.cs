@@ -47,7 +47,8 @@ namespace Dactra.Services.Implementation
             existing.Comment = dto.Comment;
             existing.UpdatedAt = DateTime.UtcNow;
 
-            await _repo.UpdateAsync(existing);
+            _repo.Update(existing);
+            await _repo.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<SiteReviewResponse>> GetAllReviewsAsync()
@@ -78,7 +79,7 @@ namespace Dactra.Services.Implementation
             if (existing.ReviewerUserId != userId)
                 throw new UnauthorizedAccessException("You are not allowed to delete this review.");
 
-            await _repo.DeleteAsync(reviewId);
+            await _repo.DeleteByIdAsync(reviewId);
         }
 
         public async Task<ReviewDistributionDto> GetReviewDistributionAsync()

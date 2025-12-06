@@ -6,11 +6,9 @@ namespace Dactra.Repositories.Implementation
 {
     public class DoctorProfileRepository : GenericRepository<DoctorProfile> , IDoctorProfileRepository
     {
-        private readonly ApplicationDbContext _context;
-
         public DoctorProfileRepository(ApplicationDbContext context) : base(context)
         {
-            _context = context;
+
         }
         public override async Task<IEnumerable<DoctorProfile>> GetAllAsync()
         {

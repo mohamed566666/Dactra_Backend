@@ -1,4 +1,5 @@
-﻿using Dactra.DTOs.ProfilesDTOs.MedicalTestsProviderDTOs;
+﻿using AutoMapper;
+using Dactra.DTOs.ProfilesDTOs.MedicalTestsProviderDTOs;
 using Dactra.Enums;
 using Dactra.Models;
 using Dactra.Repositories.Interfaces;
@@ -12,11 +13,14 @@ namespace Dactra.Services.Implementation
         private readonly IMedicalTestProviderProfileRepository _medicalTestProviderProfileRepository;
         private readonly IUserRepository _userRepository;
         private readonly ApplicationDbContext _context;
-        public MedicalTestsProviderService(IMedicalTestProviderProfileRepository medicalTestProviderProfileRepository, IUserRepository userRepository, ApplicationDbContext context)
+        private readonly IMapper _mapper;
+        public MedicalTestsProviderService(IMedicalTestProviderProfileRepository medicalTestProviderProfileRepository, IUserRepository userRepository,
+            ApplicationDbContext context , IMapper mapper)
         {
             _medicalTestProviderProfileRepository = medicalTestProviderProfileRepository;
             _userRepository = userRepository;
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task ApproveProfileAsync(int id)
@@ -27,7 +31,8 @@ namespace Dactra.Services.Implementation
                 throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
             profile.IsApproved = true;
-            await _medicalTestProviderProfileRepository.UpdateAsync(profile);
+            _medicalTestProviderProfileRepository.Update(profile);
+            await _medicalTestProviderProfileRepository.SaveChangesAsync();
         }
 
         public async Task CompleteRegistrationAsync(MedicalTestProviderDTO medicalTestProviderDTO)
@@ -49,16 +54,7 @@ namespace Dactra.Services.Implementation
                 {
                     throw new InvalidOperationException("This User Already has an Profile");
                 }
-                var medicalTestProviderProfile = new MedicalTestProviderProfile
-                {
-                    UserId = user.Id,
-                    User = user,
-                    Name = medicalTestProviderDTO.Name,
-                    LicenceNo = medicalTestProviderDTO.LicenceNo,
-                    Address = medicalTestProviderDTO.Address,
-                    About = medicalTestProviderDTO.About,
-                    Type = medicalTestProviderDTO.Role.ToLower() == "lab" ? MedicalTestProviderType.Lab : MedicalTestProviderType.Scan
-                };
+                var medicalTestProviderProfile = _mapper.Map<MedicalTestProviderProfile>(medicalTestProviderDTO);
                 await _medicalTestProviderProfileRepository.AddAsync(medicalTestProviderProfile);
                 user.IsRegistrationComplete = true;
                 await _userRepository.UpdateUserAsync(user);
@@ -78,35 +74,21 @@ namespace Dactra.Services.Implementation
             {
                 throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
-            await _medicalTestProviderProfileRepository.DeleteAsync(profile);
+            _medicalTestProviderProfileRepository.Delete(profile);
+            await _medicalTestProviderProfileRepository.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetAllProfilesAsync()
         {
             var profiles = await _medicalTestProviderProfileRepository.GetAllAsync();
-            var profileDTOs = profiles.Select(profile => new MedicalTestsProviderResponseDTO
-            {
-                Id = profile.Id,
-                Name = profile.Name,
-                LicenceNo = profile.LicenceNo,
-                Address = profile.Address,
-                About = profile.About,
-                Avg_Rating = profile.Avg_Rating,
-                Type = profile.Type
-            });
+            var profileDTOs = _mapper.Map<IEnumerable<MedicalTestsProviderResponseDTO>>(profiles);
             return profileDTOs;
         }
 
         public async Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetApprovedProfilesAsync(MedicalTestProviderType? type = null)
         {
             var profiles = await _medicalTestProviderProfileRepository.GetApprovedProfilesAsync(type);
-            var profileDTOs = profiles.Select(profile => new MedicalTestsProviderResponseDTO
-            {
-                Name = profile.Name,
-                LicenceNo = profile.LicenceNo,
-                Address = profile.Address,
-                About = profile.About
-            });
+            var profileDTOs = _mapper.Map<IEnumerable<MedicalTestsProviderResponseDTO>>(profiles);
             return profileDTOs;
         }
 
@@ -117,16 +99,7 @@ namespace Dactra.Services.Implementation
             {
                 throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
-            var profileDTO = new MedicalTestsProviderResponseDTO
-            {
-                Id = profile.Id,
-                Name = profile.Name,
-                LicenceNo = profile.LicenceNo,
-                Address = profile.Address,
-                About = profile.About,
-                Avg_Rating = profile.Avg_Rating,
-                Type = profile.Type
-            };
+            var profileDTO = _mapper.Map<MedicalTestsProviderResponseDTO>(profile);
             return profileDTO;
         }
 
@@ -137,32 +110,14 @@ namespace Dactra.Services.Implementation
             {
                 throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
-            var profileDTO = new MedicalTestsProviderResponseDTO
-            {
-                Id = profile.Id,
-                Name = profile.Name,
-                LicenceNo = profile.LicenceNo,
-                Address = profile.Address,
-                About = profile.About,
-                Avg_Rating = profile.Avg_Rating,
-                Type = profile.Type
-            };
+            var profileDTO = _mapper.Map<MedicalTestsProviderResponseDTO>(profile);
             return profileDTO;
         }
 
         public async Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetProfilesByTypeAsync(MedicalTestProviderType type)
         {
             var profiles = await _medicalTestProviderProfileRepository.GetProfilesByTypeAsync(type);
-            var profileDTOs = profiles.Select(profile => new MedicalTestsProviderResponseDTO
-            {
-                Id = profile.Id,
-                Name = profile.Name,
-                LicenceNo = profile.LicenceNo,
-                Address = profile.Address,
-                About = profile.About,
-                Avg_Rating = profile.Avg_Rating,
-                Type = profile.Type
-            });
+            var profileDTOs = _mapper.Map<IEnumerable<MedicalTestsProviderResponseDTO>>(profiles);
             return profileDTOs;
         }
 
@@ -174,7 +129,8 @@ namespace Dactra.Services.Implementation
                 throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
             profile.IsApproved = false;
-            await _medicalTestProviderProfileRepository.UpdateAsync(profile);
+            _medicalTestProviderProfileRepository.Update(profile);
+            await _medicalTestProviderProfileRepository.SaveChangesAsync();
         }
 
         public async Task UpdateProfileAsync(string id, MedicalTestsProviderUpdateDTO dto)
@@ -184,11 +140,9 @@ namespace Dactra.Services.Implementation
             {
                 throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
-            profile.Name = dto.Name;
-            profile.LicenceNo = dto.LicenceNo;
-            profile.Address = dto.Address;
-            profile.About = dto.About;
-            await _medicalTestProviderProfileRepository.UpdateAsync(profile);
+            _mapper.Map(dto, profile);
+            _medicalTestProviderProfileRepository.Update(profile);
+            await _medicalTestProviderProfileRepository.SaveChangesAsync();
         }
     }
 }

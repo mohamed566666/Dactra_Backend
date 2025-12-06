@@ -1,4 +1,5 @@
-﻿using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
+﻿using AutoMapper;
+using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
 using Dactra.Models;
 using Dactra.Repositories.Interfaces;
 using Dactra.Services.Interfaces;
@@ -10,12 +11,14 @@ namespace Dactra.Services.Implementation
         private readonly IDoctorProfileRepository _doctorProfileRepository;
         private readonly IUserRepository _userRepository;
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public DoctorService(IDoctorProfileRepository doctorProfileRepository , IUserRepository userRepository, ApplicationDbContext context)
+        public DoctorService(IDoctorProfileRepository doctorProfileRepository , IUserRepository userRepository, ApplicationDbContext context , IMapper mapper)
         {
             _doctorProfileRepository = doctorProfileRepository;
             _userRepository = userRepository;
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task CompleteRegistrationAsync(DoctorCompleteDTO doctorComplateDTO)
@@ -37,19 +40,7 @@ namespace Dactra.Services.Implementation
                 {
                     throw new InvalidOperationException("This User Already has an Profile");
                 }
-                var doctorProfile = new DoctorProfile
-                {
-                    UserId = user.Id,
-                    User = user,
-                    FirstName = doctorComplateDTO.FirstName,
-                    LastName = doctorComplateDTO.LastName,
-                    LicenceNo = doctorComplateDTO.LicenceNo,
-                    DateOfBirth = doctorComplateDTO.DateOfBirth,
-                    StartingCareerDate = doctorComplateDTO.StartingCareerDate,
-                    Address = doctorComplateDTO.Address,
-                    Gender = doctorComplateDTO.Gender,
-                    SpecializationId = doctorComplateDTO.MajorId,
-                };
+                var doctorProfile = _mapper.Map<DoctorProfile>(doctorComplateDTO);
                 await _doctorProfileRepository.AddAsync(doctorProfile);
                 user.IsRegistrationComplete = true;
                 await _userRepository.UpdateUserAsync(user);
@@ -76,20 +67,7 @@ namespace Dactra.Services.Implementation
         public async Task<IEnumerable<DoctorProfileResponseDTO>> GetAllProfileAsync()
         {
             var profiles = await _doctorProfileRepository.GetAllAsync();
-            return profiles.Select(profile => new DoctorProfileResponseDTO
-            {
-                Id = profile.Id,
-                FirstName = profile.FirstName,
-                LastName = profile.LastName,
-                About = profile.About,
-                Address = profile.Address,
-                age = DateTime.Now.Year - profile.DateOfBirth.Year,
-                AverageRating = profile.Avg_Rating,
-                YearsOfExperience = DateTime.Now.Year - profile.StartingCareerDate.Year,
-                SpecializationName = profile.specialization.Name,
-                PhoneNumber = profile.User.PhoneNumber,
-                Email = profile.User.Email
-            });
+            return _mapper.Map<IEnumerable<DoctorProfileResponseDTO>>(profiles);
         }
 
         public async Task<DoctorProfileResponseDTO> GetProfileByIdAsync(int doctorProfileId)
@@ -99,20 +77,7 @@ namespace Dactra.Services.Implementation
             {
                 return null;
             }
-            return new DoctorProfileResponseDTO
-            {
-                Id = profile.Id,
-                FirstName = profile.FirstName,
-                LastName = profile.LastName,
-                About = profile.About,
-                Address = profile.Address,
-                age = DateTime.Now.Year - profile.DateOfBirth.Year,
-                AverageRating = profile.Avg_Rating,
-                YearsOfExperience = DateTime.Now.Year - profile.StartingCareerDate.Year,
-                SpecializationName = profile.specialization.Name,
-                PhoneNumber = profile.User.PhoneNumber,
-                Email = profile.User.Email
-            };
+            return _mapper.Map<DoctorProfileResponseDTO>(profile);
         }
 
         public async Task<DoctorProfileResponseDTO> GetProfileByUserEmail(string email)
@@ -127,20 +92,7 @@ namespace Dactra.Services.Implementation
             {
                 throw new KeyNotFoundException("Doctor Profile Not Found");
             }
-            return new DoctorProfileResponseDTO
-            {
-                Id = profile.Id,
-                FirstName = profile.FirstName,
-                LastName = profile.LastName,
-                About = profile.About,
-                Address = profile.Address,
-                age = DateTime.Now.Year - profile.DateOfBirth.Year,
-                AverageRating = profile.Avg_Rating,
-                YearsOfExperience = DateTime.Now.Year - profile.StartingCareerDate.Year,
-                SpecializationName = profile.specialization.Name,
-                PhoneNumber = profile.User.PhoneNumber,
-                Email = profile.User.Email
-            };
+            return _mapper.Map<DoctorProfileResponseDTO>(profile);
         }
 
         public async Task<DoctorProfileResponseDTO> GetProfileByUserIdAsync(string userId)
@@ -150,20 +102,7 @@ namespace Dactra.Services.Implementation
             {
                 throw new KeyNotFoundException("Profile Not Found");
             }
-            return new DoctorProfileResponseDTO
-            {
-                Id = profile.Id,
-                FirstName = profile.FirstName,
-                LastName = profile.LastName,
-                About = profile.About,
-                Address = profile.Address,
-                age = DateTime.Now.Year - profile.DateOfBirth.Year,
-                AverageRating = profile.Avg_Rating,
-                YearsOfExperience = DateTime.Now.Year - profile.StartingCareerDate.Year,
-                SpecializationName = profile.specialization.Name,
-                PhoneNumber = profile.User.PhoneNumber,
-                Email = profile.User.Email
-            };
+            return _mapper.Map<DoctorProfileResponseDTO>(profile);
         }
 
         public async Task UpdateProfileAsync(string userId, DoctorUpdateDTO updatedProfile)
@@ -173,14 +112,7 @@ namespace Dactra.Services.Implementation
             {
                 throw new KeyNotFoundException("Profile Not Found");
             }
-            existingProfile.FirstName = updatedProfile.FirstName;
-            existingProfile.LastName = updatedProfile.LastName;
-            existingProfile.Name = updatedProfile.FirstName + " " + updatedProfile.LastName;
-            existingProfile.Address = updatedProfile.Address;
-            existingProfile.DateOfBirth = updatedProfile.DateOfBirth;
-            existingProfile.Gender = updatedProfile.Gender;
-            existingProfile.SpecializationId = updatedProfile.SpecializationId;
-            existingProfile.specialization = updatedProfile.specialization;
+            _mapper.Map(updatedProfile, existingProfile);
             _doctorProfileRepository.Update(existingProfile);
             await _doctorProfileRepository.SaveChangesAsync();
         }

@@ -6,15 +6,13 @@ namespace Dactra.Repositories.Implementation
 {
     public class ComplaintRepository : GenericRepository<Complaint> , IComplaintRepository
     {
-        private readonly ApplicationDbContext _dbContext;
-        public ComplaintRepository(ApplicationDbContext dbContext) : base(dbContext)
+        public ComplaintRepository(ApplicationDbContext context) : base(context)
         {
-            _dbContext = dbContext;
         }
 
         public override async Task<IEnumerable<Complaint>> GetAllAsync()
         {
-            return await _dbContext.Complaints
+            return await _context.Complaints
                 .Include(c => c.User)
                 .Include(c => c.Attachments)
                 .OrderByDescending(c => c.CreatedAt)
@@ -23,7 +21,7 @@ namespace Dactra.Repositories.Implementation
 
         public override async Task<Complaint?> GetByIdAsync(int id)
         {
-            return await _dbContext.Complaints
+            return await _context.Complaints
                 .Include(c => c.User)
                 .Include(c => c.Attachments)
                 .FirstOrDefaultAsync(c => c.Id == id);
@@ -34,28 +32,28 @@ namespace Dactra.Repositories.Implementation
             foreach (var a in attachments)
             {
                 a.ComplaintId = complaintId;
-                await _dbContext.ComplaintAttachments.AddAsync(a);
+                await _context.ComplaintAttachments.AddAsync(a);
             }
-            await _dbContext.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAttachmentAsync(int attachmentId)
         {
-            _dbContext.ComplaintAttachments.RemoveRange(
-                _dbContext.ComplaintAttachments.Where(a => a.Id == attachmentId)
+            _context.ComplaintAttachments.RemoveRange(
+                _context.ComplaintAttachments.Where(a => a.Id == attachmentId)
             );
-            await _dbContext.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
         public async Task<ComplaintAttachment?> GetAttachmentAsync(int attachmentId)
         {
-            return await _dbContext.ComplaintAttachments
+            return await _context.ComplaintAttachments
                 .FirstOrDefaultAsync(a => a.Id == attachmentId);
         }
 
         public async Task<IEnumerable<Complaint?>> GetByUserIdAsync(string userId)
         {
-            return await _dbContext.Complaints
+            return await _context.Complaints
                 .Where(c => c.UserId == userId)
                 .Include(c => c.Attachments)
                 .OrderByDescending(c => c.CreatedAt)
