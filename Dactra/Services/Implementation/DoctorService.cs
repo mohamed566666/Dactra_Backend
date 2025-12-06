@@ -116,5 +116,30 @@ namespace Dactra.Services.Implementation
             _doctorProfileRepository.Update(existingProfile);
             await _doctorProfileRepository.SaveChangesAsync();
         }
+
+        public async Task<PaginatedDoctorsResponseDTO> GetFilteredDoctorsAsync(DoctorFilterDTO filter)
+        {
+            if (filter.PageNumber < 1)
+                filter.PageNumber = 1;
+            if (filter.PageSize < 1 || filter.PageSize > 100)
+                filter.PageSize = 9;
+            var (doctors, totalCount) = await _doctorProfileRepository.GetFilteredDoctorsAsync(filter);
+            var doctorDTOs = doctors.Select(d => new DoctorsFilterResponseDTO
+            {
+                Id = d.Id,
+                Name = $"{d.FirstName} {d.LastName}",
+                Specialization = d.specialization?.Name ?? "N/A",
+                AverageRating = d.Avg_Rating
+            });
+            var totalPages = (int)Math.Ceiling(totalCount / (double)filter.PageSize);
+            return new PaginatedDoctorsResponseDTO
+            {
+                Doctors = doctorDTOs,
+                CurrentPage = filter.PageNumber,
+                PageSize = filter.PageSize,
+                TotalCount = totalCount,
+                TotalPages = totalPages
+            };
+        }
     }
 }
