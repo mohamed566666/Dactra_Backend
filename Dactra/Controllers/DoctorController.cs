@@ -113,5 +113,32 @@ namespace Dactra.Controllers
                 return NotFound(ex.Message);
             }
         }
+
+        [HttpGet("Search")]
+        public async Task<ActionResult<PaginatedDoctorsResponseDTO>> GetFilteredDoctors([FromQuery] DoctorFilterDTO filter)
+        {
+            try
+            {
+                var result = await _doctorService.GetFilteredDoctorsAsync(filter);
+
+                if (result.TotalCount == 0)
+                {
+                    return Ok(new PaginatedDoctorsResponseDTO
+                    {
+                        Doctors = new List<DoctorsFilterResponseDTO>(),
+                        CurrentPage = 1,
+                        TotalPages = 0,
+                        PageSize = filter.PageSize,
+                        TotalCount = 0
+                    });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while retrieving doctors", error = ex.Message });
+            }
+        }
     }
 }

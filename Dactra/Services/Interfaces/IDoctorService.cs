@@ -14,5 +14,6 @@ namespace Dactra.Services.Interfaces
         public Task<DoctorProfileResponseDTO> GetProfileByUserIdAsync(string userId);
         public Task DeleteDoctorProfileAsync(int doctorProfileId);
         public Task UpdateProfileAsync(string userId, DoctorUpdateDTO updatedProfile);
+        Task<PaginatedDoctorsResponseDTO> GetFilteredDoctorsAsync(DoctorFilterDTO filter);
     }
 }
