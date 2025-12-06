@@ -11,7 +11,6 @@ namespace Dactra.DTOs.ProfilesDTOs.DoctorDTOs
         public string LastName { get; set; } = string.Empty;
         public Gender Gender { get; set; }
         public int SpecializationId { get; set; }
-        public Majors specialization { get; set; }
         public DateTime DateOfBirth { get; set; }
         public DateTime StartingCareerDate { get; set; }
         public string Address { get; set; }
