@@ -65,12 +65,22 @@ namespace Dactra.Controllers
         [HttpDelete("DeleteAdmin/{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            return Ok(await _service.DeleteAdmin(id));
+            var result = await _service.DeleteAppUser(id);
+
+            if (!result)
+                return NotFound(new { message = "user not found" });
+
+            return Ok(new { message = "user Blocked/unblocked successfully" });
         }
         [HttpDelete("DeleteAppUser/{id}")]
         public async Task<IActionResult> DeleteAppUser(string id)
         {
-            return Ok(await _service.DeleteAppUser(id));
+            var result = await _service.DeleteAppUser(id);
+
+            if (!result)
+                return NotFound(new { message = "user not found" });
+
+            return Ok(new { message = "user Blocked/unblocked successfully" });
         }
         [HttpDelete("DeleteQuestion{id}")]
         public async Task<IActionResult> DeleteQuestions(string id)
@@ -80,7 +90,7 @@ namespace Dactra.Controllers
             if (!result)
                 return NotFound(new { message = "Question not found" });
 
-            return Ok(new { message = "Question deleted successfully" });
+            return Ok(new { message = "Question Blocked/unblocked successfully" });
         }
         [HttpDelete("DeletePost{id}")]
         public async Task<IActionResult> DeletePost(string id)
@@ -90,7 +100,7 @@ namespace Dactra.Controllers
             if (!result)
                 return NotFound(new { message = "Post not found" });
 
-            return Ok(new { message = "Post deleted successfully" });
+            return Ok(new { message = "Post Blocked/unblocked successfully" });
         }
 
         [HttpGet("summary")]
