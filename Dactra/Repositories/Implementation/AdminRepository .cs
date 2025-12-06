@@ -43,22 +43,33 @@ namespace Dactra.Repositories.Implementation
 
         public async Task DeletePost(Post post)
         {
-            post.isDeleted = true;
-            await _context.SaveChangesAsync();
+            
+                post.isDeleted = !post.isDeleted;
+                await _context.SaveChangesAsync();
+            
+           
+           
         }
 
         public async Task DeleteQuestions(Questions questions)
         {
-            questions.isDeleted = true;
-            _context.Questions.Update(questions);
-              await _context.SaveChangesAsync();
+            
+            
+                questions.isDeleted = !questions.isDeleted;
+                _context.Questions.Update(questions);
+                await _context.SaveChangesAsync();
+            
+            
         }
 
         public async Task DeleteUser(ApplicationUser user)
         {
-           user.isDeleted = true;
-            await _userManager.UpdateAsync(user);
-            await _context.SaveChangesAsync();
+          
+                user.isDeleted = !user.isDeleted;
+                await _userManager.UpdateAsync(user);
+                await _context.SaveChangesAsync();
+            
+         
         }
 
         public async Task<IList<ApplicationUser>> GetAdmins()

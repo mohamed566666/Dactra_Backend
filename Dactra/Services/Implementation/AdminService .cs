@@ -40,24 +40,30 @@ namespace Dactra.Services.Implementation
             return "Admin created successfully";
         }
 
-        public async Task<string> DeleteAdmin(string id)
+        public async Task<bool> DeleteAdmin(string id)
         {
             var user = await _repo.GetById(id);
-            if (user == null) return "Admin not found";
+            if (user == null) return false;
 
             var isAdmin = await _repo.IsAdmin(user);
-            if (!isAdmin) return "User is not an admin";
-
-            await _repo.DeleteUser(user);
-            return "Admin deleted";
+            if (!isAdmin) return false;
+            
+            
+                await _repo.DeleteUser(user);
+                return true;
+            
+         
         }
-        public async Task<string> DeleteAppUser(string id)
+        public async Task<bool> DeleteAppUser(string id)
         {
             var user = await _repo.GetById(id);
-            if (user == null) return "user not found";
-
-            await _repo.DeleteUser(user);
-            return "user deleted";
+            if (user == null) return false;
+            
+            
+                await _repo.DeleteUser(user);
+                return true;
+            
+        
         }
 
         public async Task<IList<ApplicationUser>> GetAdmins()

@@ -7,11 +7,11 @@ namespace Dactra.Services.Interfaces
         Task<string> SeedAdmin();
         Task<string> AddAdmin(CreateAdminDto dto);
         Task<IList<ApplicationUser>> GetAdmins();
-        Task<string> DeleteAdmin(string id);
+        Task<bool> DeleteAdmin(string id);
         Task<ApplicationUser> GetById(string id);
         Task<ApplicationUser> GetByEmail(string email);
         Task AddToAdminRole(ApplicationUser user);
-        Task<string> DeleteAppUser(string id);
+        Task<bool> DeleteAppUser(string id);
         Task<bool> DeleteQuestions(string id);
         Task<bool> DeletePosts(string id);
         Task<StatsDto> GetSummary();
