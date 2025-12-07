@@ -71,27 +71,6 @@ namespace Dactra.Services.Implementation
            return  await _repo.GetAdmins();
         }
 
-        public async Task<string> SeedAdmin()
-        {
-            var existing = await _repo.GetByEmail("rashadmostafa84@gmail.com");
-            if (existing != null)
-                return "Admin already exists";
-
-            var newAdmin = new ApplicationUser
-            {
-                Email = "rashadmostafa84@gmail.com",
-                UserName = "rashadmostafa84@gmail.com"
-            };
-
-            var result = await _repo.CreateUser(newAdmin, "12345678#Rr");
-
-            if (!result.Succeeded)
-                return "Failed: " + string.Join(" | ", result.Errors.Select(e => e.Description));
-
-            await _repo.AddToAdminRole(newAdmin);
-            return "Admin Seeded";
-        
-        }
         public async Task<ApplicationUser> GetById(string id)
         {
             var user = await _repo.GetById(id);

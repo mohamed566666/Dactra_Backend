@@ -25,14 +25,6 @@ namespace Dactra.Controllers
             _service = adminService;
             _userManager = userManager;
         }
-
-        [AllowAnonymous]
-        [HttpGet("Seed")]
-        public async Task<IActionResult> Seed()
-        {
-            return Ok(await _service.SeedAdmin());
-        }
-
        
         [HttpPost("Add")]
         public async Task<IActionResult> AddAdmin(CreateAdminDto dto)
@@ -40,14 +32,12 @@ namespace Dactra.Controllers
             return Ok(await _service.AddAdmin(dto));
         }
 
-      
         [HttpGet("All")]
         public async Task<IActionResult> GetAdmins()
         {
             return Ok(await _service.GetAdmins());
         }
 
-        
      
         [HttpGet("getById/{id}")]
         public async Task<IActionResult> GetById(string id)

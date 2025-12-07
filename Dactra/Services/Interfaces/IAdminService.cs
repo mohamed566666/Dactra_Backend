@@ -4,7 +4,6 @@ namespace Dactra.Services.Interfaces
 {
     public interface IAdminService
     {
-        Task<string> SeedAdmin();
         Task<string> AddAdmin(CreateAdminDto dto);
         Task<IList<ApplicationUser>> GetAdmins();
         Task<bool> DeleteAdmin(string id);
