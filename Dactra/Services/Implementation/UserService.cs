@@ -195,6 +195,8 @@ namespace Dactra.Services.Implementation
                 throw new KeyNotFoundException("User not found");
             if (model.NewPassword != model.ConfirmNewPassword)
                 throw new ArgumentException("New password and confirm password misMatch.");
+            if (model.OldPassword == model.NewPassword)
+                throw new ArgumentException("New password cannot be the same as the old password.");
             var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
             if (!result.Succeeded)
                 throw new InvalidOperationException("Password change failed: " + string.Join(", ", result.Errors.Select(e => e.Description)));
