@@ -1,4 +1,5 @@
-﻿using Dactra.DTOs.Admin;
+﻿using Azure;
+using Dactra.DTOs.Admin;
 using Dactra.Models;
 using Dactra.Repositories.Interfaces;
 using Dactra.Services.Interfaces;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Dactra.Controllers
 {
@@ -116,22 +118,31 @@ namespace Dactra.Controllers
             return Ok(result);
         }
         [HttpGet("allPetientInfo")]
-        public async Task<IActionResult> GetAllPatients()
+        public async Task<IActionResult> GetAllPatients(int page = 1, int pageSize = 10)
         {
-            var patients = await _service.GetAllPatientsAsync();
-            return Ok(patients);
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+
+            var result = await _service.patientinfo(page, pageSize);
+            return Ok(result);
         }
         [HttpGet("allquestionsInfo")]
-        public async Task<IActionResult> GetAllquestions()
+        public async Task<IActionResult> GetAllquestions(int page = 1, int pageSize = 10)
         {
-            var questions = await _service.GetAllquestionAsync();
-            return Ok(questions);
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+
+            var result = await _service.questioninfo(page, pageSize);
+            return Ok(result);
         }
         [HttpGet("allArticlesInfo")]
-        public async Task<IActionResult> GetAllArticels()
+        public async Task<IActionResult> GetAllArticels(int page = 1, int pageSize = 10)
         {
-            var post = await _service.GetAllpostAsync();
-            return Ok(post);
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+
+            var result = await _service.postinfo(page, pageSize);
+            return Ok(result);
         }
         //[HttpPost("makeAdmin/{id}")]
         //public async Task<IActionResult> MakeAdmin(string id)

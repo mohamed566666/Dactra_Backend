@@ -167,40 +167,63 @@ namespace Dactra.Repositories.Implementation
            return await _userManager.IsInRoleAsync(user, "Admin");
         }
 
-        public async Task<List< patientinfoDto>> patientinfo()
+        public async Task<List<patientinfoDto>> patientinfo(int page = 1, int pageSize = 10)
         {
-           var result =await _context.Patients.Select(p=> new patientinfoDto
-            {
-                fullName = p.FirstName+" "+p.LastName,
-                Email = p.User.Email,
-                isDeleted = p.User.isDeleted
-            }).ToListAsync();
+            var result = await _context.Patients
+                .OrderBy(p => p.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => new patientinfoDto
+                {
+                    id = p.UserId,
+                    fullName = p.FirstName + " " + p.LastName,
+                    Email = p.User.Email,
+                    isDeleted = p.User.isDeleted
+                })
+                .ToListAsync();
 
-            return  result;
-        }
-
-        public async Task<List<postInfoDto>> postinfo()
-        {
-           var result= await _context.Posts.Select(p=> new postInfoDto
-            {
-                title = p.title,
-                FullName = p.Doctor.FirstName+" "+p.Doctor.LastName,
-                createdAt = p.CreatedAt,
-                isDeleted = p.isDeleted
-            }).ToListAsync();
             return result;
         }
 
-        public async Task<List<questionInfoDto>> questioninfo()
+
+        public async Task<List<postInfoDto>> postinfo(int page = 1, int pageSize = 10)
         {
-            var result=await _context.Questions.Select(q=> new questionInfoDto
-            {
-                Content = q.Text,
-                Pname = q.Patient.FirstName+" "+q.Patient.LastName,
-                createdAt = q.CreatedAt,
-                isDeleted = q.isDeleted
-            }).ToListAsync();
+            var result = await _context.Posts
+                .OrderBy(p => p.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => new postInfoDto
+                {
+                    id = p.Id.ToString(),
+                    title = p.title,
+                    FullName = p.Doctor.FirstName + " " + p.Doctor.LastName,
+                    createdAt = p.CreatedAt,
+                    isDeleted = p.isDeleted
+                })
+                .ToListAsync();
+
             return result;
         }
+
+
+        public async Task<List<questionInfoDto>> questioninfo(int page = 1, int pageSize = 10)
+        {
+            var result = await _context.Questions
+                .OrderBy(q => q.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(q => new questionInfoDto
+                {
+                    id = q.Id.ToString(),
+                    Content = q.Text,
+                    Pname = q.Patient.FirstName + " " + q.Patient.LastName,
+                    createdAt = q.CreatedAt,
+                    isDeleted = q.isDeleted
+                })
+                .ToListAsync();
+
+            return result;
+        }
+
     }
 }

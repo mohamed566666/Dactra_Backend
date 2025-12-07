@@ -158,19 +158,13 @@ namespace Dactra.Services.Implementation
             return await _repo.GetWeeklyAppointmentsCount();
         }
 
-        public async Task<List<patientinfoDto>> GetAllPatientsAsync()
-        {
-           return await _repo.patientinfo();
-        }
+        public Task<List<patientinfoDto>> patientinfo(int page, int pageSize)
+          => _repo.patientinfo(page, pageSize);
 
-        public Task<List<questionInfoDto>> GetAllquestionAsync()
-        {
-            return _repo.questioninfo();
-        }
+        public Task<List<postInfoDto>> postinfo(int page, int pageSize)
+            => _repo.postinfo(page, pageSize);
 
-        public Task<List<postInfoDto>> GetAllpostAsync()
-        {
-            return _repo.postinfo();
-        }
+        public Task<List<questionInfoDto>> questioninfo(int page, int pageSize)
+            => _repo.questioninfo(page, pageSize);
     }
 }
