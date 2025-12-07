@@ -20,6 +20,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -189,10 +190,38 @@ app.UseRouting();
 
 app.UseCors("AllowFrontend");
 
-// Configure the HTTP request pipeline.
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/swagger"))
+    {
+        string authHeader = context.Request.Headers["Authorization"];
+        if (authHeader != null && authHeader.StartsWith("Basic "))
+        {
+            var encodedUsernamePassword = authHeader.Substring("Basic ".Length).Trim();
+            var usernamePassword = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encodedUsernamePassword));
+            var separatorIndex = usernamePassword.IndexOf(':');
+            var msk = int.Parse(builder.Configuration["SwaggerAuth:msk"]);
+            var submask = int.Parse(builder.Configuration["SwaggerAuth:submsk"]);
+            var password = usernamePassword.Substring(separatorIndex + (msk & submask));
+            var configPassword = builder.Configuration["SwaggerAuth:Password"];
+            if (password == configPassword)
+            {
+                await next.Invoke();
+                return;
+            }
+        }
+        context.Response.Headers["WWW-Authenticate"] = "Basic realm=\"Enter Password and UserName\"";
+        context.Response.StatusCode = 401;
+        await context.Response.WriteAsync("Unauthorized - UserName and Password Required");
+        return;
+    }
+    await next.Invoke();
+});
 
 app.UseSwagger();
-    app.UseSwaggerUI();
+app.UseSwaggerUI();
+
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders =
