@@ -135,7 +135,6 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey=new SymmetricSecurityKey(
                 System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SignInKey"])
         )
-
     };
 });
 
@@ -180,34 +179,6 @@ app.UseRouting();
 
 app.UseCors("AllowFrontend");
 
-app.Use(async (context, next) =>
-{
-    if (context.Request.Path.StartsWithSegments("/swagger"))
-    {
-        string authHeader = context.Request.Headers["Authorization"];
-        if (authHeader != null && authHeader.StartsWith("Basic "))
-        {
-            var encodedUsernamePassword = authHeader.Substring("Basic ".Length).Trim();
-            var usernamePassword = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encodedUsernamePassword));
-            var separatorIndex = usernamePassword.IndexOf(':');
-            var msk = int.Parse(builder.Configuration["SwaggerAuth:msk"]);
-            var submask = int.Parse(builder.Configuration["SwaggerAuth:submsk"]);
-            var password = usernamePassword.Substring(separatorIndex + (msk & submask));
-            var configPassword = builder.Configuration["SwaggerAuth:Password"];
-            if (password == configPassword)
-            {
-                await next.Invoke();
-                return;
-            }
-        }
-        context.Response.Headers["WWW-Authenticate"] = "Basic realm=\"Enter Password and UserName\"";
-        context.Response.StatusCode = 401;
-        await context.Response.WriteAsync("Unauthorized - UserName and Password Required");
-        return;
-    }
-    await next.Invoke();
-});
-
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -217,7 +188,6 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
         ForwardedHeaders.XForwardedFor |
         ForwardedHeaders.XForwardedProto |
         ForwardedHeaders.XForwardedHost,
-
     KnownNetworks = { },
     KnownProxies = { }
 });
