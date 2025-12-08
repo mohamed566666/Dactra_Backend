@@ -1,6 +1,7 @@
 ﻿using Dactra.DTOs.MajorDTOs;
 using Dactra.Models;
 using Dactra.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,7 @@ namespace Dactra.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Add([FromBody] MajorBasicsDTO major)
         {
             await _majorsService.CreateMajorAsync(major);
@@ -41,17 +43,20 @@ namespace Dactra.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] MajorBasicsDTO major)
         {
             await _majorsService.UpdateMajorAsync(id, major);
             return Ok("Major Updated successfully");
         }
         [HttpPatch("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateIcon(int id, string iconUrl)
         {
             await _majorsService.UpdateMajorIconAsync(id, iconUrl);
             return Ok("Major icon updated successfully");
         }
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

@@ -95,6 +95,7 @@ namespace Dactra.Controllers
             }
         }
         [HttpPut]
+        [Authorize]
         public async Task<IActionResult> UpdateDoctor(DoctorUpdateDTO doctorUpdateDTO)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)

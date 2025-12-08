@@ -77,9 +77,7 @@ builder.Services.AddScoped<ISiteReviewRepository, SiteReviewRepository>();
 builder.Services.AddScoped<ISiteReviewService, SiteReviewService>();
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
-
 //builder.Services.AddScoped<IAuthCoreService,AuthCoreService>();
-
 
 builder.Services.AddControllers();
 
@@ -91,13 +89,9 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 8;
-
-
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
-
-
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -111,7 +105,6 @@ builder.Services.AddAuthentication(options =>
      options.DefaultScheme = 
     options.DefaultSignInScheme =
     options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
-
 }).AddCookie().AddGoogle(options =>
 {
 
@@ -179,17 +172,13 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
-
-
 var app = builder.Build();
-
 
 app.UseDeveloperExceptionPage();
 
 app.UseRouting();
 
 app.UseCors("AllowFrontend");
-
 
 app.Use(async (context, next) =>
 {
@@ -233,13 +222,10 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     KnownProxies = { }
 });
 
-
 app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
-
-
 
 app.MapControllers();
 

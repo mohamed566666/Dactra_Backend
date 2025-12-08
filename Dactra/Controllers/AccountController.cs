@@ -56,7 +56,6 @@ namespace Dactra.Controllers
             
         }
         [HttpPost("Register")]
-
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
             if (model == null)
@@ -357,7 +356,9 @@ namespace Dactra.Controllers
             };
             return Ok(userDto);
         }
+
         [HttpGet("GetAllEmailsVerfications")]
+        [Authorize(Roles ="Admin")]
         public async Task<IActionResult> GetAllEmailsVerfications()
         {
             var otps = await _context.EmailVerifications.ToListAsync();
@@ -450,7 +451,7 @@ namespace Dactra.Controllers
 
             return Ok(accessToken);
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpDelete("DeleteUserByid/{id}")]
         public async Task<IActionResult> DeleteUserByID(string id)
         {

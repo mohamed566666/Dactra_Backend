@@ -38,7 +38,8 @@ namespace Dactra.Controllers
                 return NotFound(ex.Message);
             }
         }
-        [HttpPut("{id}")]
+        [HttpPut]
+        [Authorize]
         public async Task<IActionResult> Update(MedicalTestsProviderUpdateDTO medicalTestProviderDTO)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
@@ -141,6 +142,7 @@ namespace Dactra.Controllers
         }
 
         [HttpDelete("{Id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteProfile(int Id)
         {
             try
