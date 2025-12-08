@@ -1,4 +1,5 @@
 ﻿using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
+using Dactra.Helpers;
 using Dactra.Models;
 using Dactra.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -43,44 +44,119 @@ namespace Dactra.Repositories.Implementation
         }
         public async Task<(IEnumerable<DoctorProfile> doctors, int totalCount)> GetFilteredDoctorsAsync(DoctorFilterDTO filter)
         {
-            var query = _context.Doctors
+            double FuzzyThreshold = 0.70;
+            int PrefixLength = 2;
+            int MaxCandidatesHardCap = 2000;
+        filter.PageNumber = Math.Max(1, filter.PageNumber);
+            filter.PageSize = Math.Clamp(filter.PageSize, 1, 100);
+            var baseQuery = _context.Doctors
                 .Include(d => d.User)
                 .Include(d => d.specialization)
                 .AsQueryable();
-
             if (filter.SpecializationId.HasValue)
-            {
-                query = query.Where(d => d.SpecializationId == filter.SpecializationId.Value);
-            }
+                baseQuery = baseQuery.Where(d => d.SpecializationId == filter.SpecializationId.Value);
             if (filter.Gender.HasValue)
+                baseQuery = baseQuery.Where(d => d.Gender == filter.Gender.Value);
+            bool useFuzzy = !string.IsNullOrWhiteSpace(filter.SearchTerm);
+            string normalized = useFuzzy ? filter.SearchTerm.Trim().ToLower() : null;
+            if (!useFuzzy)
             {
-                query = query.Where(d => d.Gender == filter.Gender.Value);
-            }
+                var totalCount = await baseQuery.CountAsync();
 
-            if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
-            {
-                var searchTerm = filter.SearchTerm.ToLower().Trim();
-                query = query.Where(d =>
-                    (d.FirstName + " " + d.LastName).ToLower().Contains(searchTerm) ||
-                    d.FirstName.ToLower().Contains(searchTerm) ||
-                    d.LastName.ToLower().Contains(searchTerm));
-            }
+                if (filter.SortedByRating.HasValue && filter.SortedByRating.Value)
+                    baseQuery = baseQuery.OrderByDescending(d => d.Avg_Rating);
+                else
+                    baseQuery = baseQuery.OrderBy(d => d.FirstName).ThenBy(d => d.LastName);
+                var doctors = await baseQuery
+                    .Skip((filter.PageNumber - 1) * filter.PageSize)
+                    .Take(filter.PageSize)
+                    .AsNoTracking()
+                    .ToListAsync();
 
-            var totalCount = await query.CountAsync();
-
-            if (filter.SortedByRating.HasValue && filter.SortedByRating.Value)
-            {
-                query = query.OrderByDescending(d => d.Avg_Rating);
+                return (doctors, totalCount);
             }
-            else
-            {
-                query = query.OrderBy(d => d.FirstName); 
-            }
-            var doctors = await query
-                .Skip((filter.PageNumber - 1) * filter.PageSize)
-                .Take(filter.PageSize)
+            var prefix = normalized.Length >= PrefixLength ? normalized.Substring(0, PrefixLength) : normalized;
+            IQueryable<DoctorProfile> stageAQuery = baseQuery.Where(d =>
+                ((d.FirstName ?? string.Empty) + " " + (d.LastName ?? string.Empty)).ToLower().Contains(prefix) ||
+                (d.FirstName ?? string.Empty).ToLower().Contains(prefix) ||
+                (d.LastName ?? string.Empty).ToLower().Contains(prefix)
+            );
+            stageAQuery = stageAQuery.OrderByDescending(d => d.Avg_Rating);
+            var candidates = await stageAQuery
+                .AsNoTracking()
+                .Take(Math.Min(500, MaxCandidatesHardCap))
                 .ToListAsync();
-            return (doctors, totalCount);
+            if (candidates.Count == 0)
+            {
+                IQueryable<DoctorProfile> stageBQuery = baseQuery.Where(d =>
+                    ((d.FirstName ?? string.Empty) + " " + (d.LastName ?? string.Empty)).ToLower().Contains(normalized) ||
+                    (d.FirstName ?? string.Empty).ToLower().Contains(normalized) ||
+                    (d.LastName ?? string.Empty).ToLower().Contains(normalized)
+                ).OrderByDescending(d => d.Avg_Rating);
+                candidates = await stageBQuery
+                    .AsNoTracking()
+                    .Take(Math.Min(1000, MaxCandidatesHardCap))
+                    .ToListAsync();
+            }
+            if (candidates.Count == 0)
+            {
+                candidates = await baseQuery
+                    .AsNoTracking()
+                    .OrderByDescending(d => d.Avg_Rating)
+                    .Take(MaxCandidatesHardCap)
+                    .ToListAsync();
+            }   
+            var scored = candidates.Select(d =>
+            {
+                var fullName = $"{d.FirstName} {d.LastName}".Trim().ToLower();
+                double bestScore = 0;
+                bestScore = Math.Max(bestScore, FuzzyMatcher.SimilarityScore(fullName, normalized));
+                bestScore = Math.Max(bestScore, FuzzyMatcher.SimilarityScore((d.FirstName ?? string.Empty).ToLower(), normalized));
+                bestScore = Math.Max(bestScore, FuzzyMatcher.SimilarityScore((d.LastName ?? string.Empty).ToLower(), normalized));
+                string matchLevel =
+                    bestScore >= 0.80 ? "HIGH" :
+                    bestScore >= 0.55 ? "MEDIUM" :
+                    "LOW";
+                return new { Doctor = d, Score = bestScore, Level = matchLevel };
+            }).Where(x => x.Level != "LOW")
+            .OrderByDescending(x => x.Level == "HIGH")
+            .ThenByDescending(x => x.Score)
+            .ThenByDescending(x => x.Doctor.Avg_Rating)
+            .ThenBy(x => x.Doctor.FirstName)
+            .ThenBy(x => x.Doctor.LastName)
+            .ToList();
+            if (scored.Count == 0)
+            {
+                const double relaxedThreshold = 0.45;
+                scored = candidates.Select(d =>
+                {
+                    var fullName = $"{d.FirstName} {d.LastName}".Trim().ToLower();
+                    double bestScore = 0;
+                    bestScore = Math.Max(bestScore, FuzzyMatcher.SimilarityScore(fullName, normalized));
+                    bestScore = Math.Max(bestScore, FuzzyMatcher.SimilarityScore((d.FirstName ?? string.Empty).ToLower(), normalized));
+                    bestScore = Math.Max(bestScore, FuzzyMatcher.SimilarityScore((d.LastName ?? string.Empty).ToLower(), normalized));
+                    string matchLevel =
+                        bestScore >= 0.80 ? "HIGH" :
+                        bestScore >= 0.60 ? "MEDIUM" :
+                        "LOW";
+                    return new { Doctor = d, Score = bestScore, Level = matchLevel };
+                })
+                .Where(x => x.Score >= relaxedThreshold)
+                .OrderByDescending(x => x.Score)
+                .ThenByDescending(x => x.Doctor.Avg_Rating)
+                .ThenBy(x => x.Doctor.FirstName)
+                .ThenBy(x => x.Doctor.LastName)
+                .ToList();
+            }
+            var totalFuzzyMatches = scored.Count;
+            var pageIndex = filter.PageNumber - 1;
+            var pageSize = filter.PageSize;
+            var paged = scored
+                .Skip(pageIndex * pageSize)
+                .Take(pageSize)
+                .Select(x => x.Doctor)
+                .ToList();
+            return (paged, totalFuzzyMatches);
         }
     }
 }
