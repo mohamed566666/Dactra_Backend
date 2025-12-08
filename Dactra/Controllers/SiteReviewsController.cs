@@ -45,7 +45,7 @@ namespace Dactra.Controllers
                 return StatusCode(500, new { success = false, message = "Internal server error" });
             }
         }
-        [HttpGet("{id:int}")]
+        [HttpGet("{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)
         {

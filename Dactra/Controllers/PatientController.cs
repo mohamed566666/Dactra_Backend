@@ -33,6 +33,7 @@ namespace Dactra.Controllers
             return PatientProfile == null ? NotFound("Patient Profile Not Found") : Ok(PatientProfile);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{Id}")]
         public async Task<IActionResult> DeletePatient(int Id)
         {
@@ -82,6 +83,7 @@ namespace Dactra.Controllers
         }
 
         [HttpPut]
+        [Authorize]
         public async Task<IActionResult> Update(PatientUpdateDTO updateDTO)
         {
             var Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
