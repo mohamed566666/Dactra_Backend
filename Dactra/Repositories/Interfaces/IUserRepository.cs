@@ -1,7 +1,4 @@
-﻿using Dactra.Models;
-using Microsoft.AspNetCore.Identity;
-
-namespace Dactra.Repositories.Interfaces
+﻿namespace Dactra.Repositories.Interfaces
 {
     public interface IUserRepository
     {

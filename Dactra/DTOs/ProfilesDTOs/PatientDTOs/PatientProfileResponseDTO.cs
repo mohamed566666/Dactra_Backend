@@ -1,9 +1,4 @@
-﻿using Dactra.Enums;
-using Dactra.Models;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Dactra.DTOs.ProfilesDTOs.PatientDTOs
+﻿namespace Dactra.DTOs.ProfilesDTOs.PatientDTOs
 {
     public class PatientProfileResponseDTO
     {

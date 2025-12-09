@@ -1,9 +1,4 @@
-﻿using Dactra.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-
-namespace Dactra.Controllers
+﻿namespace Dactra.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

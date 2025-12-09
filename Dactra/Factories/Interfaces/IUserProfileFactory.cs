@@ -1,6 +1,4 @@
-﻿using Dactra.Models;
-
-namespace Dactra.Factories.Interfaces
+﻿namespace Dactra.Factories.Interfaces
 {
     public interface IUserProfileFactory
     {

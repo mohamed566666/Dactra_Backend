@@ -1,6 +1,4 @@
-﻿using Dactra.DTOs;
-
-namespace Dactra.Services.Interfaces
+﻿namespace Dactra.Services.Interfaces
 {
     public interface IHomeService
     {

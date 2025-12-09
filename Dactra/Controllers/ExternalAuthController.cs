@@ -1,14 +1,4 @@
-﻿using Dactra.Models;
-using Google.Apis.Auth;
-using Dactra.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Dactra.Repositories.Interfaces;
-using Dactra.Services.Interfaces;
-
-
-namespace Dactra.Controllers
+﻿namespace Dactra.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

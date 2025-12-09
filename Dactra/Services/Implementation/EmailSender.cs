@@ -1,12 +1,4 @@
-﻿using Dactra.Models;
-using Dactra.Services.Interfaces;
-using MailKit.Security;
-using Microsoft.Extensions.Options;
-using MimeKit;
-using MimeKit.Text;
-using MailKit.Net.Smtp;
-
-namespace Dactra.Services.Implementation
+﻿namespace Dactra.Services.Implementation
 {
     public class EmailSender : IEmailSender
     {

@@ -1,8 +1,4 @@
-﻿using Dactra.DTOs.ProfilesDTOs.MedicalTestsProviderDTOs;
-using Dactra.Enums;
-using Dactra.Models;
-
-namespace Dactra.Services.Interfaces
+﻿namespace Dactra.Services.Interfaces
 {
     public interface IMedicalTestsProviderService
     {

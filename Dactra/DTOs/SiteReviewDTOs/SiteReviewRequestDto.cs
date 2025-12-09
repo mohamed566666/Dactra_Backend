@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Dactra.DTOs.SiteReviewDTOs
+﻿namespace Dactra.DTOs.SiteReviewDTOs
 {
     public class SiteReviewRequestDto
     {

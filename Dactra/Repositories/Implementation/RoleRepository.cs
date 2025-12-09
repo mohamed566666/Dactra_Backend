@@ -1,9 +1,4 @@
-﻿using Dactra.Models;
-using Dactra.Repositories.Interfaces;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-
-namespace Dactra.Repositories.Implementation
+﻿namespace Dactra.Repositories.Implementation
 {
     public class RoleRepository : IRoleRepository
     {

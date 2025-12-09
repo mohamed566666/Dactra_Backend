@@ -1,10 +1,4 @@
-﻿using AutoMapper;
-using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
-using Dactra.Models;
-using Dactra.Repositories.Interfaces;
-using Dactra.Services.Interfaces;
-
-namespace Dactra.Services.Implementation
+﻿namespace Dactra.Services.Implementation
 {
     public class DoctorService : IDoctorService
     {
@@ -124,22 +118,7 @@ namespace Dactra.Services.Implementation
             if (filter.PageSize < 1 || filter.PageSize > 100)
                 filter.PageSize = 9;
             var (doctors, totalCount) = await _doctorProfileRepository.GetFilteredDoctorsAsync(filter);
-            var doctorDTOs = doctors.Select(d => new DoctorsFilterResponseDTO
-            {
-                Id = d.Id,
-                Name = $"{d.FirstName} {d.LastName}",
-                Specialization = d.specialization?.Name ?? "N/A",
-                AverageRating = d.Avg_Rating
-            });
-            var totalPages = (int)Math.Ceiling(totalCount / (double)filter.PageSize);
-            return new PaginatedDoctorsResponseDTO
-            {
-                Doctors = doctorDTOs,
-                CurrentPage = filter.PageNumber,
-                PageSize = filter.PageSize,
-                TotalCount = totalCount,
-                TotalPages = totalPages
-            };
+            return _mapper.Map<PaginatedDoctorsResponseDTO>((doctors, totalCount, filter));
         }
     }
 }

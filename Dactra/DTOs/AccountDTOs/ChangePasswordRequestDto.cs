@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Dactra.DTOs.AccountDTOs
+﻿namespace Dactra.DTOs.AccountDTOs
 {
     public class ChangePasswordRequestDto
     {

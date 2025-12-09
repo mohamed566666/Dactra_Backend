@@ -1,6 +1,4 @@
-﻿using Dactra.Models;
-
-namespace Dactra.DTOs
+﻿namespace Dactra.DTOs
 {
     public class TopRatedDoctorDTO
     {

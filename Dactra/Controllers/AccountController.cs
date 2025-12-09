@@ -1,28 +1,4 @@
-﻿using Dactra.DTOs;
-using Dactra.DTOs.AccountDTOs;
-using Dactra.DTOs.AuthemticationDTOs;
-using Dactra.Models;
-using Dactra.Repositories;
-using Dactra.Repositories.Implementation;
-using Dactra.Repositories.Interfaces;
-using Dactra.Services.Implementation;
-using Dactra.Services.Interfaces;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using static Google.Apis.Auth.OAuth2.Web.AuthorizationCodeWebApp;
-using static System.Net.WebRequestMethods;
-
-namespace Dactra.Controllers
+﻿namespace Dactra.Controllers
 {
     [Route("api/account")]
     [ApiController]

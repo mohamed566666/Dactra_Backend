@@ -1,10 +1,4 @@
-﻿using Dactra.DTOs.AccountDTOs;
-using Dactra.DTOs.AuthemticationDTOs;
-using Dactra.Models;
-using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
-
-namespace Dactra.Services.Interfaces
+﻿namespace Dactra.Services.Interfaces
 {
     public interface IUserService
     {

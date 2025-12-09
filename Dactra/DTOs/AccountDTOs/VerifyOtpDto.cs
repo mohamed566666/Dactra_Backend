@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Dactra.DTOs
+﻿namespace Dactra.DTOs
 {
     public class VerifyOtpDto
     {

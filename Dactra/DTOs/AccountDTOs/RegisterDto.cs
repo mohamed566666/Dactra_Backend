@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Dactra.DTOs.AuthemticationDTOs
+﻿namespace Dactra.DTOs.AuthemticationDTOs
 {
     public class RegisterDto
     {

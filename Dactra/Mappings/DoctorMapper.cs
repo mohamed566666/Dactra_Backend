@@ -1,7 +1,4 @@
-﻿using AutoMapper;
-using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
-using Dactra.Models;
-namespace Dactra.Mappings
+﻿namespace Dactra.Mappings
 {
     public class DoctorMapper : Profile
     {
@@ -45,6 +42,19 @@ namespace Dactra.Mappings
                 {
                     opt.Condition((src, dest, srcMember) => srcMember != null);
                 });
+
+            CreateMap<DoctorProfile, DoctorsFilterResponseDTO>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"))
+                .ForMember(dest => dest.Specialization, opt => opt.MapFrom(src => src.specialization != null ? src.specialization.Name : "N/A"))
+                .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Avg_Rating));
+
+            CreateMap<(IEnumerable<DoctorProfile> doctors, int totalCount, DoctorFilterDTO filter), PaginatedDoctorsResponseDTO>()
+                .ForMember(dest => dest.Doctors, opt => opt.MapFrom(src => src.doctors))
+                .ForMember(dest => dest.CurrentPage, opt => opt.MapFrom(src => src.filter.PageNumber))
+                .ForMember(dest => dest.PageSize, opt => opt.MapFrom(src => src.filter.PageSize))
+                .ForMember(dest => dest.TotalCount, opt => opt.MapFrom(src => src.totalCount))
+                .ForMember(dest => dest.TotalPages, opt => opt.MapFrom(src => (int)Math.Ceiling(src.totalCount / (double)src.filter.PageSize)));
         }
         private static int CalculateYears(DateTime date)
         {

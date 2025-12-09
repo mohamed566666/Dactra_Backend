@@ -1,8 +1,4 @@
-﻿using Dactra.DTOs.ProfilesDTOs.PatientDTOs;
-using Dactra.Models;
-using AutoMapper;
-
-namespace Dactra.Mappings
+﻿namespace Dactra.Mappings
 {
     public class PatientMapper : Profile
     {

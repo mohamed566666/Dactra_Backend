@@ -1,15 +1,4 @@
-﻿using AutoMapper;
-using Dactra.DTOs.ProfilesDTOs.PatientDTOs;
-using Dactra.Models;
-using Dactra.Repositories.Interfaces;
-using Dactra.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-
-namespace Dactra.Controllers
+﻿namespace Dactra.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

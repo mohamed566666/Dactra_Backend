@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Dactra.Models
+﻿namespace Dactra.Models
 {
     public class City
     {

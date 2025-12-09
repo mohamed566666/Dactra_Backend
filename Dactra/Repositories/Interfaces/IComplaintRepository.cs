@@ -1,6 +1,4 @@
-﻿using Dactra.Models;
-
-namespace Dactra.Repositories.Interfaces
+﻿namespace Dactra.Repositories.Interfaces
 {
     public interface IComplaintRepository : IGenericRepository<Complaint>
     {

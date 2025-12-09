@@ -1,8 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Dactra.Models
+﻿namespace Dactra.Models
 {
     public class Answer
     {

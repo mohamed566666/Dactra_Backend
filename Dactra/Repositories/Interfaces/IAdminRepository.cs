@@ -1,8 +1,4 @@
-﻿using Dactra.DTOs.Admin;
-using Dactra.Models;
-using Microsoft.AspNetCore.Identity;
-
-namespace Dactra.Repositories.Interfaces
+﻿namespace Dactra.Repositories.Interfaces
 {
     public interface IAdminRepository
     {

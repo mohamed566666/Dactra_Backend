@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-
-namespace Dactra.Models
+﻿namespace Dactra.Models
 {
     public class ApplicationRole:IdentityRole
     {

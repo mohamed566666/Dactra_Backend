@@ -1,12 +1,4 @@
-﻿using AutoMapper;
-using Dactra.DTOs.ProfilesDTOs.MedicalTestsProviderDTOs;
-using Dactra.Enums;
-using Dactra.Models;
-using Dactra.Repositories.Interfaces;
-using Dactra.Services.Interfaces;
-using Microsoft.IdentityModel.Tokens;
-
-namespace Dactra.Services.Implementation
+﻿namespace Dactra.Services.Implementation
 {
     public class MedicalTestsProviderService : IMedicalTestsProviderService
     {

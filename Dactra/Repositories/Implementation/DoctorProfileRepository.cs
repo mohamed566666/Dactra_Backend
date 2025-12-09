@@ -1,10 +1,4 @@
-﻿using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
-using Dactra.Helpers;
-using Dactra.Models;
-using Dactra.Repositories.Interfaces;
-using Microsoft.EntityFrameworkCore;
-
-namespace Dactra.Repositories.Implementation
+﻿namespace Dactra.Repositories.Implementation
 {
     public class DoctorProfileRepository : GenericRepository<DoctorProfile> , IDoctorProfileRepository
     {

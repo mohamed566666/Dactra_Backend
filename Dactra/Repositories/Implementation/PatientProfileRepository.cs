@@ -1,8 +1,4 @@
-﻿using Dactra.Models;
-using Dactra.Repositories.Interfaces;
-using Microsoft.EntityFrameworkCore;
-
-namespace Dactra.Repositories.Implementation
+﻿namespace Dactra.Repositories.Implementation
 {
     public class PatientProfileRepository : GenericRepository<PatientProfile> , IPatientProfileRepository
     {

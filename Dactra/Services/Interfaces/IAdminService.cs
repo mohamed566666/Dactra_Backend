@@ -1,6 +1,4 @@
-﻿using Dactra.Models;
-using Dactra.DTOs.Admin;
-namespace Dactra.Services.Interfaces
+﻿namespace Dactra.Services.Interfaces
 {
     public interface IAdminService
     {

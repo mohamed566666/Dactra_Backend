@@ -1,15 +1,4 @@
-﻿using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
-using Dactra.Repositories.Interfaces;
-using Dactra.Services.Implementation;
-using Dactra.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Client;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-
-namespace Dactra.Controllers
+﻿namespace Dactra.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
