@@ -1,11 +1,4 @@
-﻿using Dactra.DTOs.Admin;
-using Dactra.Models;
-using Dactra.Repositories.Interfaces;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using System.Globalization;
-
-namespace Dactra.Repositories.Implementation
+﻿namespace Dactra.Repositories.Implementation
 {
     public class AdminRepository : IAdminRepository
     {

@@ -1,21 +1,4 @@
-﻿using Dactra.Controllers;
-using Dactra.DTOs.AccountDTOs;
-using Dactra.DTOs.AuthemticationDTOs;
-using Dactra.Factories.Interfaces;
-using Dactra.Models;
-using Dactra.Repositories.Implementation;
-using Dactra.Repositories.Interfaces;
-using Dactra.Services.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System.Security.Claims;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-
-
-namespace Dactra.Services.Implementation
+﻿namespace Dactra.Services.Implementation
 {
     public class UserService : IUserService
     {

@@ -1,6 +1,4 @@
-﻿using Dactra.Enums;
-
-namespace Dactra.DTOs.ProfilesDTOs.MedicalTestsProviderDTOs
+﻿namespace Dactra.DTOs.ProfilesDTOs.MedicalTestsProviderDTOs
 {
     public class MedicalTestsProviderResponseDTO
     {

@@ -1,15 +1,4 @@
-﻿using Azure;
-using Dactra.DTOs.Admin;
-using Dactra.Models;
-using Dactra.Repositories.Interfaces;
-using Dactra.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-
-namespace Dactra.Controllers
+﻿namespace Dactra.Controllers
 {
     [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]

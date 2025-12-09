@@ -1,8 +1,4 @@
-﻿using AutoMapper;
-using Dactra.DTOs.ProfilesDTOs.MedicalTestsProviderDTOs;
-using Dactra.Models;
-
-namespace Dactra.Mappings
+﻿namespace Dactra.Mappings
 {
     public class MedicalTestsProviderMapper : Profile
     {

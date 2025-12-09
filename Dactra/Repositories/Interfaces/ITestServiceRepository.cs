@@ -1,7 +1,4 @@
-﻿using Dactra.DTOs;
-using Dactra.Models;
-
-namespace Dactra.Repositories.Interfaces
+﻿namespace Dactra.Repositories.Interfaces
 {
     public interface ITestServiceRepository
     {

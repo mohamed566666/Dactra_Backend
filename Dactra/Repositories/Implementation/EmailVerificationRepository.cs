@@ -1,9 +1,4 @@
-﻿using Dactra.Models;
-using Dactra.Repositories.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using SQLitePCL;
-
-namespace Dactra.Repositories.Implementation
+﻿namespace Dactra.Repositories.Implementation
 {
     public class EmailVerificationRepository : IEmailVerificationRepository
     {

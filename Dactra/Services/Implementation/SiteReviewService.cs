@@ -1,17 +1,14 @@
-﻿using Dactra.DTOs.SiteReviewDTOs;
-using Dactra.Models;
-using Dactra.Repositories.Interfaces;
-using Dactra.Services.Interfaces;
-
-namespace Dactra.Services.Implementation
+﻿namespace Dactra.Services.Implementation
 {
     public class SiteReviewService : ISiteReviewService
     {
         private readonly ISiteReviewRepository _repo;
+        private readonly IMapper _mapper;
 
-        public SiteReviewService(ISiteReviewRepository repo)
+        public SiteReviewService(ISiteReviewRepository repo, IMapper mapper)
         {
             _repo = repo;
+            _mapper = mapper;
         }
 
         public async Task<SiteReview> CreateReviewAsync(string userId, SiteReviewRequestDto dto)
@@ -21,15 +18,9 @@ namespace Dactra.Services.Implementation
             var existing = await _repo.GetByUserIdAsync(userId);
             if (existing != null)
                 throw new InvalidOperationException("User already submitted a review. Use update instead.");
-
-            var review = new SiteReview
-            {
-                ReviewerUserId = userId,
-                Score = dto.Score,
-                Comment = dto.Comment,
-                CreatedAt = DateTime.UtcNow
-            };
-
+            var review = _mapper.Map<SiteReview>(dto);
+            review.ReviewerUserId = userId;
+            review.CreatedAt = DateTime.UtcNow;
             await _repo.AddAsync(review);
             return review;
         }
@@ -42,11 +33,8 @@ namespace Dactra.Services.Implementation
 
             if (existing.ReviewerUserId != userId)
                 throw new UnauthorizedAccessException("You are not allowed to edit this review.");
-
-            existing.Score = dto.Score;
-            existing.Comment = dto.Comment;
+            _mapper.Map(dto, existing);
             existing.UpdatedAt = DateTime.UtcNow;
-
             _repo.Update(existing);
             await _repo.SaveChangesAsync();
         }
@@ -54,13 +42,7 @@ namespace Dactra.Services.Implementation
         public async Task<IEnumerable<SiteReviewResponse>> GetAllReviewsAsync()
         {
             var reviews = await _repo.GetAllAsync();
-            return reviews.Select(r => new SiteReviewResponse
-            {
-                Id = r.Id,
-                Score = r.Score,
-                Comment = r.Comment,
-                CreatedAt = r.CreatedAt,
-            });
+            return _mapper.Map<IEnumerable<SiteReviewResponse>>(reviews);
         }
 
         public async Task<(int Count, decimal Avg)> GetStatsAsync()
@@ -75,10 +57,8 @@ namespace Dactra.Services.Implementation
             var existing = await _repo.GetByIdAsync(reviewId);
             if (existing == null)
                 throw new KeyNotFoundException($"Review with id {reviewId} not found.");
-
             if (existing.ReviewerUserId != userId)
                 throw new UnauthorizedAccessException("You are not allowed to delete this review.");
-
             await _repo.DeleteByIdAsync(reviewId);
         }
 

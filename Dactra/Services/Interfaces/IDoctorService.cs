@@ -1,9 +1,4 @@
-﻿using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
-using Dactra.DTOs.ProfilesDTOs.PatientDTOs;
-using Dactra.Models;
-using Dactra.Repositories.Interfaces;
-
-namespace Dactra.Services.Interfaces
+﻿namespace Dactra.Services.Interfaces
 {
     public interface IDoctorService
     {

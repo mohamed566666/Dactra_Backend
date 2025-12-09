@@ -1,8 +1,4 @@
-﻿using Dactra.Enums;
-using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations;
-
-namespace Dactra.Models
+﻿namespace Dactra.Models
 {
     public class ApplicationUser : IdentityUser
     {

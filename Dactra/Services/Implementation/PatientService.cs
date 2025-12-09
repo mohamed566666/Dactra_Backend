@@ -1,14 +1,4 @@
-﻿using AutoMapper;
-using Dactra.DTOs.ProfilesDTOs.PatientDTOs;
-using Dactra.Mappings;
-using Dactra.Models;
-using Dactra.Repositories.Implementation;
-using Dactra.Repositories.Interfaces;
-using Dactra.Services.Interfaces;
-using System.Data;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
-namespace Dactra.Services.Implementation
+﻿namespace Dactra.Services.Implementation
 {
     public class PatientService : IPatientService
     {

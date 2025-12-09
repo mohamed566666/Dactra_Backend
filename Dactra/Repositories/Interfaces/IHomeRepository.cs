@@ -1,6 +1,4 @@
-﻿using Dactra.DTOs;
-
-namespace Dactra.Repositories.Interfaces
+﻿namespace Dactra.Repositories.Interfaces
 {
     public interface IHomeRepository
     {

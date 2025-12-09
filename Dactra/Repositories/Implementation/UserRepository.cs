@@ -1,10 +1,4 @@
-﻿using Dactra.Models;
-using Dactra.Repositories.Interfaces;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using MimeKit.Encodings;
-
-namespace Dactra.Repositories.Implementation
+﻿namespace Dactra.Repositories.Implementation
 {
     public class UserRepository : IUserRepository
     {
@@ -17,13 +11,13 @@ namespace Dactra.Repositories.Implementation
 
         public async Task<IdentityResult> CreateUserAsync(ApplicationUser user, string password)
             => await _userManager.CreateAsync(user, password);
-        public async Task<ApplicationUser> GetUserByEmailAsync(string email)
+        public async Task<ApplicationUser?> GetUserByEmailAsync(string email)
         {
             return await _userManager.FindByEmailAsync(email)!;
         }
         public async Task<IdentityResult> UpdateUserAsync(ApplicationUser user)
             => await _userManager.UpdateAsync(user);
-        public async Task<ApplicationUser> GetUserByIdAsync(string id)
+        public async Task<ApplicationUser?> GetUserByIdAsync(string id)
         {
             return await _userManager.FindByIdAsync(id);
         }

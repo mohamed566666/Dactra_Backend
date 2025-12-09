@@ -1,7 +1,4 @@
-﻿using Dactra.DTOs;
-using Dactra.Models;
-
-namespace Dactra.Services.Interfaces
+﻿namespace Dactra.Services.Interfaces
 {
     public interface IProviderOfferingService
     {

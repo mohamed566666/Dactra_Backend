@@ -1,10 +1,4 @@
-﻿using Dactra.Models;
-using Dactra.Repositories.Interfaces;
-using Dactra.Services.Interfaces;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-
-namespace Dactra.Services.Implementation
+﻿namespace Dactra.Services.Implementation
 {
     public class CityService : ICityService
     {

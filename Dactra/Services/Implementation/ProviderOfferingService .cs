@@ -1,9 +1,4 @@
-﻿using Dactra.DTOs;
-using Dactra.Models;
-using Dactra.Repositories.Interfaces;
-using Dactra.Services.Interfaces;
-
-namespace Dactra.Services.Implementation
+﻿namespace Dactra.Services.Implementation
 {
     public class ProviderOfferingService : IProviderOfferingService
     {

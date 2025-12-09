@@ -1,7 +1,4 @@
-﻿using Dactra.Models;
-using System.Security.Claims;
-
-namespace Dactra.Services.Interfaces
+﻿namespace Dactra.Services.Interfaces
 {
     public interface ITokenService
     {

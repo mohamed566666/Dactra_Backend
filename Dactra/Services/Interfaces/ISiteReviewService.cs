@@ -1,7 +1,4 @@
-﻿using Dactra.DTOs.SiteReviewDTOs;
-using Dactra.Models;
-
-namespace Dactra.Services.Interfaces
+﻿namespace Dactra.Services.Interfaces
 {
     public interface ISiteReviewService
     {

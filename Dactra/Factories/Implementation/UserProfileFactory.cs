@@ -1,7 +1,4 @@
-﻿using Dactra.Factories.Interfaces;
-using Dactra.Models;
-
-namespace Dactra.Factories.Implementation
+﻿namespace Dactra.Factories.Implementation
 {
     public class UserProfileFactory : IUserProfileFactory
     {

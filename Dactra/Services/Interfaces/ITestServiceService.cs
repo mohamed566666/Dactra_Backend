@@ -1,8 +1,4 @@
-﻿using Dactra.DTOs;
-using Dactra.Models;
-using Microsoft.AspNetCore.Identity;
-
-namespace Dactra.Services.Interfaces
+﻿namespace Dactra.Services.Interfaces
 {
     public interface ITestServiceService
     {

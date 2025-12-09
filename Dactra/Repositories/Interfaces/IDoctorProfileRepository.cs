@@ -1,7 +1,4 @@
-﻿using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
-using Dactra.Models;
-
-namespace Dactra.Repositories.Interfaces
+﻿namespace Dactra.Repositories.Interfaces
 {
     public interface IDoctorProfileRepository : IGenericRepository<DoctorProfile>
     {

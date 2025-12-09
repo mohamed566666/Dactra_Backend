@@ -1,11 +1,4 @@
-﻿using Dactra.DTOs.SiteReviewDTOs;
-using Dactra.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-
-namespace Dactra.Controllers
+﻿namespace Dactra.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

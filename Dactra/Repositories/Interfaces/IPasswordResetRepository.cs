@@ -1,6 +1,4 @@
-﻿using Dactra.DTOs.AccountDTOs;
-
-namespace Dactra.Repositories.Interfaces
+﻿namespace Dactra.Repositories.Interfaces
 {
     public interface IPasswordResetRepository
     {

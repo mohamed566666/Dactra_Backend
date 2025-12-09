@@ -1,7 +1,4 @@
-﻿using Dactra.Enums;
-using System.Globalization;
-
-namespace Dactra.DTOs.ProfilesDTOs.DoctorDTOs
+﻿namespace Dactra.DTOs.ProfilesDTOs.DoctorDTOs
 {
     public class DoctorProfileResponseDTO
     {
