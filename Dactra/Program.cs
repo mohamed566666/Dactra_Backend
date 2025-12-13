@@ -56,6 +56,8 @@ builder.Services.AddScoped<IServiceProviderRepository, ServiceProviderRepository
 builder.Services.AddScoped<IServiceProviderService, ServiceProviderService>();
 builder.Services.AddScoped<IDoctorQualificationRepository, DoctorQualificationRepository>();
 builder.Services.AddScoped<IDoctorQualificationService, DoctorQualificationService>();
+builder.Services.AddScoped<IRatingRepository , RatingRepository>();
+builder.Services.AddScoped<IRatingService , RatingService>();
 
 //builder.Services.AddScoped<IAuthCoreService,AuthCoreService>();
 

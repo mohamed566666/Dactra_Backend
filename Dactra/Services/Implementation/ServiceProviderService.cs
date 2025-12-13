@@ -11,7 +11,7 @@
 
         public async Task<bool> ApproveAsync(ServiceProviderType type, int id)
         {
-            var provider = await _repository.GetByIdAsync(type, id);
+            var provider = await _repository.GetByIdAsync(id);
             if (provider == null)
                 return false;
             provider.IsApproved = true;
@@ -21,13 +21,18 @@
 
         public async Task<bool> DisApproveAsync(ServiceProviderType type, int id)
         {
-            var provider = await _repository.GetByIdAsync(type, id);
+            var provider = await _repository.GetByIdAsync(id);
             if (provider == null)
                 return false;
             provider.IsApproved = false;
             await _repository.SaveChangesAsync();
-
             return true;
         }
+
+        public async Task<ServiceProviderProfile?> GetByUserIdAsync(string userId)
+        {
+            return await _repository.GetByUserIdAsync(userId);
+        }
+
     }
 }

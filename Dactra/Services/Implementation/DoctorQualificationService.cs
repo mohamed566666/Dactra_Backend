@@ -65,7 +65,6 @@ namespace Dactra.Services.Implementation
                 Type = dto.Type,
                 Description = dto.Description
             };
-
             await _repository.AddAsync(qualification);
             await _repository.SaveChangesAsync();
         }
@@ -91,6 +90,18 @@ namespace Dactra.Services.Implementation
             _repository.Delete(qualification);
             await _repository.SaveChangesAsync();
             return true;
+        }
+        public async Task<IEnumerable<DoctorQualificationResponseDTO>> GetByUserIdAsync(string userId)
+        {
+            var doctor = await _repository.GetByUserIdAsync(userId)
+                ?? throw new Exception("Doctor profile not found");
+            var list = await _repository.GetByDoctorIdAsync(doctor.Id);
+            return list.Select(q => new DoctorQualificationResponseDTO
+            {
+                Id = q.Id,
+                Type = q.Type,
+                Description = q.Description
+            });
         }
     }
 }

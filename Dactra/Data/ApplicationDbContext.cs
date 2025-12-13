@@ -96,7 +96,5 @@
            .IsUnique();
         modelBuilder.Entity<SiteReview>()
             .HasIndex(r => r.Score);
-
-
     }
 }

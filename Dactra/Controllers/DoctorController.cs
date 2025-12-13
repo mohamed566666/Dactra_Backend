@@ -12,7 +12,6 @@ namespace Dactra.Controllers
         {
             _doctorService = doctorService;
             _qualificationService = qualificationService;
-
         }
 
         [HttpGet]
@@ -28,7 +27,7 @@ namespace Dactra.Controllers
             var DoctorProfile = await _doctorService.GetProfileByIdAsync(Id);
             return DoctorProfile == null ? NotFound("Doctor Profile Not Found") : Ok(DoctorProfile);
         }
-        [HttpGet("{doctorId}/qualifications")]
+        [HttpGet("qualifications/{doctorId}")]
         public async Task<IActionResult> GetQualifications(int doctorId)
         {
             var result = await _qualificationService.GetAllAsync(doctorId);
@@ -62,7 +61,7 @@ namespace Dactra.Controllers
                 return NotFound(ex.Message);
             }
         }
-        [HttpDelete("me/qualifications/{qualificationId}")]
+        [HttpDelete("qualifications/{qualificationId}")]
         [Authorize]
         public async Task<IActionResult> DeleteQualification(int qualificationId)
         {
@@ -88,7 +87,7 @@ namespace Dactra.Controllers
                 return NotFound(ex.Message);
             }
         }
-        [HttpPost("me/qualifications")]
+        [HttpPost("qualifications")]
         [Authorize]
         public async Task<IActionResult> AddQualification([FromBody] DoctorQualificationDTO dto)
         {
@@ -110,6 +109,18 @@ namespace Dactra.Controllers
             catch (Exception ex) {
                 return NotFound(ex.Message);
             }
+        }
+
+        [HttpGet("qualifications/me")]
+        [Authorize]
+        public async Task<IActionResult> GetMyQualifications()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                      ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+            var result = await _qualificationService.GetByUserIdAsync(userId);
+            return Ok(result);
         }
 
         [HttpGet("GetMe")]
@@ -134,6 +145,7 @@ namespace Dactra.Controllers
                 return NotFound(ex.Message);
             }
         }
+
         [HttpPut]
         [Authorize]
         public async Task<IActionResult> UpdateDoctor(DoctorUpdateDTO doctorUpdateDTO)
@@ -155,7 +167,7 @@ namespace Dactra.Controllers
             }
         }
 
-        [HttpPut("me/qualifications/{qualificationId}")]
+        [HttpPut("qualifications/{qualificationId}")]
         [Authorize]
         public async Task<IActionResult> UpdateQualification(int qualificationId,[FromBody] DoctorQualificationDTO dto)
         {
@@ -176,7 +188,6 @@ namespace Dactra.Controllers
             try
             {
                 var result = await _doctorService.GetFilteredDoctorsAsync(filter);
-
                 if (result.TotalCount == 0)
                 {
                     return Ok(new PaginatedDoctorsResponseDTO

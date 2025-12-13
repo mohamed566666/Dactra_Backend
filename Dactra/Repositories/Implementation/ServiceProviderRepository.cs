@@ -1,4 +1,5 @@
-﻿namespace Dactra.Repositories.Implementation
+﻿
+namespace Dactra.Repositories.Implementation
 {
     public class ServiceProviderRepository : IServiceProviderRepository
     {
@@ -9,16 +10,20 @@
             _context = context;
         }
 
-        public async Task<ServiceProviderProfile?> GetByIdAsync(ServiceProviderType type, int id)
+        public async Task<ServiceProviderProfile?> GetByIdAsync(int id)
         {
-            return type switch
+            ServiceProviderProfile? profile = await _context.Doctors
+                .FirstOrDefaultAsync(sp => sp.Id == id);
+            if (profile == null)
             {
-                ServiceProviderType.Doctor =>
-                    await _context.Doctors.FirstOrDefaultAsync(d => d.Id == id && !d.User.isDeleted),
-                ServiceProviderType.MedicalTestProvider =>
-                    await _context.Doctors.FirstOrDefaultAsync(m => m.Id == id && !m.User.isDeleted),
-                _ => null
-            };
+                profile = await _context.MedicalTestProviders.FirstOrDefaultAsync(sp => sp.Id == id);   
+            }
+            return profile;
+        }
+        public async Task<ServiceProviderProfile?> GetByUserIdAsync(string userId)
+        {
+            return await _context.Providers
+                .FirstOrDefaultAsync(p => p.UserId == userId);
         }
 
         public async Task SaveChangesAsync()

@@ -2,7 +2,8 @@
 {
     public interface IServiceProviderRepository
     {
-        Task<ServiceProviderProfile?> GetByIdAsync(ServiceProviderType type, int id);
+        Task<ServiceProviderProfile?> GetByIdAsync(int id);
+        Task<ServiceProviderProfile?> GetByUserIdAsync(string userId);
         Task SaveChangesAsync();
     }
 }

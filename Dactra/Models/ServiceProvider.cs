@@ -20,5 +20,6 @@
 
         public string About { get; set; } = string.Empty;
         public bool IsApproved { get; set; } = false;
+        public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
     }
 }

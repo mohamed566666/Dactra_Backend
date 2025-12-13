@@ -33,6 +33,7 @@
         public List<VitalSign> VitalSign { get; set; } = new List<VitalSign>();
         public List<PatientAppointment> Patient_Appointment { get; set; } = new List<PatientAppointment>();
         public List<Questions> questions { get; set; } = new List<Questions>();
+        public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
 
         private int CalculateAge(DateTime dob)
         {

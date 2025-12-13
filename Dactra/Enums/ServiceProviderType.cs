@@ -2,7 +2,8 @@
 {
     public enum ServiceProviderType
     {
+        any = 0,
         Doctor = 1,
-        MedicalTestProvider = 2
+        MedicalTestProvider = 2,
     }
 }
