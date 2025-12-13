@@ -58,6 +58,8 @@ builder.Services.AddScoped<IDoctorQualificationRepository, DoctorQualificationRe
 builder.Services.AddScoped<IDoctorQualificationService, DoctorQualificationService>();
 builder.Services.AddScoped<IRatingRepository , RatingRepository>();
 builder.Services.AddScoped<IRatingService , RatingService>();
+builder.Services.AddScoped<IVitalSignRepository, VitalSignRepository>();
+builder.Services.AddScoped<IVitalSignService, VitalSignService>();
 
 //builder.Services.AddScoped<IAuthCoreService,AuthCoreService>();
 

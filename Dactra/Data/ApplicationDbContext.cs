@@ -17,6 +17,7 @@
     public DbSet<Majors> Majors { get; set; }
     public DbSet<Questions> Questions { get; set; }
     public DbSet<Answer> Answers { get; set; }
+    public DbSet<VitalSignType> VitalSignTypes { get; set; }
     public DbSet<VitalSign> VitalSigns { get; set; }
     public DbSet<Rating> Ratings { get; set; }
     public DbSet<ScheduleTable> ScheduleTables { get; set; }
