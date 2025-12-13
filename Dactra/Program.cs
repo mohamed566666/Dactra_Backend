@@ -23,6 +23,7 @@ builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IDoctorProfileRepository, DoctorProfileRepository>();
@@ -51,7 +52,14 @@ builder.Services.AddScoped<ICityRepository, CityRepository>();
 builder.Services.AddScoped<ICityService, CityService>();
 builder.Services.AddScoped<ISiteReviewRepository, SiteReviewRepository>();
 builder.Services.AddScoped<ISiteReviewService, SiteReviewService>();
-builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
+builder.Services.AddScoped<IServiceProviderRepository, ServiceProviderRepository>();
+builder.Services.AddScoped<IServiceProviderService, ServiceProviderService>();
+builder.Services.AddScoped<IDoctorQualificationRepository, DoctorQualificationRepository>();
+builder.Services.AddScoped<IDoctorQualificationService, DoctorQualificationService>();
+builder.Services.AddScoped<IRatingRepository , RatingRepository>();
+builder.Services.AddScoped<IRatingService , RatingService>();
+builder.Services.AddScoped<IVitalSignRepository, VitalSignRepository>();
+builder.Services.AddScoped<IVitalSignService, VitalSignService>();
 
 //builder.Services.AddScoped<IAuthCoreService,AuthCoreService>();
 

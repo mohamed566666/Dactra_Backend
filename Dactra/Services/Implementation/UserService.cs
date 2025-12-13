@@ -185,5 +185,14 @@
                 throw new InvalidOperationException("Password change failed: " + string.Join(", ", result.Errors.Select(e => e.Description)));
             await _emailSender.SendEmailAsync(user.Email, "Password Changed", "Your password has been changed successfully.");
         }
+
+        public async Task deleteUserAsync(string userId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+                throw new KeyNotFoundException("User not found");
+            user.isDeleted = true;
+            await _userRepository.UpdateUserAsync(user);
+        }
     }
 }

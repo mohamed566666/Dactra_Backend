@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251213193929_add rating navigation")]
+    partial class addratingnavigation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,25 +83,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "6492a3a6-0464-49a8-a3c1-fb386ca9516c",
+                            Id = "cadead08-0d16-4f25-99e2-29112ba9985d",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "0de3f188-3ea0-47b5-9d60-ca2ed947f037",
+                            Id = "42a33958-ba99-4a3a-bf5e-75b66a042700",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "f2d0cecc-21ba-402b-9fb2-29695429f61e",
+                            Id = "6ffd2939-6903-45c5-9c2e-eb9cee774b36",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "8a039670-e0bf-4825-b653-2b3a57f02734",
+                            Id = "b4214901-06b7-4ca0-a3e3-f2333089d3f7",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -868,49 +871,18 @@ namespace Dactra.Migrations
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("RecordedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Value")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Value2")
-                        .HasColumnType("int");
-
-                    b.Property<int>("VitalSignTypeId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PatientId");
 
-                    b.HasIndex("VitalSignTypeId");
-
                     b.ToTable("VitalSigns");
-                });
-
-            modelBuilder.Entity("Dactra.Models.VitalSignType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CompositeFields")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsComposite")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("VitalSignTypes");
                 });
 
             modelBuilder.Entity("MedicinesPrescription", b =>
@@ -1323,15 +1295,7 @@ namespace Dactra.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Dactra.Models.VitalSignType", "Type")
-                        .WithMany()
-                        .HasForeignKey("VitalSignTypeId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.Navigation("Patient");
-
-                    b.Navigation("Type");
                 });
 
             modelBuilder.Entity("MedicinesPrescription", b =>

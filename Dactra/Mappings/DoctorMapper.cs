@@ -34,15 +34,6 @@
                 .ForMember(dest => dest.Email,
                     opt => opt.MapFrom(src => src.User != null ? src.User.Email : string.Empty));
 
-            CreateMap<DoctorUpdateDTO, DoctorProfile>()
-                .ForMember(dest => dest.specialization, opt => opt.Ignore())
-                .ForMember(dest => dest.User, opt => opt.Ignore())
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForAllMembers(opt =>
-                {
-                    opt.Condition((src, dest, srcMember) => srcMember != null);
-                });
-
             CreateMap<DoctorProfile, DoctorsFilterResponseDTO>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"))

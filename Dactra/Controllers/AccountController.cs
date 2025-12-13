@@ -427,24 +427,13 @@
 
             return Ok(accessToken);
         }
-        [Authorize(Roles = "Admin")]
-        [HttpDelete("DeleteUserByid/{id}")]
-        public async Task<IActionResult> DeleteUserByID(string id)
+        [Authorize]
+        [HttpDelete("DeleteMe")]
+        public async Task<IActionResult> DeleteUserByID()
         {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null)
-                return NotFound(new { message = "User not found" });
-            var userRoles = await _userManager.GetRolesAsync(user);
-            if (userRoles.Any())
-            {
-                var removeResult = await _userManager.RemoveFromRolesAsync(user, userRoles);
-                if (!removeResult.Succeeded)
-                    return BadRequest(removeResult.Errors);
-            }
-            var result = await _userManager.DeleteAsync(user);
-            if (result.Succeeded)
-                return Ok(new { message = "User deleted successfully" });
-            return BadRequest(result.Errors);
+           var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+           await _userService.deleteUserAsync(id);
+           return Ok("User deleted successfully");
         }
     }
 }

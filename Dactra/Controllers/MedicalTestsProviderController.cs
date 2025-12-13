@@ -103,33 +103,6 @@
                 return NotFound(ex.Message);
             }
         }
-        [HttpPatch("Approve/{Id}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ChangeProfileStatus(int Id)
-        {
-            try
-            {
-                await _medicalTestsProviderService.ApproveProfileAsync(Id);
-                return Ok("Profile Approved Succesfully");
-            }
-            catch (Exception ex) {
-                return NotFound(ex.Message);
-            }
-        }
-
-        [HttpPatch("Reject/{Id}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> RejectProfile(int Id)
-        {
-            try
-            {
-                await _medicalTestsProviderService.RejectProfileAsync(Id);
-                return Ok("Profile Rejected Succesfully");
-            }
-            catch (Exception ex) {
-                return NotFound(ex.Message);
-            }
-        }
 
         [HttpDelete("{Id}")]
         [Authorize(Roles = "Admin")]

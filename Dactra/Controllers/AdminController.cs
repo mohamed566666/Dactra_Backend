@@ -8,11 +8,13 @@
 
         private readonly IAdminService _service;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IServiceProviderService _approvalService;
 
-        public AdminController(IAdminService adminService, UserManager<ApplicationUser> userManager)
+        public AdminController(IAdminService adminService, UserManager<ApplicationUser> userManager , IServiceProviderService approvalService)
         {
             _service = adminService;
             _userManager = userManager;
+            _approvalService = approvalService;
         }
        
         [HttpPost("Add")]
@@ -122,6 +124,23 @@
 
             var result = await _service.postinfo(page, pageSize);
             return Ok(result);
+        }
+        [HttpPut("approve-Provider")]
+        public async Task<IActionResult> Approve([FromBody] ApprovalRequestDto dto)
+        {
+            var result = await _approvalService.ApproveAsync(dto.ProviderType, dto.ProviderId);
+            if (!result)
+                return NotFound("Service Provider not found");
+            return Ok("Approved successfully");
+        }
+
+        [HttpPut("disapprove-Provider")]
+        public async Task<IActionResult> DisApprove([FromBody] ApprovalRequestDto dto)
+        {
+            var result = await _approvalService.DisApproveAsync(dto.ProviderType, dto.ProviderId);
+            if (!result)
+                return NotFound("Service Provider not found");
+            return Ok("Disapproved successfully");
         }
         //[HttpPost("makeAdmin/{id}")]
         //public async Task<IActionResult> MakeAdmin(string id)

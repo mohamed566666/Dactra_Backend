@@ -5,9 +5,12 @@
     public class PatientController : ControllerBase
     {
         private readonly IPatientService _patientService;
-        public PatientController(IPatientService patientService)
+        private readonly IRatingService _ratingService;
+
+        public PatientController(IPatientService patientService , IRatingService ratingService)
         {
             _patientService = patientService;
+            _ratingService = ratingService;
         }
         [HttpGet]
         public async Task<IActionResult> GetAll()

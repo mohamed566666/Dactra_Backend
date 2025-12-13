@@ -17,6 +17,7 @@
     public DbSet<Majors> Majors { get; set; }
     public DbSet<Questions> Questions { get; set; }
     public DbSet<Answer> Answers { get; set; }
+    public DbSet<VitalSignType> VitalSignTypes { get; set; }
     public DbSet<VitalSign> VitalSigns { get; set; }
     public DbSet<Rating> Ratings { get; set; }
     public DbSet<ScheduleTable> ScheduleTables { get; set; }
@@ -27,6 +28,7 @@
     public DbSet<Complaint> Complaints { get; set; }
     public DbSet<City> Cities { get; set; }
     public DbSet<SiteReview> SiteReviews { get; set; }
+    public DbSet<DoctorQualification> DoctorQualifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -95,7 +97,5 @@
            .IsUnique();
         modelBuilder.Entity<SiteReview>()
             .HasIndex(r => r.Score);
-
-
     }
 }

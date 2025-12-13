@@ -106,7 +106,11 @@
             {
                 throw new KeyNotFoundException("Profile Not Found");
             }
-            _mapper.Map(updatedProfile, existingProfile);
+            existingProfile.FirstName = updatedProfile.FirstName;
+            existingProfile.LastName = updatedProfile.LastName;
+            existingProfile.Address = updatedProfile.Address;
+            existingProfile.User.PhoneNumber = updatedProfile.PhoneNumber;
+            existingProfile.About = updatedProfile.About;
             _doctorProfileRepository.Update(existingProfile);
             await _doctorProfileRepository.SaveChangesAsync();
         }
@@ -119,6 +123,18 @@
                 filter.PageSize = 9;
             var (doctors, totalCount) = await _doctorProfileRepository.GetFilteredDoctorsAsync(filter);
             return _mapper.Map<PaginatedDoctorsResponseDTO>((doctors, totalCount, filter));
+        }
+
+        public async Task<IEnumerable<DoctorProfileResponseDTO>> GetApprovedDoctorsAsync()
+        {
+            var doctors = await _doctorProfileRepository.GetApprovedDoctorsAsync();
+            return _mapper.Map<IEnumerable<DoctorProfileResponseDTO>>(doctors);
+        }
+
+        public async Task<IEnumerable<DoctorProfileResponseDTO>> GetdisApprovedDoctorsAsync()
+        {
+            var doctors = await _doctorProfileRepository.GetdisApprovedDoctorsAsync();
+            return _mapper.Map<IEnumerable<DoctorProfileResponseDTO>>(doctors);
         }
     }
 }
