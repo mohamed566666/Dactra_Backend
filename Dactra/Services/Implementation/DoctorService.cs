@@ -106,7 +106,11 @@
             {
                 throw new KeyNotFoundException("Profile Not Found");
             }
-            _mapper.Map(updatedProfile, existingProfile);
+            existingProfile.FirstName = updatedProfile.FirstName;
+            existingProfile.LastName = updatedProfile.LastName;
+            existingProfile.Address = updatedProfile.Address;
+            existingProfile.User.PhoneNumber = updatedProfile.PhoneNumber;
+            existingProfile.About = updatedProfile.About;
             _doctorProfileRepository.Update(existingProfile);
             await _doctorProfileRepository.SaveChangesAsync();
         }
