@@ -120,5 +120,17 @@
             var (doctors, totalCount) = await _doctorProfileRepository.GetFilteredDoctorsAsync(filter);
             return _mapper.Map<PaginatedDoctorsResponseDTO>((doctors, totalCount, filter));
         }
+
+        public async Task<IEnumerable<DoctorProfileResponseDTO>> GetApprovedDoctorsAsync()
+        {
+            var doctors = await _doctorProfileRepository.GetApprovedDoctorsAsync();
+            return _mapper.Map<IEnumerable<DoctorProfileResponseDTO>>(doctors);
+        }
+
+        public async Task<IEnumerable<DoctorProfileResponseDTO>> GetdisApprovedDoctorsAsync()
+        {
+            var doctors = await _doctorProfileRepository.GetdisApprovedDoctorsAsync();
+            return _mapper.Map<IEnumerable<DoctorProfileResponseDTO>>(doctors);
+        }
     }
 }

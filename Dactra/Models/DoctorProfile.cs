@@ -29,6 +29,8 @@
 
         public ICollection<Post> Posts { get; set; } = new List<Post>();
         public ICollection<ScheduleTable> Time { get; set; } = new List<ScheduleTable>();
+        public ICollection<DoctorQualification> Qualifications { get; set; }
+        = new List<DoctorQualification>();
 
         private int CalculateAge(DateTime dob)
         {

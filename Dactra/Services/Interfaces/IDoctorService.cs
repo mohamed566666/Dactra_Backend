@@ -9,6 +9,8 @@
         public Task<DoctorProfileResponseDTO> GetProfileByUserIdAsync(string userId);
         public Task DeleteDoctorProfileAsync(int doctorProfileId);
         public Task UpdateProfileAsync(string userId, DoctorUpdateDTO updatedProfile);
-        Task<PaginatedDoctorsResponseDTO> GetFilteredDoctorsAsync(DoctorFilterDTO filter);
+        public Task<PaginatedDoctorsResponseDTO> GetFilteredDoctorsAsync(DoctorFilterDTO filter);
+        public Task<IEnumerable<DoctorProfileResponseDTO>> GetApprovedDoctorsAsync();
+        public Task<IEnumerable<DoctorProfileResponseDTO>> GetdisApprovedDoctorsAsync();
     }
 }

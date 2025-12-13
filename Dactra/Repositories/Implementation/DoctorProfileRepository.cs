@@ -13,6 +13,15 @@
                 .Include(d => d.specialization)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<DoctorProfile>> GetApprovedDoctorsAsync()
+        {
+            return await _context.Doctors
+                .Where(m => m.IsApproved)
+                .OrderByDescending(M => M.Avg_Rating)
+                .ToListAsync();
+        }
+
         public override async Task<DoctorProfile?> GetByIdAsync(int id)
         {
             return await _context.Doctors
@@ -36,6 +45,14 @@
                 .Include(d => d.specialization)
                 .FirstOrDefaultAsync(d => d.UserId == userId);
         }
+
+        public async Task<IEnumerable<DoctorProfile>> GetdisApprovedDoctorsAsync()
+        {
+            return await _context.Doctors
+                .Where(m => !m.IsApproved)
+                .ToListAsync();
+        }
+
         public async Task<(IEnumerable<DoctorProfile> doctors, int totalCount)> GetFilteredDoctorsAsync(DoctorFilterDTO filter)
         {
             double FuzzyThreshold = 0.70;

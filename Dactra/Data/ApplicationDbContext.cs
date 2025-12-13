@@ -27,6 +27,7 @@
     public DbSet<Complaint> Complaints { get; set; }
     public DbSet<City> Cities { get; set; }
     public DbSet<SiteReview> SiteReviews { get; set; }
+    public DbSet<DoctorQualification> DoctorQualifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
