@@ -11,11 +11,11 @@
         [ForeignKey(nameof(PatientId))]
         public PatientProfile Patient{ get; set; } = null!;
 
-        [Required]
-        public int PrescriptionId { get; set; }
+        
+        public int? PrescriptionId { get; set; }
 
         [ForeignKey(nameof(PrescriptionId))]
-        public Prescription Prescription { get; set; } = null!;
+        public Prescription? Prescription { get; set; } = null!;
 
         [Required]
         public int PaymentId { get; set; }
