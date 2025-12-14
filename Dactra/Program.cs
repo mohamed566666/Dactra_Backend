@@ -60,6 +60,10 @@ builder.Services.AddScoped<IRatingRepository , RatingRepository>();
 builder.Services.AddScoped<IRatingService , RatingService>();
 builder.Services.AddScoped<IVitalSignRepository, VitalSignRepository>();
 builder.Services.AddScoped<IVitalSignService, VitalSignService>();
+builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddSignalR();
+
 
 //builder.Services.AddScoped<IAuthCoreService,AuthCoreService>();
 
@@ -182,6 +186,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapHub<AppointmentHub>("/appointmentHub");
 app.Run();
 
