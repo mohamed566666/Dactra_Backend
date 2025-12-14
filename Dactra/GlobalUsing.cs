@@ -98,3 +98,10 @@ global using Dactra.Factories.Interfaces;
 global using Dactra.Factories.Implementation;
 global using Dactra.Mappings;
 // ====================================
+//SingelR For RealTime
+//=====================================
+global using Microsoft.AspNetCore.SignalR;
+// ====================================
+//Hubs
+//=====================================
+global using Dactra.Hubs;
