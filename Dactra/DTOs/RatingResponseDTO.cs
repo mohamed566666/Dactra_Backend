@@ -8,5 +8,6 @@
         public DateTime RatedAt { get; set; }
         public int PatientId { get; set; }
         public string PatientName { get; set; } = string.Empty;
+        public string Heading { get; set; } = string.Empty;
     }
 }

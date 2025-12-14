@@ -20,6 +20,7 @@
         [Required]
         [Range(1, 5)]
         public int Score { get; set; }
+        public string Heading { get; set; } = string.Empty;
         public string Comment { get; set; } = string.Empty;
         public DateTime Rated_At { get; set; } = DateTime.Now;
     }

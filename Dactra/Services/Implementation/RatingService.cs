@@ -12,7 +12,7 @@ namespace Dactra.Services.Implementation
             _providerRepository = providerRepository;
             _mapper = mapper;
         }
-        public async Task<bool> RateProviderAsync(int patientId, int providerId, int score, string comment)
+        public async Task<bool> RateProviderAsync(int patientId, int providerId, string heading,int score, string comment)
         {
             var existingRating = await _ratingRepository.GetByPatientAndProviderAsync(patientId, providerId);
             if (existingRating != null)
@@ -21,6 +21,7 @@ namespace Dactra.Services.Implementation
             {
                 PatientId = patientId,
                 ProviderId = providerId,
+                Heading = heading,
                 Score = score,
                 Comment = comment
             };
@@ -42,12 +43,13 @@ namespace Dactra.Services.Implementation
             return Math.Round((decimal)ratings.Average(r => r.Score), 2);
         }
 
-        public async Task<bool> UpdateRatingAsync(int patientId, int providerId, int score, string comment)
+        public async Task<bool> UpdateRatingAsync(int patientId, int providerId, string heading, int score, string comment)
         {
             var existingRating = await _ratingRepository.GetByPatientAndProviderAsync(patientId, providerId);
             if (existingRating == null) return false;
             existingRating.Score = score;
             existingRating.Comment = comment;
+            existingRating.Heading = heading;
             await _ratingRepository.SaveChangesAsync();
             return true;
         }
@@ -76,6 +78,23 @@ namespace Dactra.Services.Implementation
         {
             var ratings = await _ratingRepository.GetByProviderIdAsync(providerId);
             return _mapper.Map<List<RatingResponseDTO>>(ratings);
+        }
+
+        public async Task<ProviderRatingsSummaryDTO> GetRatingsSummaryForProviderAsync(int providerId)
+        {
+            var ratings = await _ratingRepository.GetByProviderIdAsync(providerId);
+            var summary = new ProviderRatingsSummaryDTO
+            {
+                TotalRatings = ratings.Count,
+                AverageRating = ratings.Any()
+                    ? Math.Round((decimal)ratings.Average(r => r.Score), 2)
+                    : 0,
+                ScoreCounts = ratings
+                    .GroupBy(r => r.Score)
+                    .ToDictionary(g => g.Key, g => g.Count()),
+                Ratings = _mapper.Map<List<RatingResponseDTO>>(ratings)
+            };
+            return summary;
         }
     }
 }

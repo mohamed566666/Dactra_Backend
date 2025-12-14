@@ -7,6 +7,5 @@
         [Required]
         public int Value { get; set; }
         public int? Value2 { get; set; }
-        public string? Note { get; set; } = string.Empty;
     }
 }

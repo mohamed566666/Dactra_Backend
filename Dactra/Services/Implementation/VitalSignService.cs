@@ -36,7 +36,6 @@ namespace Dactra.Services.Implementation
                 VitalSignTypeId = dto.VitalSignTypeId,
                 Value = dto.Value,
                 Value2 = dto.Value2,
-                Note = dto.Note ?? string.Empty,
                 RecordedAt = DateTime.UtcNow
             };
 
@@ -44,12 +43,10 @@ namespace Dactra.Services.Implementation
             await _repository.SaveChangesAsync();
             return new VitalSignResponseDTO
             {
-                Id = entity.Id,
-                TypeName = type.Name,
+                VitalSignTypeId = entity.VitalSignTypeId,
                 Value = entity.Value,
                 Value2 = entity.Value2,
-                Note = entity.Note,
-                RecordedAt = entity.RecordedAt
+                date = entity.RecordedAt
             };
         }
 
@@ -59,12 +56,10 @@ namespace Dactra.Services.Implementation
             var vitals = await _repository.GetByPatientIdAsync(patient.Id);
             return vitals.Select(v => new VitalSignResponseDTO
             {
-                Id = v.Id,
-                TypeName = v.Type.Name,
+                VitalSignTypeId = v.VitalSignTypeId,
                 Value = v.Value,
                 Value2 = v.Value2,
-                Note = v.Note,
-                RecordedAt = v.RecordedAt
+                date = v.RecordedAt
             }).ToList();
         }
 
@@ -99,12 +94,10 @@ namespace Dactra.Services.Implementation
             var vitals = await _repository.GetByPatientIdAsync(patientId);
             return vitals.Select(v => new VitalSignResponseDTO
             {
-                Id = v.Id,
-                TypeName = v.Type.Name,
+                VitalSignTypeId = v.VitalSignTypeId,
                 Value = v.Value,
                 Value2 = v.Value2,
-                Note = v.Note,
-                RecordedAt = v.RecordedAt
+                date = v.RecordedAt
             }).ToList();
         }
     }

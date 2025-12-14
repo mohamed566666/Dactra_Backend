@@ -29,6 +29,12 @@
             return true;
         }
 
+        public async Task<ServiceProviderProfile?> GetByIdAsync(int Id)
+        {
+            var provider = await _repository.GetByIdAsync(Id);
+            return provider;
+        }
+
         public async Task<ServiceProviderProfile?> GetByUserIdAsync(string userId)
         {
             return await _repository.GetByUserIdAsync(userId);
