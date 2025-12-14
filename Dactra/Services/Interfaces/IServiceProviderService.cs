@@ -5,5 +5,6 @@
         Task<bool> ApproveAsync(ServiceProviderType type, int id);
         Task<bool> DisApproveAsync(ServiceProviderType type, int id);
         Task<ServiceProviderProfile?> GetByUserIdAsync(string userId);
+        Task<ServiceProviderProfile?> GetByIdAsync(int Id);
     }
 }

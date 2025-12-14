@@ -22,7 +22,7 @@ namespace Dactra.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var profile = await _patientService.GetProfileByUserID(userId);
-            var result = await _ratingService.RateProviderAsync(profile.Id, providerId, dto.Score, dto.Comment);
+            var result = await _ratingService.RateProviderAsync(profile.Id, providerId, dto.Heading, dto.Score, dto.Comment);
             if (!result)
                 return BadRequest("You already rated this provider");
             return Ok("Rate done successfully");
@@ -34,7 +34,7 @@ namespace Dactra.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var profile = await _patientService.GetProfileByUserID(userId);
-            var result = await _ratingService.UpdateRatingAsync(profile.Id, providerId, dto.Score, dto.Comment);
+            var result = await _ratingService.UpdateRatingAsync(profile.Id, providerId, dto.Heading, dto.Score, dto.Comment);
             if (!result)
                 return NotFound("Rating not found");
             return Ok("Rating updated successfully");
@@ -81,8 +81,17 @@ namespace Dactra.Controllers
             var provider = await _ServiceProviderService.GetByUserIdAsync(userId);
             if (provider == null)
                 return NotFound("Provider profile not found");
-            var ratings = await _ratingService.GetRatingsforProviderAsync(provider.Id);
-            return Ok(ratings);
+            var result = await _ratingService.GetRatingsSummaryForProviderAsync(provider.Id);
+            return Ok(result);
+        }
+        [HttpGet("provider/rating{id}")]
+        public async Task<IActionResult> GetMyRatingsForProvider(int id)
+        {
+            var provider = await _ServiceProviderService.GetByIdAsync(id);
+            if (provider == null)
+                return NotFound("Provider profile not found");
+            var result = await _ratingService.GetRatingsSummaryForProviderAsync(provider.Id);
+            return Ok(result);
         }
     }
 }

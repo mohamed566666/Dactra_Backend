@@ -2,11 +2,9 @@
 {
     public class VitalSignResponseDTO
     {
-        public int Id { get; set; }
-        public string TypeName { get; set; } = string.Empty;
+        public int VitalSignTypeId { get; set; }
         public decimal? Value { get; set; }
         public decimal? Value2 { get; set; }
-        public string Note { get; set; } = string.Empty;
-        public DateTime RecordedAt { get; set; }
+        public DateTime date { get; set; }
     }
 }
