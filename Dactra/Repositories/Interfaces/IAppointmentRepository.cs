@@ -4,5 +4,6 @@
     {
         Task<bool> IsBooked(int scheduletableId);
         Task<PatientAppointment> BookeAsync(PatientAppointment appointment);
+        Task<ScheduleTable> GetScheduleByIdAsync(int scheduleTableId);
     }
 }
