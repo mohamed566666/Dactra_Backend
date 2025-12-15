@@ -13,6 +13,10 @@
         [ForeignKey(nameof(DoctorId))]
         public DoctorProfile Doctor{ get; set; } = null!;
 
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, 1000000, ErrorMessage = "Amount must be non-negative and reasonable.")]
+        public decimal Amount { get; set; }
+
         [Required]
         public DateTime Start { get; set; }
 

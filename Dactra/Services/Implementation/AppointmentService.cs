@@ -1,5 +1,7 @@
 ﻿
+using Google;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Dactra.Services.Implementation
 {
@@ -7,10 +9,12 @@ namespace Dactra.Services.Implementation
     {
         private readonly IAppointmentRepository _repo;
         private readonly IHubContext<AppointmentHub> _hub;
-        public AppointmentService(IHubContext<AppointmentHub> hub, IAppointmentRepository repo)
+        private readonly ApplicationDbContext _context;
+        public AppointmentService(IHubContext<AppointmentHub> hub, IAppointmentRepository repo,ApplicationDbContext context)
         {
             _hub = hub; 
             _repo = repo;   
+            _context = context;
         }
         public async Task<int> BookAppointmentAsync(int patientId, int scheduleTableId)
         {
@@ -19,19 +23,25 @@ namespace Dactra.Services.Implementation
             {
                 throw new Exception("This appointment slot is already booked.");
             }
+            var schedule = await _repo.GetScheduleByIdAsync(scheduleTableId);
+            if (schedule == null)
+                throw new Exception("Schedule not found");
 
-            //var payment = new Payment
-            //{
-            //    Id = patientId,
-            //    Amount = 200,
-            //    Status =true,
-            //    CreatedAt = DateTime.UtcNow,
-            //    Currency = "USD",
-            //    Method = "Credit Card"
-            //};
 
-            //_context.Payments.Add(payment);
-            //await _context.SaveChangesAsync();
+            decimal amount = schedule.Amount;
+
+            var payment = new Payment
+            {
+                Id = patientId,
+                Amount = amount,
+                Status = true,
+                CreatedAt = DateTime.UtcNow,
+                Currency = "EGP",
+                Method = "Credit Card"
+            };
+
+            _context.Payments.Add(payment);
+            await _context.SaveChangesAsync();
 
             var appointment = new PatientAppointment
             {
