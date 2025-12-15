@@ -1,4 +1,6 @@
-﻿namespace Dactra.Repositories.Interfaces
+﻿using Dactra.DTOs.Admin;
+
+namespace Dactra.Repositories.Interfaces
 {
     public interface IAdminRepository
     {
@@ -22,5 +24,8 @@
         Task<List< patientinfoDto>> patientinfo(int page , int pageSize );
         Task<List< questionInfoDto>> questioninfo(int page  , int pageSize );
         Task<List< postInfoDto>> postinfo(int page , int pageSize );
+        Task<List<DoctorAdminInfoDTO>> GetAllDoctorsAsync(int page, int pageSize);
+        Task<List<MedicalProviderAdminDTO>> GetAllLabsAsync(int page, int pageSize);
+        Task<List<MedicalProviderAdminDTO>> GetAllScansAsync(int page, int pageSize);
     }
 }

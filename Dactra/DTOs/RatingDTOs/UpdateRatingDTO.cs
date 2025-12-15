@@ -1,6 +1,6 @@
-﻿namespace Dactra.DTOs
+﻿namespace Dactra.DTOs.RatingDTOs
 {
-    public class CreateRatingDTO
+    public class UpdateRatingDTO
     {
         [Range(1, 5)]
         public string Heading { get; set; } = string.Empty;

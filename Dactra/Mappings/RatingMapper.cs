@@ -1,4 +1,6 @@
-﻿namespace Dactra.Mappings
+﻿using Dactra.DTOs.RatingDTOs;
+
+namespace Dactra.Mappings
 {
     public class RatingMapper : Profile
     {

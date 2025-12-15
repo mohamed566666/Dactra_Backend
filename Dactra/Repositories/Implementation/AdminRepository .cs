@@ -1,4 +1,6 @@
-﻿namespace Dactra.Repositories.Implementation
+﻿using Dactra.DTOs.Admin;
+
+namespace Dactra.Repositories.Implementation
 {
     public class AdminRepository : IAdminRepository
     {
@@ -216,6 +218,64 @@
                 .ToListAsync();
 
             return result;
+        }
+
+        public async Task<List<DoctorAdminInfoDTO>> GetAllDoctorsAsync(int page, int pageSize)
+        {
+            return await _context.Doctors
+                .Include(d => d.User)
+                .OrderBy(d => d.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(d => new DoctorAdminInfoDTO
+                {
+                    ProfileId = d.Id,
+                    Name = d.FirstName + " " + d.LastName,
+                    Email = d.User.Email,
+                    IsApproved = d.IsApproved
+                })
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<List<MedicalProviderAdminDTO>> GetAllLabsAsync(int page, int pageSize)
+        {
+            return await _context.MedicalTestProviders
+                .Include(p => p.User)
+                .Where(p => p.Type == MedicalTestProviderType.Lab)
+                .OrderBy(p => p.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => new MedicalProviderAdminDTO
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    PhoneNumber = p.User.PhoneNumber,
+                    IsApproved = p.IsApproved,
+                    Address = p.Address
+                })
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<List<MedicalProviderAdminDTO>> GetAllScansAsync(int page, int pageSize)
+        {
+            return await _context.MedicalTestProviders
+                .Include(p => p.User)
+                .Where(p => p.Type == MedicalTestProviderType.Scan)
+                .OrderBy(p => p.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => new MedicalProviderAdminDTO
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    PhoneNumber = p.User.PhoneNumber,
+                    IsApproved = p.IsApproved,
+                    Address = p.Address
+                })
+                .AsNoTracking()
+                .ToListAsync();
         }
 
     }

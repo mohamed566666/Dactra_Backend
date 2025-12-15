@@ -1,4 +1,6 @@
-﻿namespace Dactra.Services.Interfaces
+﻿using Dactra.DTOs.RatingDTOs;
+
+namespace Dactra.Services.Interfaces
 {
     public interface IHomeService
     {

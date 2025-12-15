@@ -1,4 +1,6 @@
-﻿namespace Dactra.Repositories.Interfaces
+﻿using Dactra.DTOs.RatingDTOs;
+
+namespace Dactra.Repositories.Interfaces
 {
     public interface IHomeRepository
     {

@@ -1,4 +1,4 @@
-﻿namespace Dactra.DTOs
+﻿namespace Dactra.DTOs.Admin
 {
     public class ApprovalRequestDto
     {

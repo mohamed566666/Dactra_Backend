@@ -1,4 +1,6 @@
-﻿namespace Dactra.Repositories.Implementation
+﻿using Dactra.DTOs.RatingDTOs;
+
+namespace Dactra.Repositories.Implementation
 {
     public class HomeRepository : IHomeRepository
     {

@@ -1,4 +1,6 @@
-﻿namespace Dactra.Services.Implementation
+﻿using Dactra.DTOs.RatingDTOs;
+
+namespace Dactra.Services.Implementation
 {
     public class HomeService : IHomeService
     {
@@ -7,7 +9,7 @@
         {
             _homeRepository = homeRepository;
         }
-        public async Task<IEnumerable<DTOs.TopRatedDoctorDTO>> GetTopRatedDoctorsAsync(int count = 10)
+        public async Task<IEnumerable<TopRatedDoctorDTO>> GetTopRatedDoctorsAsync(int count = 10)
         {
             return await _homeRepository.GetTopRatedDoctorsAsync(count);
         }

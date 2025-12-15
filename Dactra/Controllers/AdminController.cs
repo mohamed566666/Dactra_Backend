@@ -125,6 +125,27 @@
             var result = await _service.postinfo(page, pageSize);
             return Ok(result);
         }
+
+        [HttpGet("allDoctorsInfo")]
+        public async Task<IActionResult> GetDoctors(int page = 1, int pageSize = 10)
+        {
+            var result = await _service.GetDoctorsAsync(page, pageSize);
+            return Ok(result);
+        }
+
+        [HttpGet("allLabsInfo")]
+        public async Task<IActionResult> GetLabs(int page = 1, int pageSize = 10)
+        {
+            var result = await _service.GetLabsAsync(page, pageSize);
+            return Ok(result);
+        }
+
+        [HttpGet("allScansInfo")]
+        public async Task<IActionResult> GetScans(int page = 1, int pageSize = 10)
+        {
+            var result = await _service.GetScansAsync(page, pageSize);
+            return Ok(result);
+        }
         [HttpPut("approve-Provider")]
         public async Task<IActionResult> Approve([FromBody] ApprovalRequestDto dto)
         {
