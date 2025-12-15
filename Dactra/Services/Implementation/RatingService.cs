@@ -1,4 +1,6 @@
 ﻿
+using Dactra.DTOs.RatingDTOs;
+
 namespace Dactra.Services.Implementation
 {
     public class RatingService : IRatingService
@@ -89,9 +91,7 @@ namespace Dactra.Services.Implementation
                 AverageRating = ratings.Any()
                     ? Math.Round((decimal)ratings.Average(r => r.Score), 2)
                     : 0,
-                ScoreCounts = ratings
-                    .GroupBy(r => r.Score)
-                    .ToDictionary(g => g.Key, g => g.Count()),
+                ScoreCounts = Enumerable.Range(1, 5).ToDictionary(score => score,score => ratings.Count(r => r.Score == score)),
                 Ratings = _mapper.Map<List<RatingResponseDTO>>(ratings)
             };
             return summary;

@@ -1,4 +1,6 @@
-﻿namespace Dactra.Services.Implementation
+﻿using Dactra.DTOs.Admin;
+
+namespace Dactra.Services.Implementation
 {
     public class AdminService : IAdminService
 
@@ -138,5 +140,14 @@
 
         public Task<List<questionInfoDto>> questioninfo(int page, int pageSize)
             => _repo.questioninfo(page, pageSize);
+
+        public Task<List<DoctorAdminInfoDTO>> GetDoctorsAsync(int page, int pageSize)
+        => _repo.GetAllDoctorsAsync(page, pageSize);
+
+        public Task<List<MedicalProviderAdminDTO>> GetLabsAsync(int page, int pageSize)
+            => _repo.GetAllLabsAsync(page, pageSize);
+
+        public Task<List<MedicalProviderAdminDTO>> GetScansAsync(int page, int pageSize)
+            => _repo.GetAllScansAsync(page, pageSize);
     }
 }
