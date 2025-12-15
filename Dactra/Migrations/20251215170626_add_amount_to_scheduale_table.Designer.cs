@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251215170626_add_amount_to_scheduale_table")]
+    partial class add_amount_to_scheduale_table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,41 +83,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-<<<<<<< HEAD
-                            Id = "7d381eff-6f0e-4f12-9512-97131e8ca98f",
-=======
                             Id = "d8b1f406-1afd-468a-a0c8-c99d409324cb",
->>>>>>> 523f484aec18b54815a58d2ea957570bb96ecc02
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-<<<<<<< HEAD
-                            Id = "dbfd8323-7d1b-4147-ac7a-5ab0797add4a",
-=======
                             Id = "4b7b1c8e-ff5a-4ddd-88ba-57ffb2aeebce",
->>>>>>> 523f484aec18b54815a58d2ea957570bb96ecc02
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-<<<<<<< HEAD
-                            Id = "a6ebba53-9056-4477-b298-72ae017a10dd",
-=======
                             Id = "cb0cb1df-52e8-40bb-a903-590006eb2714",
->>>>>>> 523f484aec18b54815a58d2ea957570bb96ecc02
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-<<<<<<< HEAD
-                            Id = "1de58df4-2ee3-4f19-ae31-8170769dcc62",
-=======
                             Id = "646d202e-627e-4e20-9cf4-8a8bd240c0f6",
->>>>>>> 523f484aec18b54815a58d2ea957570bb96ecc02
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
