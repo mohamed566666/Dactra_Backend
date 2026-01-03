@@ -105,5 +105,45 @@
             _patientProfileRepository.Update(existingProfile);
             await _patientProfileRepository.SaveChangesAsync();
         }
+        public async Task<List<string>> GetAllergiesByPatientIdAsync(int patientId)
+        {
+            var profile = await _patientProfileRepository.GetByIdAsync(patientId);
+            if (profile == null)
+                throw new KeyNotFoundException("Patient Profile Not Found");
+            return profile.Allergies?.Select(a => a.Name).ToList() ?? new List<string>();
+        }
+
+        public async Task<List<string>> GetChronicDiseasesByPatientIdAsync(int patientId)
+        {
+            var profile = await _patientProfileRepository.GetByIdAsync(patientId);
+            if (profile == null)
+                throw new KeyNotFoundException("Patient Profile Not Found");
+            return profile.ChronicDiseases?.Select(c => c.Name).ToList() ?? new List<string>();
+        }
+
+        public async Task UpdateAllergiesAsync(string userId, List<int> allergyIds)
+        {
+            var profile = await _patientProfileRepository.GetByUserIdAsync(userId);
+            if (profile == null)
+                throw new KeyNotFoundException("Patient Profile Not Found");
+            var allergies = await _context.Allergies
+                .Where(a => allergyIds.Contains(a.Id))
+                .ToListAsync();
+            profile.Allergies = allergies;
+            _patientProfileRepository.Update(profile);
+            await _patientProfileRepository.SaveChangesAsync();
+        }
+        public async Task UpdateChronicDiseasesAsync(string userId, List<int> chronicDiseaseIds)
+        {
+            var profile = await _patientProfileRepository.GetByUserIdAsync(userId);
+            if (profile == null)
+                throw new KeyNotFoundException("Patient Profile Not Found");
+            var diseases = await _context.ChronicDiseases
+                .Where(c => chronicDiseaseIds.Contains(c.Id))
+                .ToListAsync();
+            profile.ChronicDiseases = diseases;
+            _patientProfileRepository.Update(profile);
+            await _patientProfileRepository.SaveChangesAsync();
+        }
     }
 }

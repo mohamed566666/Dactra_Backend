@@ -62,6 +62,10 @@ builder.Services.AddScoped<IVitalSignRepository, VitalSignRepository>();
 builder.Services.AddScoped<IVitalSignService, VitalSignService>();
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IAllergyRepository, AllergyRepository>();
+builder.Services.AddScoped<IChronicDiseaseRepository, ChronicDiseaseRepository>();
+builder.Services.AddScoped<IAllergyService,AllergyService>();
+builder.Services.AddScoped<IChronicDiseaseService,ChronicDiseaseService>();
 builder.Services.AddSignalR();
 
 

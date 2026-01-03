@@ -11,6 +11,8 @@
             return await _context.Patients
                 .Include(p => p.User)
                 .Include(p => p.Address)
+                .Include(p => p.Allergies)
+                .Include(p => p.ChronicDiseases)
                 .ToListAsync();
         }
         public override async Task<PatientProfile?> GetByIdAsync(int id)
@@ -18,6 +20,8 @@
             return await _context.Patients
                 .Include (p => p.User)
                 .Include(p => p.Address)
+                .Include(p => p.Allergies)
+                .Include(p => p.ChronicDiseases)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
@@ -26,6 +30,8 @@
             return await _context.Patients
                 .Include(p => p.User)
                 .Include(p => p.Address)
+                .Include(p => p.Allergies)
+                .Include(p => p.ChronicDiseases)
                 .FirstOrDefaultAsync(p => p.User.Email == email);
         }
 
@@ -34,6 +40,8 @@
             return await _context.Patients
                 .Include(p => p.User)
                 .Include(p => p.Address)
+                .Include(p => p.Allergies)
+                .Include(p => p.ChronicDiseases)
                 .FirstOrDefaultAsync(p => p.UserId == userId);
         }
     }

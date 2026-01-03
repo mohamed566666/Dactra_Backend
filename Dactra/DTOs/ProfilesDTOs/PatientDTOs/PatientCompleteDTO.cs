@@ -22,7 +22,7 @@
         public SmokingStatus SmokingStatus { get; set; }
         [Range(0, 4)]
         public MaritalStatus MaritalStatus { get; set; }
-        public string ChronicDisease { get; set; }
-        public string Allergies { get; set; }
+        public List<int> AllergyIds { get; set; } = new();
+        public List<int> ChronicDiseaseIds { get; set; } = new();
     }
 }

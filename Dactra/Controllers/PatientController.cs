@@ -93,5 +93,52 @@
                 return NotFound(ex.Message);
             }
         }
+        [Authorize(Roles = "Doctor")]
+        [HttpGet("{patientId}/allergies")]
+        public async Task<IActionResult> GetAllergies(int patientId)
+        {
+            try
+            {
+                var allergies = await _patientService.GetAllergiesByPatientIdAsync(patientId);
+                return Ok(allergies);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound($"Patient with ID {patientId} not found");
+            }
+        }
+
+        [Authorize(Roles = "Doctor")]
+        [HttpGet("{patientId}/chronic-diseases")]
+        public async Task<IActionResult> GetChronicDiseases(int patientId)
+        {
+            try
+            {
+                var diseases = await _patientService.GetChronicDiseasesByPatientIdAsync(patientId);
+                return Ok(diseases);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound($"Patient with ID {patientId} not found");
+            }
+        }
+
+        [Authorize]
+        [HttpPut("allergies")]
+        public async Task<IActionResult> UpdateAllergies([FromBody] PatientAllergiesUpdateDTO dto)
+        {
+            var Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _patientService.UpdateAllergiesAsync(Id, dto.AllergyIds);
+            return Ok("Allergies updated successfully");
+        }
+
+        [Authorize]
+        [HttpPut("chronic-diseases")]
+        public async Task<IActionResult> UpdateChronicDiseases([FromBody] PatientChronicDiseasesUpdateDTO dto)
+        {
+            var Id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _patientService.UpdateChronicDiseasesAsync(Id, dto.ChronicDiseaseIds);
+            return Ok("Chronic Diseases updated successfully");
+        }
     }
 }

@@ -27,9 +27,9 @@
         public BloodTypes BloodType { get; set; }
         public ICollection<Medicines> Current_Medications { get; set; } = new List<Medicines>();
         public SmokingStatus SmokingStatus { get; set; }
-        public string Allergies { get; set; } = string.Empty;
+        public ICollection<Allergy> Allergies { get; set; } = new List<Allergy>();
+        public ICollection<ChronicDisease> ChronicDiseases { get; set; } = new List<ChronicDisease>();
         public MaritalStatus MaritalStatus { get; set; }
-        public string ChronicDisease { get; set; } = string.Empty;
         public List<VitalSign> VitalSign { get; set; } = new List<VitalSign>();
         public List<PatientAppointment> Patient_Appointment { get; set; } = new List<PatientAppointment>();
         public List<Questions> questions { get; set; } = new List<Questions>();
