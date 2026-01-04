@@ -16,8 +16,8 @@
         public SmokingStatus SmokingStatus { get; set; }
         public int? AddressId { get; set; }
         public string? address { get; set; }
-        public string Allergies { get; set; }
-        public string ChronicDisease { get; set; }
+        public List<string> Allergies { get; set; } = new();
+        public List<string> ChronicDiseases { get; set; } = new();
         public string RoleName { get; set; }
     }
 }

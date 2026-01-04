@@ -62,7 +62,7 @@
                 return Unauthorized("invalid Email");
 
             if (user.isDeleted)
-                return Unauthorized("User not found");
+                return NotFound("User not found");
 
             var role= await _roleRepository.GetUserRolesAsync(user);
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);

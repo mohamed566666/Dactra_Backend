@@ -61,6 +61,7 @@
         filter.PageNumber = Math.Max(1, filter.PageNumber);
             filter.PageSize = Math.Clamp(filter.PageSize, 1, 100);
             var baseQuery = _context.Doctors
+                .Where(d => d.IsApproved)
                 .Include(d => d.User)
                 .Include(d => d.specialization)
                 .AsQueryable();
