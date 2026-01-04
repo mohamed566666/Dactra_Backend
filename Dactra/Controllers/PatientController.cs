@@ -140,5 +140,23 @@
             await _patientService.UpdateChronicDiseasesAsync(Id, dto.ChronicDiseaseIds);
             return Ok("Chronic Diseases updated successfully");
         }
+
+        [Authorize]
+        [HttpGet("allergies")]
+        public async Task<IActionResult> GetMyAllergies()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var allergies = await _patientService.GetMyAllergiesAsync(userId);
+            return Ok(allergies);
+        }
+
+        [Authorize]
+        [HttpGet("chronic-diseases")]
+        public async Task<IActionResult> GetMyChronicDiseases()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var diseases = await _patientService.GetMyChronicDiseasesAsync(userId);
+            return Ok(diseases);
+        }
     }
 }

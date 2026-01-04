@@ -1,4 +1,6 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using Dactra.Middlewares;
+
+var builder = WebApplication.CreateBuilder(args);
 
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
 
@@ -21,6 +23,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
+
+builder.Services.Configure<RateLimitSettings>(
+    builder.Configuration.GetSection("RateLimiting"));
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
@@ -171,6 +176,8 @@ app.UseRouting();
 
 app.UseCors("AllowFrontend");
 
+app.UseMiddleware<RateLimitingMiddleware>();
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -186,9 +193,7 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
-
 app.UseAuthorization();
-
 app.MapControllers();
 app.MapHub<AppointmentHub>("/appointmentHub");
 app.Run();

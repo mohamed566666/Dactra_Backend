@@ -145,5 +145,21 @@
             _patientProfileRepository.Update(profile);
             await _patientProfileRepository.SaveChangesAsync();
         }
+
+        public async Task<List<string>> GetMyAllergiesAsync(string userId)
+        {
+            var profile = await _patientProfileRepository.GetByUserIdAsync(userId);
+            if (profile == null)
+                throw new KeyNotFoundException("Patient Profile Not Found");
+            return profile.Allergies?.Select(a => a.Name).ToList() ?? new List<string>();
+        }
+
+        public async Task<List<string>> GetMyChronicDiseasesAsync(string userId)
+        {
+            var profile = await _patientProfileRepository.GetByUserIdAsync(userId);
+            if (profile == null)
+                throw new KeyNotFoundException("Patient Profile Not Found");
+            return profile.ChronicDiseases?.Select(c => c.Name).ToList() ?? new List<string>();
+        }
     }
 }

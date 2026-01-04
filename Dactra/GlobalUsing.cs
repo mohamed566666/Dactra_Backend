@@ -15,6 +15,8 @@ global using System.Text;
 global using System.Text.Json.Serialization;
 global using System.Threading.Tasks;
 global using System.Globalization;
+global using System.Collections.Concurrent;
+global using System.Net;
 
 // ====================================
 // ASP.NET Core
