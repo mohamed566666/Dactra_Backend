@@ -8,6 +8,7 @@
         Task<(string? AccessToken, string? Message)> RefreshAccessTokenAsync(string refreshToken);
         Task<ApplicationUser?> GetUserByRefreshToken(string refreshToken);
         Task RemoveRefreshToken(ApplicationUser user);
+        Task RemoveAccessToken(ApplicationUser user);
 
     }
 }

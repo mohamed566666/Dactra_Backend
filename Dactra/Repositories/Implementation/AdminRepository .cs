@@ -7,13 +7,15 @@ namespace Dactra.Repositories.Implementation
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly ApplicationDbContext _context;
+        private readonly  ITokenService _tokenService;
 
-        public AdminRepository(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, ApplicationDbContext context
-                               )
+        public AdminRepository(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, ApplicationDbContext context,
+                  ITokenService token             )
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
             _context = context;
+            _tokenService = token;
         }
         public async Task AddToAdminRole(ApplicationUser user)
         {
@@ -60,11 +62,16 @@ namespace Dactra.Repositories.Implementation
         public async Task DeleteUser(ApplicationUser user)
         {
           
-                user.isDeleted = !user.isDeleted;
-                await _userManager.UpdateAsync(user);
-                await _context.SaveChangesAsync();
+                 user.isDeleted = !user.isDeleted;
+                if (user.isDeleted == true)
+                {
+                    _tokenService.RemoveRefreshToken(user);
+                    _tokenService.RemoveAccessToken(user);
+                }
+                 await _userManager.UpdateAsync(user);
+                 await _context.SaveChangesAsync();
             
-         
+
         }
 
         public async Task<IList<ApplicationUser>> GetAdmins()
