@@ -89,32 +89,15 @@
 
         public async Task<int> GetDoctorsCount()
         {
-            var doctorRoleId = await _context.Roles
-                .Where(r => r.Name == "Doctor")
-                .Select(r => r.Id)
-                .FirstOrDefaultAsync();
-
-            var doctorsCount = await _context.UserRoles
-                .Where(ur => ur.RoleId == doctorRoleId)
-                .Select(ur => ur.UserId)
-                .Distinct()
-                .CountAsync();
-            return doctorsCount;
+            var totalDoctors = await _context.Doctors
+            .Where(d => !d.User.isDeleted)
+            .CountAsync();
+            return totalDoctors;
         }
 
         public async Task<int> GetPatientsCount()
         {
-            var patientRoleId = await _context.Roles
-              .Where(r => r.Name == "Patient")
-              .Select(r => r.Id)
-              .FirstOrDefaultAsync();
-
-            var patientCount = await _context.UserRoles
-                .Where(ur => ur.RoleId == patientRoleId)
-                .Select(ur => ur.UserId)
-                .Distinct()
-                .CountAsync();
-            return patientCount;
+            return await _context.Patients.CountAsync();
 
         }
 
