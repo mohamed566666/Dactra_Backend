@@ -136,6 +136,18 @@
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task RemoveAccessToken(ApplicationUser user)
+        {
+            var tokens = await _context.UserTokens
+             .Where(t => t.UserId == user.Id)
+              .ToListAsync();
+
+            if (tokens.Any())
+            {
+                _context.UserTokens.RemoveRange(tokens);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 
 }
