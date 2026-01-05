@@ -1,6 +1,4 @@
 ﻿using Dactra.DTOs.VitalSignDTOs;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Dactra.Controllers
 {
