@@ -101,7 +101,15 @@
             {
                 throw new KeyNotFoundException("Patient Profile Not Found");
             }
-            _mapper.Map(updatedProfile, existingProfile);
+            existingProfile.FirstName = updatedProfile.FirstName;
+            existingProfile.LastName = updatedProfile.LastName;
+            existingProfile.User.PhoneNumber = updatedProfile.PhoneNamber;
+            existingProfile.Height = updatedProfile.Height;
+            existingProfile.Weight = updatedProfile.Weight;
+            existingProfile.BloodType = updatedProfile.BloodType;
+            existingProfile.MaritalStatus = updatedProfile.MaritalStatus;
+            existingProfile.SmokingStatus = updatedProfile.SmokingStatus;
+            existingProfile.AddressId = updatedProfile.AddressId;
             _patientProfileRepository.Update(existingProfile);
             await _patientProfileRepository.SaveChangesAsync();
         }
