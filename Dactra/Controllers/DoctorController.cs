@@ -1,6 +1,4 @@
-﻿using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
-
-namespace Dactra.Controllers
+﻿namespace Dactra.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

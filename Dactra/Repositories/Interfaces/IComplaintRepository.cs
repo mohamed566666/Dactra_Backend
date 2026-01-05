@@ -2,9 +2,8 @@
 {
     public interface IComplaintRepository : IGenericRepository<Complaint>
     {
-        public Task AddAttachmentsAsync(int complaintId, IEnumerable<ComplaintAttachment> attachments);
-        public Task<IEnumerable<Complaint?>> GetByUserIdAsync(string userId);
-        Task<ComplaintAttachment?> GetAttachmentAsync(int attachmentId);
-        public Task DeleteAttachmentAsync(int attachmentId);
+        Task<IEnumerable<Complaint>> GetByUserIdAsync(string userId);
+        Task<IEnumerable<Complaint>> GetAllWithAttachmentsAsync();
+        Task<Complaint?> GetDetailsAsync(int id);
     }
 }

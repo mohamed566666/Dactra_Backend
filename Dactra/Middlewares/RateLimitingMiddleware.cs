@@ -1,4 +1,6 @@
-﻿namespace Dactra.Middlewares
+﻿using System.Net;
+
+namespace Dactra.Middlewares
 {
     public class RateLimitingMiddleware
     {

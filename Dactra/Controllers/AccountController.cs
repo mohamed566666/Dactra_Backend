@@ -1,4 +1,6 @@
-﻿namespace Dactra.Controllers
+﻿using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.EntityFrameworkCore;
+namespace Dactra.Controllers
 {
     [Route("api/account")]
     [ApiController]

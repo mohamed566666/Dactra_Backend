@@ -1,6 +1,4 @@
-﻿using Dactra.DTOs.Admin;
-
-namespace Dactra.Repositories.Implementation
+﻿namespace Dactra.Repositories.Implementation
 {
     public class AdminRepository : IAdminRepository
     {
