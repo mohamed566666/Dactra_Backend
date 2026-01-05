@@ -63,13 +63,16 @@
                  user.isDeleted = !user.isDeleted;
                 if (user.isDeleted == true)
                 {
-                    _tokenService.RemoveRefreshToken(user);
-                    _tokenService.RemoveAccessToken(user);
+                     await _tokenService.RemoveRefreshToken(user);
+                     await _tokenService.RemoveAccessToken(user);
+                     user.TokenVersion++;
                 }
                  await _userManager.UpdateAsync(user);
-                 await _context.SaveChangesAsync();
-            
 
+
+            
+            
+            
         }
 
         public async Task<IList<ApplicationUser>> GetAdmins()

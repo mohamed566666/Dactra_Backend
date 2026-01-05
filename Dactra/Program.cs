@@ -224,12 +224,14 @@ app.UseCors("AllowFrontend");
 
 app.UseMiddleware<RateLimitingMiddleware>();
 
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+app.UseMiddleware<TokenVersionMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

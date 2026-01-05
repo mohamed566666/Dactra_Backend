@@ -22,6 +22,8 @@
                 new Claim(JwtRegisteredClaimNames.Email,user.Email),
                 new Claim(JwtRegisteredClaimNames.GivenName,user.UserName),
                 new Claim(ClaimTypes.Role,string.Join(",",userRoles)),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim("tv", user.TokenVersion.ToString())
 
             };
             var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
