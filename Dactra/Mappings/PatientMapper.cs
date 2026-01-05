@@ -37,22 +37,6 @@
                     ? src.ChronicDiseases.Select(c => c.Name).ToList()
                     : new List<string>()));
 
-            CreateMap<PatientUpdateDTO, PatientProfile>()
-               .ForMember(dest => dest.Id, opt => opt.Ignore())
-               .ForMember(dest => dest.User, opt => opt.Ignore())
-               .ForMember(dest => dest.Address, opt => opt.Ignore())
-               .ForMember(dest => dest.Allergies, opt => opt.Ignore())
-               .ForMember(dest => dest.ChronicDiseases, opt => opt.Ignore())
-               .ForAllMembers(opt =>
-               {
-                   opt.Condition((src, dest, srcMember) =>
-                   {
-                       if (srcMember == null) return false;
-                       if (srcMember is string s)
-                           return !string.IsNullOrWhiteSpace(s);
-                       return true;
-                   });
-               });
         }
     }
 }
