@@ -4,7 +4,7 @@
     {
         public Task CompleteRegistrationAsync(DoctorCompleteDTO doctorComplateDTO);
         public Task<IEnumerable<DoctorProfileResponseDTO>> GetAllProfileAsync();
-        public Task<DoctorProfileResponseDTO> GetProfileByIdAsync(int doctorProfileId);
+        public Task<DoctorsResponseDTO> GetProfileByIdAsync(int doctorProfileId);
         public Task<DoctorProfileResponseDTO> GetProfileByUserEmail(string email);
         public Task<DoctorProfileResponseDTO> GetProfileByUserIdAsync(string userId);
         public Task DeleteDoctorProfileAsync(int doctorProfileId);

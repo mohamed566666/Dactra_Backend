@@ -3,6 +3,7 @@
     public class patientinfoDto
     {
         public string id { get; set; }
+        public int profileId { get; set; }
         public  string  fullName { get; set; }
         public string  Email { get; set; }
         public bool isDeleted { get; set; }
