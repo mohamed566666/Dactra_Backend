@@ -67,6 +67,11 @@ builder.Services.AddScoped<IComplaintRepository, ComplaintRepository>();
 builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
 builder.Services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
 
+builder.Services.AddScoped<IPostRepository, PostRepository>();
+
+builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
+
 #endregion
 
 #region Services
@@ -96,6 +101,9 @@ builder.Services.AddScoped<IChronicDiseaseService, ChronicDiseaseService>();
 builder.Services.AddScoped<ICityService, CityService>();
 builder.Services.AddScoped<ISiteReviewService, SiteReviewService>();
 builder.Services.AddScoped<IComplaintService, ComplaintService>();
+
+builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<IQuestionService, QuestionService>();
 
 #endregion
 
@@ -235,6 +243,7 @@ app.UseMiddleware<TokenVersionMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<QuestionsHub>("/questionsHub");
 app.MapHub<AppointmentHub>("/appointmentHub");
 
 #endregion
