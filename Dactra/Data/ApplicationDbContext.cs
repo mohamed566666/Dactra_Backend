@@ -22,7 +22,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<VitalSignType> VitalSignTypes { get; set; }
     public DbSet<VitalSign> VitalSigns { get; set; }
     public DbSet<Rating> Ratings { get; set; }
-    public DbSet<ScheduleTable> ScheduleTables { get; set; }
     public DbSet<Medicines> Medicines { get; set; }
     public DbSet<EmailVerification> EmailVerifications { get; set; }
     public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
@@ -33,6 +32,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<DoctorQualification> DoctorQualifications { get; set; }
     public DbSet<Allergy> Allergies { get; set; }
     public DbSet<ChronicDisease> ChronicDiseases { get; set; }
+    public DbSet<DoctorAvailabilitySlot> DoctorAvailabilitySlots { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -101,5 +101,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
            .IsUnique();
         modelBuilder.Entity<SiteReview>()
             .HasIndex(r => r.Score);
+
+        modelBuilder.Entity<DoctorAvailabilitySlot>()
+        .HasIndex(x => new { x.DoctorId, x.SlotDateTimeUtc })
+        .IsUnique();
+
+        modelBuilder.Entity<DoctorAvailabilitySlot>()
+        .HasOne(x => x.Appointment)
+        .WithOne(x => x.Slot)
+        .HasForeignKey<PatientAppointment>(x => x.SlotId)
+        .OnDelete(DeleteBehavior.Restrict);
     }
 }

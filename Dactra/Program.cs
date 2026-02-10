@@ -72,6 +72,7 @@ builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
 
+
 #endregion
 
 #region Services
@@ -105,6 +106,7 @@ builder.Services.AddScoped<IComplaintService, ComplaintService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IQuestionService, QuestionService>();
 
+builder.Services.AddScoped<IDoctorSlotService, DoctorSlotService>();
 #endregion
 
 #region Background Services
@@ -245,6 +247,7 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<QuestionsHub>("/questionsHub");
 app.MapHub<AppointmentHub>("/appointmentHub");
+app.MapHub<DoctorScheduleHub>("/doctorScheduleHub");
 
 #endregion
 

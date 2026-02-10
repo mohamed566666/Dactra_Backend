@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260130113336_doctorSlots")]
+    partial class doctorSlots
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -128,25 +131,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "677cfc5d-89f6-4e64-b12f-b82e86b198af",
+                            Id = "3cba6b65-bafa-4ba7-ab28-63cf096befd1",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "9f99a251-236f-404b-ae96-9b70ce1c08ac",
+                            Id = "b0942b98-e02f-4e3a-9c31-5f7e9bebcf12",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "3b74380f-a2f4-406a-b9db-6df92117c395",
+                            Id = "11ef6ccb-28ea-4332-87db-4264870f21a2",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "5ad8ef78-5b6f-4f0d-9a29-c02d4d532c78",
+                            Id = "bbce93d2-16cd-4843-a9dc-d98de18cec47",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -356,25 +359,30 @@ namespace Dactra.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int?>("AppointmentId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("DoctorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DoctorProfileId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsBooked")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("SlotDateTimeUtc")
+                    b.Property<bool>("IsOpenByDoctor")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("SlotDateTime")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DoctorId", "SlotDateTimeUtc")
-                        .IsUnique();
+                    b.HasIndex("DoctorId");
 
                     b.ToTable("DoctorAvailabilitySlots");
                 });
@@ -520,8 +528,7 @@ namespace Dactra.Migrations
 
                     b.HasIndex("PrescriptionId");
 
-                    b.HasIndex("SlotId")
-                        .IsUnique();
+                    b.HasIndex("SlotId");
 
                     b.ToTable("PatientAppointments");
                 });
@@ -1111,12 +1118,6 @@ namespace Dactra.Migrations
                 {
                     b.HasBaseType("Dactra.Models.ServiceProviderProfile");
 
-                    b.Property<int?>("ConsultationDurationMinutes")
-                        .HasColumnType("int");
-
-                    b.Property<decimal?>("ConsultationPrice")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
 
@@ -1138,12 +1139,6 @@ namespace Dactra.Migrations
 
                     b.Property<DateTime>("StartingCareerDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<TimeSpan?>("WorkingEndTime")
-                        .HasColumnType("time");
-
-                    b.Property<TimeSpan?>("WorkingStartTime")
-                        .HasColumnType("time");
 
                     b.HasIndex("SpecializationId");
 
@@ -1281,9 +1276,9 @@ namespace Dactra.Migrations
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Dactra.Models.DoctorAvailabilitySlot", "Slot")
-                        .WithOne("Appointment")
-                        .HasForeignKey("Dactra.Models.PatientAppointment", "SlotId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .WithMany()
+                        .HasForeignKey("SlotId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Patient");
@@ -1543,11 +1538,6 @@ namespace Dactra.Migrations
             modelBuilder.Entity("Dactra.Models.Complaint", b =>
                 {
                     b.Navigation("Attachments");
-                });
-
-            modelBuilder.Entity("Dactra.Models.DoctorAvailabilitySlot", b =>
-                {
-                    b.Navigation("Appointment");
                 });
 
             modelBuilder.Entity("Dactra.Models.Majors", b =>
