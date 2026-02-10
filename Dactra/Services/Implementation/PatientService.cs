@@ -5,13 +5,15 @@
         private readonly IPatientProfileRepository _patientProfileRepository;
         private readonly IUserRepository _userRepository;
         private readonly ApplicationDbContext _context;
+        private readonly IVitalSignService _vitalSignService;
         private readonly IMapper _mapper;
 
-        public PatientService(IPatientProfileRepository patientProfileRepository, IUserRepository userRepository, ApplicationDbContext context , IMapper mapper )
+        public PatientService(IPatientProfileRepository patientProfileRepository, IUserRepository userRepository, ApplicationDbContext context , IMapper mapper , IVitalSignService vitalSignService)
         {
             _patientProfileRepository = patientProfileRepository;
             _userRepository = userRepository;
             _context = context;
+            _vitalSignService = vitalSignService;
             _mapper = mapper;
         }
 
@@ -71,7 +73,9 @@
             {
                 return null;
             }
-            return _mapper.Map<PatientProfileResponseDTO>(profile);
+            var ret = _mapper.Map<PatientProfileResponseDTO>(profile);
+            ret.vitalSigns = await _vitalSignService.GetByPatientIdAsync(profile.Id);
+            return ret;
         }
 
         public async Task<PatientProfileResponseDTO> GetProfileByUserEmail(string email)

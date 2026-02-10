@@ -162,6 +162,7 @@
                 .Select(p => new patientinfoDto
                 {
                     id = p.UserId,
+                    profileId = p.Id,
                     fullName = p.FirstName + " " + p.LastName,
                     Email = p.User.Email,
                     isDeleted = p.User.isDeleted
