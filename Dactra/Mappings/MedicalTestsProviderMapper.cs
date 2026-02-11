@@ -8,14 +8,14 @@
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.User, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
-                .ForMember(dest => dest.IsApproved, opt => opt.Ignore())
+                .ForMember(dest => dest.approvalStatus, opt => opt.Ignore())
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<MedicalTestsProviderUpdateDTO, MedicalTestProviderProfile>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.User, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
-                .ForMember(dest => dest.IsApproved, opt => opt.Ignore())
+                .ForMember(dest => dest.approvalStatus, opt => opt.Ignore())
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<MedicalTestProviderProfile, MedicalTestsProviderResponseDTO>()

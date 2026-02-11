@@ -21,11 +21,11 @@ namespace Dactra.Repositories.Interfaces
         Task<int> GetScanCount();
         Task<Dictionary<string, int>> GetWeeklyAppointmentsCount();
 
-        Task<List< patientinfoDto>> patientinfo(int page , int pageSize );
+        Task<List<patientinfoDto>> patientinfo(int page, int pageSize , string? searchName = null);
         Task<List< questionInfoDto>> questioninfo(int page  , int pageSize );
         Task<List< postInfoDto>> postinfo(int page , int pageSize );
-        Task<List<DoctorAdminInfoDTO>> GetAllDoctorsAsync(int page, int pageSize);
-        Task<List<MedicalProviderAdminDTO>> GetAllLabsAsync(int page, int pageSize);
-        Task<List<MedicalProviderAdminDTO>> GetAllScansAsync(int page, int pageSize);
+        Task<List<DoctorAdminInfoDTO>> GetAllDoctorsAsync(int page, int pageSize , string? searchName = null , ApprovalStatus? approvalStatus = null);
+        Task<List<MedicalProviderAdminDTO>> GetAllLabsAsync(int page, int pageSize , string? searchName = null , ApprovalStatus? approvalStatus = null);
+        Task<List<MedicalProviderAdminDTO>> GetAllScansAsync(int page, int pageSize , string? searchName = null , ApprovalStatus? approvalStatus = null);
     }
 }

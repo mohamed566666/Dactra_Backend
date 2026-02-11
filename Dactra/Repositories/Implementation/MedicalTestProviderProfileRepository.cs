@@ -29,7 +29,7 @@
         public async Task<IEnumerable<MedicalTestProviderProfile>> GetApprovedProfilesAsync(MedicalTestProviderType? type = null)
         {
             var query = _context.MedicalTestProviders
-                .Where(m => m.IsApproved);
+                .Where(m => m.approvalStatus == ApprovalStatus.approved);
             if (type.HasValue)
             {
                 query = query.Where(m => m.Type == type.Value);

@@ -22,7 +22,7 @@
             {
                 throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
-            profile.IsApproved = true;
+            profile.approvalStatus = ApprovalStatus.approved;
             _medicalTestProviderProfileRepository.Update(profile);
             await _medicalTestProviderProfileRepository.SaveChangesAsync();
         }
@@ -120,7 +120,7 @@
             {
                 throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
-            profile.IsApproved = false;
+            profile.approvalStatus = ApprovalStatus.rejected;
             _medicalTestProviderProfileRepository.Update(profile);
             await _medicalTestProviderProfileRepository.SaveChangesAsync();
         }

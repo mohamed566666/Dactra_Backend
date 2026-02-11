@@ -19,7 +19,7 @@ namespace Dactra.Repositories.Implementation
         public async Task<IEnumerable<DoctorProfile>> GetApprovedDoctorsAsync()
         {
             return await _context.Doctors
-                .Where(m => m.IsApproved)
+                .Where(m => m.approvalStatus == ApprovalStatus.approved)
                 .OrderByDescending(M => M.Avg_Rating)
                 .ToListAsync();
         }
@@ -51,7 +51,7 @@ namespace Dactra.Repositories.Implementation
         public async Task<IEnumerable<DoctorProfile>> GetdisApprovedDoctorsAsync()
         {
             return await _context.Doctors
-                .Where(m => !m.IsApproved)
+                .Where(m => m.approvalStatus == ApprovalStatus.rejected)
                 .ToListAsync();
         }
 
@@ -63,7 +63,7 @@ namespace Dactra.Repositories.Implementation
         filter.PageNumber = Math.Max(1, filter.PageNumber);
             filter.PageSize = Math.Clamp(filter.PageSize, 1, 100);
             var baseQuery = _context.Doctors
-                .Where(d => d.IsApproved)
+                .Where(d => d.approvalStatus == ApprovalStatus.approved)
                 .Include(d => d.User)
                 .Include(d => d.specialization)
                 .AsQueryable();

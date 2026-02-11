@@ -99,12 +99,11 @@
             return Ok(result);
         }
         [HttpGet("allPetientInfo")]
-        public async Task<IActionResult> GetAllPatients(int page = 1, int pageSize = 10)
+        public async Task<IActionResult> GetAllPatients(int page = 1, int pageSize = 10 , string? searchName = null)
         {
             if (page < 1) page = 1;
             if (pageSize < 1) pageSize = 10;
-
-            var result = await _service.patientinfo(page, pageSize);
+            var result = await _service.patientinfo(page, pageSize, searchName);
             return Ok(result);
         }
         [HttpGet("allquestionsInfo")]
@@ -112,7 +111,6 @@
         {
             if (page < 1) page = 1;
             if (pageSize < 1) pageSize = 10;
-
             var result = await _service.questioninfo(page, pageSize);
             return Ok(result);
         }
@@ -121,29 +119,28 @@
         {
             if (page < 1) page = 1;
             if (pageSize < 1) pageSize = 10;
-
             var result = await _service.postinfo(page, pageSize);
             return Ok(result);
         }
 
         [HttpGet("allDoctorsInfo")]
-        public async Task<IActionResult> GetDoctors(int page = 1, int pageSize = 10)
+        public async Task<IActionResult> GetDoctors(int page = 1, int pageSize = 10, string? searchName = null, ApprovalStatus? approvalStatus = null)
         {
-            var result = await _service.GetDoctorsAsync(page, pageSize);
+            var result = await _service.GetDoctorsAsync(page, pageSize, searchName , approvalStatus);
             return Ok(result);
         }
 
         [HttpGet("allLabsInfo")]
-        public async Task<IActionResult> GetLabs(int page = 1, int pageSize = 10)
+        public async Task<IActionResult> GetLabs(int page = 1, int pageSize = 10 , string? searchName = null, ApprovalStatus? approvalStatus = null)
         {
-            var result = await _service.GetLabsAsync(page, pageSize);
+            var result = await _service.GetLabsAsync(page, pageSize, searchName , approvalStatus);
             return Ok(result);
         }
 
         [HttpGet("allScansInfo")]
-        public async Task<IActionResult> GetScans(int page = 1, int pageSize = 10)
+        public async Task<IActionResult> GetScans(int page = 1, int pageSize = 10, string? searchName = null, ApprovalStatus? approvalStatus = null)
         {
-            var result = await _service.GetScansAsync(page, pageSize);
+            var result = await _service.GetScansAsync(page, pageSize, searchName , approvalStatus);
             return Ok(result);
         }
         [HttpPut("approve-Provider")]

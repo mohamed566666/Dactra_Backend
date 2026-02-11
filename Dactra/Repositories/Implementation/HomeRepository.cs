@@ -14,7 +14,7 @@ namespace Dactra.Repositories.Implementation
         {
             var topDoctors = await _dbContext.Doctors
                 .Include(d => d.specialization)
-                .Where(d => d.IsApproved == true)
+                .Where(d => d.approvalStatus == ApprovalStatus.approved)
                 .OrderByDescending(d => d.Avg_Rating)
                 .ThenByDescending(d => _dbContext.Ratings
                     .Count(r => r.ProviderId == d.Id))

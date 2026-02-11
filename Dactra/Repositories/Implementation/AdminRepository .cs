@@ -1,4 +1,6 @@
-﻿namespace Dactra.Repositories.Implementation
+﻿using Dactra.Enums;
+
+namespace Dactra.Repositories.Implementation
 {
     public class AdminRepository : IAdminRepository
     {
@@ -153,22 +155,78 @@
            return await _userManager.IsInRoleAsync(user, "Admin");
         }
 
-        public async Task<List<patientinfoDto>> patientinfo(int page = 1, int pageSize = 10)
+        public async Task<List<patientinfoDto>> patientinfo(int page = 1, int pageSize = 10, string? searchName = null)
         {
-            var result = await _context.Patients
-                .OrderBy(p => p.Id)
+            const double FuzzyThreshold = 0.55;
+            const int MaxCandidates = 1000;
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+            var baseQuery = _context.Patients
+                .Include(p => p.User)
+                .AsQueryable();
+            if (string.IsNullOrWhiteSpace(searchName))
+            {
+                var total = await baseQuery.CountAsync();
+
+                var data = await baseQuery
+                    .OrderBy(p => p.Id)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(p => new patientinfoDto
+                    {
+                        id = p.UserId,
+                        fullName = p.FirstName + " " + p.LastName,
+                        Email = p.User.Email,
+                        isDeleted = p.User.isDeleted
+                    })
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                return data;
+            }
+            var normalized = searchName.Trim().ToLower();
+            var candidates = await baseQuery
+                .Where(p =>
+                    (p.FirstName + " " + p.LastName).ToLower().Contains(normalized.Substring(0, 1)) ||
+                    p.FirstName.ToLower().Contains(normalized.Substring(0, 1)) ||
+                    p.LastName.ToLower().Contains(normalized.Substring(0, 1))
+                )
+                .Take(MaxCandidates)
+                .AsNoTracking()
+                .ToListAsync();
+            var scored = candidates
+                .Select(p =>
+                {
+                    var fullName = $"{p.FirstName} {p.LastName}".Trim().ToLower();
+
+                    double score = Math.Max(
+                        FuzzyMatcher.SimilarityScore(fullName, normalized),
+                        Math.Max(
+                            FuzzyMatcher.SimilarityScore(p.FirstName.ToLower(), normalized),
+                            FuzzyMatcher.SimilarityScore(p.LastName.ToLower(), normalized)
+                        )
+                    );
+
+                    return new { Patient = p, Score = score };
+                })
+                .Where(x => x.Score >= FuzzyThreshold)
+                .OrderByDescending(x => x.Score)
+                .ThenBy(x => x.Patient.FirstName)
+                .ThenBy(x => x.Patient.LastName)
+                .ToList();
+            var totalCount = scored.Count;
+            var paged = scored
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(p => new patientinfoDto
+                .Select(x => new patientinfoDto
                 {
-                    id = p.UserId,
-                    fullName = p.FirstName + " " + p.LastName,
-                    Email = p.User.Email,
-                    isDeleted = p.User.isDeleted
+                    id = x.Patient.UserId,
+                    fullName = x.Patient.FirstName + " " + x.Patient.LastName,
+                    Email = x.Patient.User.Email,
+                    isDeleted = x.Patient.User.isDeleted
                 })
-                .ToListAsync();
-
-            return result;
+                .ToList();
+            return paged;
         }
 
 
@@ -211,63 +269,234 @@
             return result;
         }
 
-        public async Task<List<DoctorAdminInfoDTO>> GetAllDoctorsAsync(int page, int pageSize)
+        public async Task<List<DoctorAdminInfoDTO>> GetAllDoctorsAsync(int page, int pageSize, string? searchName = null, ApprovalStatus? approvalStatus = null)
         {
-            return await _context.Doctors
+            const double FuzzyThreshold = 0.55;
+            const int MaxCandidates = 1000;
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+            var baseQuery = _context.Doctors
                 .Include(d => d.User)
-                .OrderBy(d => d.Id)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(d => new DoctorAdminInfoDTO
+                .AsQueryable();
+            if (string.IsNullOrWhiteSpace(searchName))
+            {
+                var filteredQuery = baseQuery;
+                if (approvalStatus != null)
                 {
-                    ProfileId = d.Id,
-                    Name = d.FirstName + " " + d.LastName,
-                    Email = d.User.Email,
-                    IsApproved = d.IsApproved
-                })
+                    filteredQuery = filteredQuery.Where(d => d.approvalStatus == approvalStatus);
+                }
+                return await filteredQuery
+                    .OrderBy(d => d.Id)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(d => new DoctorAdminInfoDTO
+                    {
+                        ProfileId = d.Id,
+                        Name = d.FirstName + " " + d.LastName,
+                        Email = d.User.Email,
+                        approvalStatus = d.approvalStatus
+                    })
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
+
+            var normalized = searchName.Trim().ToLower();
+            var prefix = normalized.Substring(0, 1);
+            var candidates = await baseQuery
+                .Where(d =>
+                    ((d.FirstName + " " + d.LastName).ToLower().Contains(prefix) ||
+                    d.FirstName.ToLower().Contains(prefix) ||
+                    d.LastName.ToLower().Contains(prefix)) &&
+                    (approvalStatus == null || d.approvalStatus == approvalStatus)
+                )
+                .Take(MaxCandidates)
                 .AsNoTracking()
                 .ToListAsync();
+            var scored = candidates
+                .Select(d =>
+                {
+                    var fullName = $"{d.FirstName} {d.LastName}".Trim().ToLower();
+
+                    double score = Math.Max(
+                        FuzzyMatcher.SimilarityScore(fullName, normalized),
+                        Math.Max(
+                            FuzzyMatcher.SimilarityScore(d.FirstName.ToLower(), normalized),
+                            FuzzyMatcher.SimilarityScore(d.LastName.ToLower(), normalized)
+                        )
+                    );
+
+                    return new { Doctor = d, Score = score };
+                })
+                .Where(x => x.Score >= FuzzyThreshold)
+                .OrderByDescending(x => x.Score)
+                .ThenBy(x => x.Doctor.FirstName)
+                .ThenBy(x => x.Doctor.LastName)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new DoctorAdminInfoDTO
+                {
+                    ProfileId = x.Doctor.Id,
+                    Name = x.Doctor.FirstName + " " + x.Doctor.LastName,
+                    Email = x.Doctor.User.Email,
+                    approvalStatus = x.Doctor.approvalStatus
+                })
+                .ToList();
+
+            return scored;
         }
 
-        public async Task<List<MedicalProviderAdminDTO>> GetAllLabsAsync(int page, int pageSize)
+        public async Task<List<MedicalProviderAdminDTO>> GetAllLabsAsync(int page,int pageSize,string? searchName = null , ApprovalStatus? approvalStatus = null)
         {
-            return await _context.MedicalTestProviders
+            const double FuzzyThreshold = 0.55;
+            const int MaxCandidates = 1000;
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var baseQuery = _context.MedicalTestProviders
                 .Include(p => p.User)
                 .Where(p => p.Type == MedicalTestProviderType.Lab)
-                .OrderBy(p => p.Id)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(p => new MedicalProviderAdminDTO
+                .AsQueryable();
+            if (string.IsNullOrWhiteSpace(searchName))
+            {
+                var filteredQuery = baseQuery;
+
+                if (approvalStatus != null)
                 {
-                    Id = p.Id,
-                    Name = p.Name,
-                    PhoneNumber = p.User.PhoneNumber,
-                    IsApproved = p.IsApproved,
-                    Address = p.Address
-                })
+                    filteredQuery = filteredQuery
+                        .Where(p => p.approvalStatus == approvalStatus);
+                }
+
+                return await filteredQuery
+                    .OrderBy(p => p.Id)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(p => new MedicalProviderAdminDTO
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        PhoneNumber = p.User.PhoneNumber,
+                        approvalStatus = p.approvalStatus,
+                        Address = p.Address
+                    })
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
+            var normalized = searchName.Trim().ToLower();
+            var prefix = normalized.Substring(0, 1);
+
+            var candidates = await baseQuery
+                .Where(p =>
+                    p.Name.ToLower().Contains(prefix) &&
+                    (approvalStatus == null || p.approvalStatus == approvalStatus)
+                )
+                .Take(MaxCandidates)
                 .AsNoTracking()
                 .ToListAsync();
+
+            var scored = candidates
+                .Select(p =>
+                {
+                    double score = FuzzyMatcher.SimilarityScore(
+                        p.Name.ToLower(),
+                        normalized
+                    );
+
+                    return new { Provider = p, Score = score };
+                })
+                .Where(x => x.Score >= FuzzyThreshold)
+                .OrderByDescending(x => x.Score)
+                .ThenBy(x => x.Provider.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new MedicalProviderAdminDTO
+                {
+                    Id = x.Provider.Id,
+                    Name = x.Provider.Name,
+                    PhoneNumber = x.Provider.User.PhoneNumber,
+                    approvalStatus = x.Provider.approvalStatus,
+                    Address = x.Provider.Address
+                })
+                .ToList();
+
+            return scored;
         }
 
-        public async Task<List<MedicalProviderAdminDTO>> GetAllScansAsync(int page, int pageSize)
+
+        public async Task<List<MedicalProviderAdminDTO>> GetAllScansAsync(int page,int pageSize,string? searchName = null , ApprovalStatus? approvalStatus = null)
         {
-            return await _context.MedicalTestProviders
+            const double FuzzyThreshold = 0.55;
+            const int MaxCandidates = 1000;
+
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var baseQuery = _context.MedicalTestProviders
                 .Include(p => p.User)
                 .Where(p => p.Type == MedicalTestProviderType.Scan)
-                .OrderBy(p => p.Id)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(p => new MedicalProviderAdminDTO
+                .AsQueryable();
+            if (string.IsNullOrWhiteSpace(searchName))
+            {
+                var filteredQuery = baseQuery;
+
+                if (approvalStatus != null)
                 {
-                    Id = p.Id,
-                    Name = p.Name,
-                    PhoneNumber = p.User.PhoneNumber,
-                    IsApproved = p.IsApproved,
-                    Address = p.Address
-                })
+                    filteredQuery = filteredQuery
+                        .Where(p => p.approvalStatus == approvalStatus);
+                }
+
+                return await filteredQuery
+                    .OrderBy(p => p.Id)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(p => new MedicalProviderAdminDTO
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        PhoneNumber = p.User.PhoneNumber,
+                        approvalStatus = p.approvalStatus,
+                        Address = p.Address
+                    })
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
+            var normalized = searchName.Trim().ToLower();
+            var prefix = normalized.Substring(0, 1);
+
+            var candidates = await baseQuery
+                .Where(p =>
+                    p.Name.ToLower().Contains(prefix) &&
+                    (approvalStatus == null || p.approvalStatus == approvalStatus)
+                )
+                .Take(MaxCandidates)
                 .AsNoTracking()
                 .ToListAsync();
-        }
 
+            var scored = candidates
+                .Select(p =>
+                {
+                    double score = FuzzyMatcher.SimilarityScore(
+                        p.Name.ToLower(),
+                        normalized
+                    );
+
+                    return new { Provider = p, Score = score };
+                })
+                .Where(x => x.Score >= FuzzyThreshold)
+                .OrderByDescending(x => x.Score)
+                .ThenBy(x => x.Provider.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new MedicalProviderAdminDTO
+                {
+                    Id = x.Provider.Id,
+                    Name = x.Provider.Name,
+                    PhoneNumber = x.Provider.User.PhoneNumber,
+                    approvalStatus = x.Provider.approvalStatus,
+                    Address = x.Provider.Address
+                })
+                .ToList();
+
+            return scored;
+        }
     }
 }
