@@ -13,9 +13,11 @@ namespace Dactra.Repositories.Implementation
         }
         public async Task AddAsync(T entity) => await _dbSet.AddAsync(entity);
 
-        public void Delete(T entity)
+        public async void Delete(T entity)
         {
             _dbSet.Remove(entity);
+            await _context.SaveChangesAsync();
+
         }
 
         public virtual async Task<IEnumerable<T>> GetAllAsync()

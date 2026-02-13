@@ -13,8 +13,15 @@
 
         public async Task CreateMajorAsync(MajorBasicsDTO majorDto)
         {
-            var major = _mapper.Map<Majors>(majorDto);
+            var major = new Majors
+            {
+                Name = majorDto.Name,
+                Description = majorDto.Description,
+                Iconpath = majorDto.Iconpath
+            };
+
             await _majorsRepository.AddAsync(major);
+            await _majorsRepository.SaveChangesAsync();
         }
 
         public async Task DeleteMajorByIdAsync(int id)

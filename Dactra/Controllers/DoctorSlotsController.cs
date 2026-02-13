@@ -33,7 +33,7 @@ namespace Dactra.Controllers
             return doctor.Id;
         }
 
-        [HttpGet]
+        [HttpGet("myworking-hours")]
         public async Task<IActionResult> GetWorkingHours()
         {
             var doctorId = await GetDoctorIdFromTokenAsync();
@@ -50,7 +50,7 @@ namespace Dactra.Controllers
             }
         }
 
-        [HttpGet("{doctorId}")]
+        [HttpGet("working-hours{doctorId}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetWorkingHoursById(int doctorId)
         {
@@ -69,7 +69,7 @@ namespace Dactra.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPut("working-details")]
         public async Task<IActionResult> UpdateWorkingHours([FromBody] WorkingHoursDTO workingHours)
         {
             var doctorId = await GetDoctorIdFromTokenAsync();
@@ -95,7 +95,7 @@ namespace Dactra.Controllers
         }
 
 
-        [HttpPost("save")]
+        [HttpPost("save-slots")]
         public async Task<IActionResult> SaveSlots([FromBody] DoctorSlotsDto dto)
         {
             var doctorId = await GetDoctorIdFromTokenAsync();
@@ -105,7 +105,7 @@ namespace Dactra.Controllers
             return Ok(new { message = "Slots saved successfully" });
         }
 
-        [HttpGet("all")]
+        [HttpGet("all-slots")]
         public async Task<IActionResult> GetAllSlots()
         {
             var doctorId = await GetDoctorIdFromTokenAsync();
@@ -115,7 +115,7 @@ namespace Dactra.Controllers
             return Ok(slots);
         }
 
-        [HttpGet("range")]
+        [HttpGet("range-slots-by-time")]
         public async Task<IActionResult> GetSlotsRange([FromQuery] DateTime fromUtc, [FromQuery] DateTime toUtc)
         {
             var doctorId = await GetDoctorIdFromTokenAsync();
@@ -125,7 +125,7 @@ namespace Dactra.Controllers
             return Ok(slots);
         }
 
-        [HttpDelete("day")]
+        [HttpDelete("slots-on-day")]
         public async Task<IActionResult> DeleteSlotsByDay([FromQuery] DateTime dayUtc)
         {
             var doctorId = await GetDoctorIdFromTokenAsync();
@@ -135,7 +135,7 @@ namespace Dactra.Controllers
             return Ok(new { message = "Slots deleted successfully" });
         }
 
-        [HttpDelete("{slotId}")]
+        [HttpDelete("delete-slot{slotId}")]
         public async Task<IActionResult> DeleteSlot(int slotId)
         {
             var doctorId = await GetDoctorIdFromTokenAsync();
