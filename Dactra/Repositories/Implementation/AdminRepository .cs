@@ -220,10 +220,18 @@ namespace Dactra.Repositories.Implementation
                 .Take(pageSize)
                 .Select(x => new patientinfoDto
                 {
+<<<<<<< HEAD
                     id = x.Patient.UserId,
                     fullName = x.Patient.FirstName + " " + x.Patient.LastName,
                     Email = x.Patient.User.Email,
                     isDeleted = x.Patient.User.isDeleted
+=======
+                    id = p.UserId,
+                    profileId = p.Id,
+                    fullName = p.FirstName + " " + p.LastName,
+                    Email = p.User.Email,
+                    isDeleted = p.User.isDeleted
+>>>>>>> 09da4474040d378a02a9aef8e20a8c99037647e0
                 })
                 .ToList();
             return paged;

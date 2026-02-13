@@ -3,16 +3,21 @@
     public class DoctorService : IDoctorService
     {
         private readonly IDoctorProfileRepository _doctorProfileRepository;
+        private readonly IDoctorQualificationService _doctorQualificationService;
         private readonly IUserRepository _userRepository;
+        private readonly IRatingService _ratingService;
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public DoctorService(IDoctorProfileRepository doctorProfileRepository , IUserRepository userRepository, ApplicationDbContext context , IMapper mapper)
+        public DoctorService(IDoctorProfileRepository doctorProfileRepository , IRatingService ratingService ,  IUserRepository userRepository, ApplicationDbContext context, IDoctorQualificationService doctorQualificationService , IMapper mapper)
         {
             _doctorProfileRepository = doctorProfileRepository;
             _userRepository = userRepository;
             _context = context;
             _mapper = mapper;
+            _doctorProfileRepository = doctorProfileRepository;
+            _doctorQualificationService = doctorQualificationService;
+            _ratingService = ratingService;
         }
 
         public async Task CompleteRegistrationAsync(DoctorCompleteDTO doctorComplateDTO)
@@ -65,14 +70,25 @@
             return _mapper.Map<IEnumerable<DoctorProfileResponseDTO>>(profiles);
         }
 
-        public async Task<DoctorProfileResponseDTO> GetProfileByIdAsync(int doctorProfileId)
+        public async Task<DoctorsResponseDTO> GetProfileByIdAsync(int doctorProfileId)
         {
             var profile = await _doctorProfileRepository.GetByIdAsync(doctorProfileId);
             if (profile == null)
-            {
                 return null;
-            }
-            return _mapper.Map<DoctorProfileResponseDTO>(profile);
+
+            var doctorDTO = _mapper.Map<DoctorsResponseDTO>(profile);
+            var qualificationResponses = await _doctorQualificationService.GetAllAsync(profile.Id);
+            doctorDTO.Qualifications = qualificationResponses
+                .Select(q => new DoctorQualificationDTO
+                {
+                    Type = q.Type,
+                    Description = q.Description
+                }).ToList();
+
+            doctorDTO.ratings =
+                await _ratingService.GetRatingsforProviderAsync(profile.Id);
+
+            return doctorDTO;
         }
 
         public async Task<DoctorProfileResponseDTO> GetProfileByUserEmail(string email)
