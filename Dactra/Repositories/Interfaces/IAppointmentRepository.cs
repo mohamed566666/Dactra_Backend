@@ -2,8 +2,8 @@
 {
     public interface IAppointmentRepository
     {
-        Task<bool> IsBooked(int scheduletableId);
+        Task<bool> IsBooked(int slotId);
         Task<PatientAppointment> BookeAsync(PatientAppointment appointment);
-        Task<ScheduleTable> GetScheduleByIdAsync(int scheduleTableId);
+        Task<DoctorAvailabilitySlot> GetScheduleByIdAsync(int slotId);
     }
 }

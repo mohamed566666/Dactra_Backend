@@ -40,6 +40,7 @@
                     throw new InvalidOperationException("This User Already has an Profile");
                 }
                 var doctorProfile = _mapper.Map<DoctorProfile>(doctorComplateDTO);
+                doctorProfile.approvalStatus = ApprovalStatus.newPending;
                 await _doctorProfileRepository.AddAsync(doctorProfile);
                 user.IsRegistrationComplete = true;
                 await _userRepository.UpdateUserAsync(user);

@@ -1,4 +1,6 @@
-﻿namespace Dactra.Repositories.Interfaces
+﻿using System.Linq.Expressions;
+
+namespace Dactra.Repositories.Interfaces
 {
     public interface IGenericRepository<T> where T : class
     {
@@ -7,6 +9,7 @@
         Task<T?> GetByIdAsync(int id);
         void Update(T entity);
         void Delete(T entity);
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> expression);
         Task SaveChangesAsync();
     }
 }

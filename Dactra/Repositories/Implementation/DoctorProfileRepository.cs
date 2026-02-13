@@ -1,4 +1,6 @@
-﻿namespace Dactra.Repositories.Implementation
+﻿using Dactra.DTOs.DoctorSlotsDTOs;
+
+namespace Dactra.Repositories.Implementation
 {
     public class DoctorProfileRepository : GenericRepository<DoctorProfile> , IDoctorProfileRepository
     {
@@ -17,7 +19,7 @@
         public async Task<IEnumerable<DoctorProfile>> GetApprovedDoctorsAsync()
         {
             return await _context.Doctors
-                .Where(m => m.IsApproved)
+                .Where(m => m.approvalStatus == ApprovalStatus.approved)
                 .OrderByDescending(M => M.Avg_Rating)
                 .ToListAsync();
         }
@@ -49,7 +51,7 @@
         public async Task<IEnumerable<DoctorProfile>> GetdisApprovedDoctorsAsync()
         {
             return await _context.Doctors
-                .Where(m => !m.IsApproved)
+                .Where(m => m.approvalStatus == ApprovalStatus.rejected)
                 .ToListAsync();
         }
 
@@ -61,7 +63,7 @@
         filter.PageNumber = Math.Max(1, filter.PageNumber);
             filter.PageSize = Math.Clamp(filter.PageSize, 1, 100);
             var baseQuery = _context.Doctors
-                .Where(d => d.IsApproved)
+                .Where(d => d.approvalStatus == ApprovalStatus.approved)
                 .Include(d => d.User)
                 .Include(d => d.specialization)
                 .AsQueryable();
@@ -169,6 +171,48 @@
                 .Select(x => x.Doctor)
                 .ToList();
             return (paged, totalFuzzyMatches);
+        }
+        public async Task<bool> UpdateWorkingHoursAsync(int doctorId, WorkingHoursDTO workingHours)
+        {
+            var doctor = await _context.Doctors.FindAsync(doctorId);
+            if (doctor == null)
+                return false;
+            if (!TimeSpan.TryParseExact(workingHours.WorkingStartTime, "hh\\:mm",
+                CultureInfo.InvariantCulture, out var startTime))
+                throw new InvalidOperationException("Invalid start time format. Use HH:mm (24-hour)");
+            if (!TimeSpan.TryParseExact(workingHours.WorkingEndTime, "hh\\:mm",
+                CultureInfo.InvariantCulture, out var endTime))
+                throw new InvalidOperationException("Invalid end time format. Use HH:mm (24-hour)");
+            if (startTime >= endTime)
+                throw new InvalidOperationException("Start time must be before end time");
+            if (workingHours.ConsultationDurationMinutes <= 0)
+                throw new InvalidOperationException("Consultation duration must be greater than 0");
+            doctor.WorkingStartTime = startTime;
+            doctor.WorkingEndTime = endTime;
+            doctor.ConsultationDurationMinutes = workingHours.ConsultationDurationMinutes;
+            doctor.ConsultationPrice = workingHours.ConsultationPrice;
+            _context.Doctors.Update(doctor);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<WorkingHoursResponseDTO> GetWorkingHoursAsync(int doctorId)
+        {
+            var doctor = await _context.Doctors
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.Id == doctorId);
+
+            if (doctor == null)
+                throw new KeyNotFoundException($"Doctor with ID {doctorId} not found");
+
+            var response = new WorkingHoursResponseDTO
+            {
+                WorkingStartTime = doctor.WorkingStartTime,
+                WorkingEndTime = doctor.WorkingEndTime,
+                ConsultationDurationMinutes = doctor.ConsultationDurationMinutes,
+                ConsultationPrice = doctor.ConsultationPrice,
+            };
+            return response;
         }
     }
 }

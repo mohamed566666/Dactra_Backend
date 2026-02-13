@@ -14,7 +14,7 @@
             var provider = await _repository.GetByIdAsync(id);
             if (provider == null)
                 return false;
-            provider.IsApproved = true;
+            provider.approvalStatus = ApprovalStatus.approved;
             await _repository.SaveChangesAsync();
             return true;
         }
@@ -24,7 +24,7 @@
             var provider = await _repository.GetByIdAsync(id);
             if (provider == null)
                 return false;
-            provider.IsApproved = false;
+            provider.approvalStatus = ApprovalStatus.rejected;
             await _repository.SaveChangesAsync();
             return true;
         }

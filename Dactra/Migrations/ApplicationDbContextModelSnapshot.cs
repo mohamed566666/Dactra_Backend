@@ -128,25 +128,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "6286b779-648d-4f88-9777-5b6b5cda9562",
+                            Id = "009e6c4b-dd66-46a4-bc1b-da2fba473a1e",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "5c242443-937b-4957-947c-25cc200e8f4f",
+                            Id = "c203944a-4869-4718-8bf6-b1eb16e08612",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "df2d9c73-52e0-4d6c-81a0-1586cd49973a",
+                            Id = "6443c647-66b7-4d5f-ad43-ff0c951a48a4",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "12c1e85d-8212-4ae6-b5b9-cdb0aace7412",
+                            Id = "386530a6-1a8f-4f2d-beec-840bff4f86c0",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -348,6 +348,37 @@ namespace Dactra.Migrations
                     b.ToTable("ComplaintAttachments");
                 });
 
+            modelBuilder.Entity("Dactra.Models.DoctorAvailabilitySlot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AppointmentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DoctorId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsBooked")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("SlotDateTimeUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DoctorId", "SlotDateTimeUtc")
+                        .IsUnique();
+
+                    b.ToTable("DoctorAvailabilitySlots");
+                });
+
             modelBuilder.Entity("Dactra.Models.DoctorQualification", b =>
                 {
                     b.Property<int>("Id")
@@ -475,11 +506,11 @@ namespace Dactra.Migrations
                     b.Property<int?>("PrescriptionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ScheduleTableId")
+                    b.Property<int>("SlotId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("Status")
-                        .HasColumnType("bit");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -489,7 +520,8 @@ namespace Dactra.Migrations
 
                     b.HasIndex("PrescriptionId");
 
-                    b.HasIndex("ScheduleTableId");
+                    b.HasIndex("SlotId")
+                        .IsUnique();
 
                     b.ToTable("PatientAppointments");
                 });
@@ -757,33 +789,6 @@ namespace Dactra.Migrations
                     b.ToTable("Ratings");
                 });
 
-            modelBuilder.Entity("Dactra.Models.ScheduleTable", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("DoctorId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("End")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("Start")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DoctorId");
-
-                    b.ToTable("ScheduleTables");
-                });
-
             modelBuilder.Entity("Dactra.Models.ServiceProviderProfile", b =>
                 {
                     b.Property<int>("Id")
@@ -804,9 +809,6 @@ namespace Dactra.Migrations
                     b.Property<decimal>("Avg_Rating")
                         .HasColumnType("decimal(3,2)");
 
-                    b.Property<bool>("IsApproved")
-                        .HasColumnType("bit");
-
                     b.Property<string>("LicenceNo")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -819,6 +821,9 @@ namespace Dactra.Migrations
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("approvalStatus")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -1106,6 +1111,12 @@ namespace Dactra.Migrations
                 {
                     b.HasBaseType("Dactra.Models.ServiceProviderProfile");
 
+                    b.Property<int?>("ConsultationDurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("ConsultationPrice")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
 
@@ -1127,6 +1138,12 @@ namespace Dactra.Migrations
 
                     b.Property<DateTime>("StartingCareerDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan?>("WorkingEndTime")
+                        .HasColumnType("time");
+
+                    b.Property<TimeSpan?>("WorkingStartTime")
+                        .HasColumnType("time");
 
                     b.HasIndex("SpecializationId");
 
@@ -1214,6 +1231,17 @@ namespace Dactra.Migrations
                     b.Navigation("Complaint");
                 });
 
+            modelBuilder.Entity("Dactra.Models.DoctorAvailabilitySlot", b =>
+                {
+                    b.HasOne("Dactra.Models.DoctorProfile", "Doctor")
+                        .WithMany("AvailableSlots")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
+                });
+
             modelBuilder.Entity("Dactra.Models.DoctorQualification", b =>
                 {
                     b.HasOne("Dactra.Models.DoctorProfile", "DoctorProfile")
@@ -1252,10 +1280,10 @@ namespace Dactra.Migrations
                         .HasForeignKey("PrescriptionId")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("Dactra.Models.ScheduleTable", "Schedule_table")
-                        .WithMany("Patient_Appointment")
-                        .HasForeignKey("ScheduleTableId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                    b.HasOne("Dactra.Models.DoctorAvailabilitySlot", "Slot")
+                        .WithOne("Appointment")
+                        .HasForeignKey("Dactra.Models.PatientAppointment", "SlotId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Patient");
@@ -1264,7 +1292,7 @@ namespace Dactra.Migrations
 
                     b.Navigation("Prescription");
 
-                    b.Navigation("Schedule_table");
+                    b.Navigation("Slot");
                 });
 
             modelBuilder.Entity("Dactra.Models.PatientProfile", b =>
@@ -1378,17 +1406,6 @@ namespace Dactra.Migrations
                     b.Navigation("Patient");
 
                     b.Navigation("Provider");
-                });
-
-            modelBuilder.Entity("Dactra.Models.ScheduleTable", b =>
-                {
-                    b.HasOne("Dactra.Models.DoctorProfile", "Doctor")
-                        .WithMany("Time")
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Doctor");
                 });
 
             modelBuilder.Entity("Dactra.Models.ServiceProviderProfile", b =>
@@ -1528,6 +1545,11 @@ namespace Dactra.Migrations
                     b.Navigation("Attachments");
                 });
 
+            modelBuilder.Entity("Dactra.Models.DoctorAvailabilitySlot", b =>
+                {
+                    b.Navigation("Appointment");
+                });
+
             modelBuilder.Entity("Dactra.Models.Majors", b =>
                 {
                     b.Navigation("Post");
@@ -1570,11 +1592,6 @@ namespace Dactra.Migrations
                     b.Navigation("Answers");
                 });
 
-            modelBuilder.Entity("Dactra.Models.ScheduleTable", b =>
-                {
-                    b.Navigation("Patient_Appointment");
-                });
-
             modelBuilder.Entity("Dactra.Models.ServiceProviderProfile", b =>
                 {
                     b.Navigation("Ratings");
@@ -1587,11 +1604,11 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Dactra.Models.DoctorProfile", b =>
                 {
+                    b.Navigation("AvailableSlots");
+
                     b.Navigation("Posts");
 
                     b.Navigation("Qualifications");
-
-                    b.Navigation("Time");
                 });
 
             modelBuilder.Entity("Dactra.Models.MedicalTestProviderProfile", b =>

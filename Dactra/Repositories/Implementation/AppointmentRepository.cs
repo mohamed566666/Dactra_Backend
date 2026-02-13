@@ -17,12 +17,12 @@ namespace Dactra.Repositories.Implementation
 
         public async Task<bool> IsBooked(int scheduletableId)
         {
-           var res=await _context.PatientAppointments.AnyAsync(a => a.ScheduleTableId == scheduletableId && a.Status==true);
+            var res = await _context.PatientAppointments.AnyAsync(a => a.SlotId == scheduletableId && a.Status == AppointmentStatus.Confirmed);
             return res;
         }
-        public async Task<ScheduleTable> GetScheduleByIdAsync(int scheduleTableId)
+        public async Task<DoctorAvailabilitySlot> GetScheduleByIdAsync(int scheduleTableId)
         {
-            return await _context.ScheduleTables
+            return await _context.DoctorAvailabilitySlots
             .Include(s => s.Doctor)
             .FirstOrDefaultAsync(s => s.Id == scheduleTableId);
         }

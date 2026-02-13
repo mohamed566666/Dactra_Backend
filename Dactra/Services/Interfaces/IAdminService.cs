@@ -15,11 +15,11 @@ namespace Dactra.Services.Interfaces
         Task<bool> DeletePosts(string id);
         Task<StatsDto> GetSummary();
         Task<Dictionary<string, int>> GetWeeklyAppointmentsCount();
-        Task<List<patientinfoDto>> patientinfo(int page, int pageSize);
+        Task<List<patientinfoDto>> patientinfo(int page, int pageSize , string? searchName = null);
         Task<List<postInfoDto>> postinfo(int page, int pageSize);
         Task<List<questionInfoDto>> questioninfo(int page, int pageSize);
-        Task<List<DoctorAdminInfoDTO>> GetDoctorsAsync(int page, int pageSize);
-        Task<List<MedicalProviderAdminDTO>> GetLabsAsync(int page, int pageSize);
-        Task<List<MedicalProviderAdminDTO>> GetScansAsync(int page, int pageSize);
+        Task<List<DoctorAdminInfoDTO>> GetDoctorsAsync(int page, int pageSize , string? searchName = null , ApprovalStatus? approvalStatus = null);
+        Task<List<MedicalProviderAdminDTO>> GetLabsAsync(int page, int pageSize , string? searchName = null ,  ApprovalStatus? approvalStatus = null);
+        Task<List<MedicalProviderAdminDTO>> GetScansAsync(int page, int pageSize , string? searchName = null ,  ApprovalStatus? approvalStatus = null);
     }
 }

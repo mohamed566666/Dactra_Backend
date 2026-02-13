@@ -132,8 +132,8 @@ namespace Dactra.Services.Implementation
             return await _repo.GetWeeklyAppointmentsCount();
         }
 
-        public Task<List<patientinfoDto>> patientinfo(int page, int pageSize)
-          => _repo.patientinfo(page, pageSize);
+        public Task<List<patientinfoDto>> patientinfo(int page, int pageSize , string? searchName = null)
+          => _repo.patientinfo(page, pageSize , searchName);
 
         public Task<List<postInfoDto>> postinfo(int page, int pageSize)
             => _repo.postinfo(page, pageSize);
@@ -141,13 +141,13 @@ namespace Dactra.Services.Implementation
         public Task<List<questionInfoDto>> questioninfo(int page, int pageSize)
             => _repo.questioninfo(page, pageSize);
 
-        public Task<List<DoctorAdminInfoDTO>> GetDoctorsAsync(int page, int pageSize)
-        => _repo.GetAllDoctorsAsync(page, pageSize);
+        public Task<List<DoctorAdminInfoDTO>> GetDoctorsAsync(int page, int pageSize , string? searchName = null, ApprovalStatus? approvalStatus = null)
+        => _repo.GetAllDoctorsAsync(page, pageSize , searchName , approvalStatus);
 
-        public Task<List<MedicalProviderAdminDTO>> GetLabsAsync(int page, int pageSize)
-            => _repo.GetAllLabsAsync(page, pageSize);
+        public Task<List<MedicalProviderAdminDTO>> GetLabsAsync(int page, int pageSize , string? searchName = null , ApprovalStatus? approvalStatus = null)
+            => _repo.GetAllLabsAsync(page, pageSize, searchName , approvalStatus);
 
-        public Task<List<MedicalProviderAdminDTO>> GetScansAsync(int page, int pageSize)
-            => _repo.GetAllScansAsync(page, pageSize);
+        public Task<List<MedicalProviderAdminDTO>> GetScansAsync(int page, int pageSize , string? searchName = null , ApprovalStatus? approvalStatus = null)
+            => _repo.GetAllScansAsync(page, pageSize, searchName , approvalStatus);
     }
 }

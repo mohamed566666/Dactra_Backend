@@ -5,7 +5,7 @@
         public int Id {  get; set; }
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
-        public bool IsApproved { get; set; }
+        public ApprovalStatus approvalStatus { get; set; }
         public string Address { get; set; }
     }
 }

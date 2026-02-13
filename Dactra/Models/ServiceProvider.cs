@@ -19,7 +19,7 @@
         public decimal Avg_Rating { get; set; }
 
         public string About { get; set; } = string.Empty;
-        public bool IsApproved { get; set; } = false;
+        public ApprovalStatus approvalStatus { get; set; } = ApprovalStatus.newPending;
         public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
     }
 }

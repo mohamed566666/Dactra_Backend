@@ -1,4 +1,6 @@
-﻿namespace Dactra.Repositories.Implementation
+﻿using System.Linq.Expressions;
+
+namespace Dactra.Repositories.Implementation
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
@@ -11,9 +13,11 @@
         }
         public async Task AddAsync(T entity) => await _dbSet.AddAsync(entity);
 
-        public void Delete(T entity)
+        public async void Delete(T entity)
         {
             _dbSet.Remove(entity);
+            await _context.SaveChangesAsync();
+
         }
 
         public virtual async Task<IEnumerable<T>> GetAllAsync()
@@ -29,6 +33,10 @@
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
+        }
+        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> expression)
+        {
+            return await _dbSet.Where(expression).ToListAsync();
         }
 
         public void Update(T entity)
