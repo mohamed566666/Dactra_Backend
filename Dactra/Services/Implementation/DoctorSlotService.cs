@@ -18,11 +18,40 @@ namespace Dactra.Services.Implementation
             _doctorrepository = doctorrepository;
         }
 
+        private bool IsWithinWorkingHours(TimeSpan slotTime, WorkingHoursResponseDTO workingHours)
+        {
+            if (!workingHours.WorkingStartTime.HasValue || !workingHours.WorkingEndTime.HasValue)
+                return false;
+
+            var start = workingHours.WorkingStartTime.Value;
+            var end = workingHours.WorkingEndTime.Value;
+            if (slotTime < start)
+                return false;
+
+            if (workingHours.ConsultationDurationMinutes.HasValue)
+            {
+                var slotEndTime = slotTime.Add(TimeSpan.FromMinutes(workingHours.ConsultationDurationMinutes.Value));
+                if (slotEndTime > end)
+                    return false;
+            }
+            else
+            {
+                if (slotTime > end)
+                    return false;
+            }
+
+            return true;
+        }
+
         public async Task SaveSlotsAsync(int doctorId, Dictionary<string, List<SlotItemDto>> slots)
         {
+            var workingHours = await GetWorkingHoursAsync(doctorId);
             foreach (var kvp in slots)
             {
-                if (!DateTime.TryParse(kvp.Key, out var dayUtc))
+                if (!DateTime.TryParseExact(kvp.Key, "dd-MM-yyyy",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var dayUtc))
                     throw new Exception($"Invalid date format: {kvp.Key}");
 
                 dayUtc = dayUtc.Date;
@@ -34,9 +63,24 @@ namespace Dactra.Services.Implementation
                     if (!int.TryParse(timeParts[0], out var hour) || !int.TryParse(timeParts[1], out var minute))
                         throw new Exception($"Invalid time format: {slot.Time}");
 
+                    var slotTime = new TimeSpan(hour, minute, 0);
+
+                    if (!IsWithinWorkingHours(slotTime, workingHours))
+                        throw new Exception($"Slot time {slot.Time} is outside working hours. Working hours: {workingHours.WorkingStartTime:hh\\:mm} - {workingHours.WorkingEndTime:hh\\:mm}");
+
                     var slotDateTimeUtc = new DateTime(
                         dayUtc.Year, dayUtc.Month, dayUtc.Day,
                         hour, minute, 0, DateTimeKind.Utc);
+
+                    var isBooked = await _repo.FindAsync(
+                s => s.DoctorId == doctorId &&
+                     s.SlotDateTimeUtc == slotDateTimeUtc &&
+                     s.IsBooked == true
+            );
+
+                    if (isBooked.Any())
+                        continue;
+                   
 
                     await _repo.AddAsync(new DoctorAvailabilitySlot
                     {
@@ -53,36 +97,45 @@ namespace Dactra.Services.Implementation
                 .SendAsync("SlotsUpdated", new { DoctorId = doctorId });
         }
 
-        public async Task<List<DoctorSlotResponseDto>> GetSlotsAsync(int doctorId, DateTime fromUtc, DateTime toUtc)
+        public async Task<DoctorSlotsDto> GetSlotsAsync(int doctorId, DateTime fromUtc, DateTime toUtc)
         {
             var slots = await _repo.FindAsync(x =>
                 x.DoctorId == doctorId &&
                 x.SlotDateTimeUtc >= fromUtc &&
                 x.SlotDateTimeUtc <= toUtc);
 
-            return slots
+            var grouped = slots
                 .OrderBy(s => s.SlotDateTimeUtc)
-                .Select(s => new DoctorSlotResponseDto
-                {
-                    SlotId = s.Id,
-                    SlotDateTimeUtc = s.SlotDateTimeUtc,
-                    IsBooked = s.IsBooked
-                })
-                .ToList();
+                .GroupBy(s => s.SlotDateTimeUtc.ToString("dd-MM-yyyy"))
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(s => new SlotItemDto
+                    {
+                        Time = s.SlotDateTimeUtc.ToString("HH:mm"),
+                        IsBooked = s.IsBooked
+                    }).ToList()
+                );
+
+            return new DoctorSlotsDto { Slots = grouped };
         }
 
-        public async Task<List<DoctorSlotResponseDto>> GetAllSlotsAsync(int doctorId)
+        public async Task<DoctorSlotsDto> GetAllSlotsAsync(int doctorId)
         {
             var slots = await _repo.FindAsync(x => x.DoctorId == doctorId);
-            return slots
+
+            var grouped = slots
                 .OrderBy(s => s.SlotDateTimeUtc)
-                .Select(s => new DoctorSlotResponseDto
-                {
-                    SlotId = s.Id,
-                    SlotDateTimeUtc = s.SlotDateTimeUtc,
-                    IsBooked = s.IsBooked
-                })
-                .ToList();
+                .GroupBy(s => s.SlotDateTimeUtc.ToString("dd-MM-yyyy"))
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(s => new SlotItemDto
+                    {
+                        Time = s.SlotDateTimeUtc.ToString("HH:mm"),
+                        IsBooked = s.IsBooked
+                    }).ToList()
+                );
+
+            return new DoctorSlotsDto { Slots = grouped };
         }
 
         public async Task DeleteSlotsByDayAsync(int doctorId, DateTime dayUtc)
@@ -93,7 +146,8 @@ namespace Dactra.Services.Implementation
                 x.SlotDateTimeUtc.Date == dayUtc);
 
             foreach (var slot in slots)
-                _repo.Delete(slot);
+                if (!slot.IsBooked)
+                    _repo.Delete(slot);
 
             await _repo.SaveChangesAsync();
             await _hub.Clients.Group($"DoctorSchedule_{doctorId}")

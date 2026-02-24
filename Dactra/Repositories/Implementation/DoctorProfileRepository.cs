@@ -183,8 +183,8 @@ namespace Dactra.Repositories.Implementation
             if (!TimeSpan.TryParseExact(workingHours.WorkingEndTime, "hh\\:mm",
                 CultureInfo.InvariantCulture, out var endTime))
                 throw new InvalidOperationException("Invalid end time format. Use HH:mm (24-hour)");
-            if (startTime >= endTime)
-                throw new InvalidOperationException("Start time must be before end time");
+            //if (startTime >= endTime)
+            //    throw new InvalidOperationException("Start time must be before end time");
             if (workingHours.ConsultationDurationMinutes <= 0)
                 throw new InvalidOperationException("Consultation duration must be greater than 0");
             doctor.WorkingStartTime = startTime;

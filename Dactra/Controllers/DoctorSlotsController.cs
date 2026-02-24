@@ -100,8 +100,16 @@ namespace Dactra.Controllers
         {
             var doctorId = await GetDoctorIdFromTokenAsync();
             if (doctorId == null) return Unauthorized();
-
-            await _service.SaveSlotsAsync(doctorId.Value, dto.Slots);
+            try {await _service.SaveSlotsAsync(doctorId.Value, dto.Slots);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
             return Ok(new { message = "Slots saved successfully" });
         }
 
