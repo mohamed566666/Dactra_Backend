@@ -8,16 +8,22 @@ namespace Dactra.Services.Implementation
     {
         private readonly ApplicationDbContext _context;
         private readonly IHubContext<AppointmentHub> _hub;
+        private readonly IPaymentService _paymentService ;
+        private readonly IPatientProfileRepository _patientProfileRepository;
+        private readonly IAppointmentRepository _appointmentRepository;
 
         public AppointmentService(
             ApplicationDbContext context,
-            IHubContext<AppointmentHub> hub)
+            IHubContext<AppointmentHub> hub,IPaymentService paymentService, IPatientProfileRepository patientProfileRepository,IAppointmentRepository appointmentRepository)
         {
             _context = context;
             _hub = hub;
+            _paymentService = paymentService;
+            _patientProfileRepository = patientProfileRepository;
+                _appointmentRepository = appointmentRepository;
         }
 
-        public async Task<int> BookAppointmentAsync(int patientId, int slotId)
+        public async Task<string> BookAppointmentAsync(int patientId, int slotId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -29,21 +35,29 @@ namespace Dactra.Services.Implementation
 
                 if (slot == null)
                     throw new Exception("Slot not found");
+                if (slot.IsBooked || (slot.IsReserved && slot.ReservedUntil > DateTime.UtcNow))
+                {
+                    throw new Exception("Slot is currently reserved by another patient");
+                }
 
                 if (slot.IsBooked)
                     throw new Exception("Slot already booked");
 
                 if (slot.SlotDateTimeUtc <= DateTime.Now)
                     throw new Exception("Cannot book past slot");
+                slot.IsReserved = true;
+                slot.ReservedUntil = DateTime.UtcNow.AddMinutes(10);
 
+
+                await _context.SaveChangesAsync();
                 // Create Payment
                 var payment = new Payment
                 {
                     Amount = slot.Doctor.ConsultationPrice ?? throw new Exception("Consultation price is not set"),
-                    Status = true,
+                    Status=paymentStatus.Pending,
                     Currency = "EGP",
                     Method = "Credit Card",
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 _context.Payments.Add(payment);
@@ -54,18 +68,11 @@ namespace Dactra.Services.Implementation
                     PatientId = patientId,
                     PaymentId = payment.Id,
                     SlotId = slot.Id,
-                    Status = AppointmentStatus.Confirmed,
+                    Status = AppointmentStatus.Pending,
                     BookedAt = DateTime.Now
                 };
 
-                _context.PatientAppointments.Add(appointment);
-                await _context.SaveChangesAsync();
-
-                slot.IsBooked = true;
-                slot.AppointmentId = appointment.Id;
-
-                await _context.SaveChangesAsync();
-
+                  _appointmentRepository.BookeAsync(appointment);
                 await transaction.CommitAsync();
 
                 await _hub.Clients.Group($"Doctor_{slot.DoctorId}")
@@ -76,8 +83,14 @@ namespace Dactra.Services.Implementation
                         SlotDateTime = slot.SlotDateTimeUtc,
                         PatientId = patientId
                     });
+                var patientProfile = await _patientProfileRepository.GetByIdAsync(patientId);
 
-                return appointment.Id;
+                var paymentUrl = await _paymentService.GetPaymentUrl(
+                    payment.Amount,
+                    patientProfile.User.UserName 
+                );
+
+                return paymentUrl;
             }
             catch
             {

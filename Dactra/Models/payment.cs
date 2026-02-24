@@ -16,10 +16,19 @@
         public string Currency { get; set; } = string.Empty;
 
         [Required]
-        public string Method { get; set; } = string.Empty;
+        public string Method { get; set; } = "Paymob";
 
-        public bool Status { get; set; } = false;
- 
+        public paymentStatus Status { get; set; }
+        public string? PaymobOrderId { get; set; }
+
+        public string? PaymobTransactionId { get; set; }
+
+        public string? PaymobPaymentKey { get; set; }
+
+        public bool IsHmacVerified { get; set; } = false;
+
+        public DateTime? ExpiresAt { get; set; }
+
         public List<PatientAppointment> PatientAppointments { get; set; } = new List<PatientAppointment>();
     }
 }

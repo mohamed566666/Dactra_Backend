@@ -90,7 +90,7 @@ namespace Dactra.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = $"Error updating working hours for doctor {doctorId}"});
+                return BadRequest(new { message = $"Error updating working hours for doctor {doctorId}" });
             }
         }
 

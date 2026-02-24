@@ -1,4 +1,6 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using Dactra.Services.Interfaces;
+
+var builder = WebApplication.CreateBuilder(args);
 
 #region Configuration
 
@@ -11,6 +13,9 @@ builder.Services.Configure<EmailSettings>(
 
 builder.Services.Configure<RateLimitSettings>(
     builder.Configuration.GetSection("RateLimiting"));
+
+builder.Services.Configure<PaymobSetting>(
+    builder.Configuration.GetSection("Paymob"));
 
 #endregion
 
@@ -71,6 +76,7 @@ builder.Services.AddScoped<IPostRepository, PostRepository>();
 
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
+builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 
 
 #endregion
@@ -107,11 +113,19 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IQuestionService, QuestionService>();
 
 builder.Services.AddScoped<IDoctorSlotService, DoctorSlotService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+
+
+
+
 #endregion
 
 #region Background Services
-
 builder.Services.AddHostedService<CleanupExpiredTokensService>();
+builder.Services.AddHostedService<SlotReservationCleanupService>();
+
+builder.Services.AddHttpClient<PaymentService>();
 
 #endregion
 

@@ -1,11 +1,10 @@
 ﻿namespace Dactra.Enums
 {
-    public enum AppointmentStatus
+    public enum paymentStatus
     {
         Confirmed,
-        Completed,
         Cancelled,
-        NoShow,
+        Failed,
         Pending
     }
 }
