@@ -79,6 +79,7 @@ global using Dactra.DTOs.VitalSignDTOs;
 global using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
 global using Dactra.DTOs.ProfilesDTOs.PatientDTOs;
 global using Dactra.DTOs.ProfilesDTOs.MedicalTestsProviderDTOs;
+global using Dactra.DTOs.PaymobDto;
 
 // ==================================================
 // Services

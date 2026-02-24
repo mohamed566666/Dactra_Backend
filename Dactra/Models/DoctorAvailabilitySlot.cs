@@ -12,5 +12,7 @@ namespace Dactra.Models
         public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
         public int? AppointmentId { get; set; }
         public PatientAppointment? Appointment { get; set; }
+        public bool IsReserved { get; set; } = false;
+        public DateTime? ReservedUntil { get; set; }
     }
 }
