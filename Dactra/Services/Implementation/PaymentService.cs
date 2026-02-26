@@ -1,4 +1,6 @@
 ﻿
+using System.Text.Json;
+
 namespace Dactra.Services.Implementation
 {
     public class PaymentService : IPaymentService
@@ -24,8 +26,10 @@ namespace Dactra.Services.Implementation
                     "https://accept.paymob.com/api/auth/tokens",
                     new { api_key = _settings.ApiKey });
 
-                var authData = await authResponse.Content.ReadFromJsonAsync<dynamic>();
-                string token = authData.token;
+                var authData = await authResponse.Content.ReadAsStreamAsync();
+                using var doc = await JsonDocument.ParseAsync(authData);
+                var root = doc.RootElement;
+                string token = root.GetProperty("token").GetString();
 
 
                 var orderResponse = await _httpClient.PostAsJsonAsync(
@@ -38,9 +42,13 @@ namespace Dactra.Services.Implementation
                         currency = "EGP",
                         items = new object[] { }
                     });
+                var orderData = await orderResponse.Content.ReadAsStreamAsync();
 
-                var orderData = await orderResponse.Content.ReadFromJsonAsync<dynamic>();
-                int orderId = orderData.id;
+                using var doc2 = await JsonDocument.ParseAsync(orderData);
+                var root2 = doc2.RootElement;
+
+                int orderId = root2.GetProperty("id").GetInt32();
+               
 
 
                 var paymentKeyResponse = await _httpClient.PostAsJsonAsync(
@@ -68,10 +76,14 @@ namespace Dactra.Services.Implementation
                         integration_id = int.Parse(_settings.IntegrationId)
                     });
 
-                var paymentData = await paymentKeyResponse.Content.ReadFromJsonAsync<dynamic>();
-                string paymentToken = paymentData.token;
+                var stream = await paymentKeyResponse.Content.ReadAsStreamAsync();
+                using var doc3 = await JsonDocument.ParseAsync(stream);
+                var root3 = doc3.RootElement;
+                string paymentToken = root3.GetProperty("token").GetString() ?? throw new Exception("Payment token not found");
+             
+                
 
-                return $"https://accept.paymob.com/api/acceptance/iframes/{_settings.IframeId}?payment_token={paymentToken}";
+                return $"https://accept.paymob.com/api/acceptance/iframes/1004947?payment_token={paymentToken}";
             }
             catch (Exception ex)
             {
