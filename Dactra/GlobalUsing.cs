@@ -114,5 +114,5 @@ global using Dactra.Hubs;
 // ==================================================
 // json
 // ==================================================
-using System.Text.Json;
+global using System.Text.Json;
 
