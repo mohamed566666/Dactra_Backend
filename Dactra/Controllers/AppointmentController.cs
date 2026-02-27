@@ -20,10 +20,16 @@ namespace Dactra.Controllers
         [HttpPost ("Book")]
         public async Task<IActionResult> BookAppointment (int scheduleTableId)
         {
-            int patientId = int.Parse(User.FindFirst("UserId")!.Value);
+          
             try
             {
-                var res = await _service.BookAppointmentAsync(patientId, scheduleTableId);
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized("Invalid token");
+
+                var patient = await _context.Patients
+                    .FirstOrDefaultAsync(p => p.UserId == userId);
+                var res = await _service.BookAppointmentAsync(patient.Id, scheduleTableId);
                 return Ok(new { appointmentId = res });
 
             }

@@ -20,12 +20,12 @@ namespace Dactra.Services.Implementation
             _hub = hub;
             _paymentService = paymentService;
             _patientProfileRepository = patientProfileRepository;
-                _appointmentRepository = appointmentRepository;
+             _appointmentRepository = appointmentRepository;
         }
 
         public async Task<string> BookAppointmentAsync(int patientId, int slotId)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+         
 
             try
             {
@@ -35,17 +35,17 @@ namespace Dactra.Services.Implementation
 
                 if (slot == null)
                     throw new Exception("Slot not found");
-                if (slot.IsBooked || (slot.IsReserved && slot.ReservedUntil > DateTime.UtcNow))
-                {
-                    throw new Exception("Slot is currently reserved by another patient");
-                }
+                //if (slot.IsBooked || (slot.IsReserved && slot.ReservedUntil > DateTime.UtcNow))
+                //{
+                //    throw new Exception("Slot is currently reserved by another patient");
+                //}
 
-                if (slot.IsBooked)
-                    throw new Exception("Slot already booked");
+                //if (slot.IsBooked)
+                //    throw new Exception("Slot already booked");
 
-                if (slot.SlotDateTimeUtc <= DateTime.Now)
-                    throw new Exception("Cannot book past slot");
-                slot.IsReserved = true;
+                //if (slot.SlotDateTimeUtc <= DateTime.Now)
+                    //    throw new Exception("Cannot book past slot");
+                    slot.IsReserved = true;
                 slot.ReservedUntil = DateTime.UtcNow.AddMinutes(10);
 
 
@@ -73,7 +73,6 @@ namespace Dactra.Services.Implementation
                 };
 
                   _appointmentRepository.BookeAsync(appointment);
-                await transaction.CommitAsync();
 
                 await _hub.Clients.Group($"Doctor_{slot.DoctorId}")
                     .SendAsync("AppointmentBooked", new
@@ -94,7 +93,7 @@ namespace Dactra.Services.Implementation
             }
             catch
             {
-                await transaction.RollbackAsync();
+                
                 throw;
             }
         }
