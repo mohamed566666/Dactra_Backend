@@ -1,4 +1,5 @@
 ﻿using Dactra.DTOs.DoctorSlotsDTOs;
+using Microsoft.AspNetCore.Routing;
 
 namespace Dactra.Services.Implementation
 {
@@ -25,15 +26,14 @@ namespace Dactra.Services.Implementation
 
             var start = workingHours.WorkingStartTime.Value;
             var end = workingHours.WorkingEndTime.Value;
-            if (slotTime < start)
-                return false;
-
             if (workingHours.ConsultationDurationMinutes.HasValue)
             {
                 var slotEndTime = slotTime.Add(TimeSpan.FromMinutes(workingHours.ConsultationDurationMinutes.Value));
-                if (slotEndTime > end)
-                    return false;
             }
+            if (slotTime < start)
+                return false;
+            if (slotTime > end) return false;
+            
             else
             {
                 if (slotTime > end)
@@ -59,14 +59,14 @@ namespace Dactra.Services.Implementation
 
                 foreach (var slot in kvp.Value)
                 {
-                    var timeParts = slot.Time.Split(':');
+                    var timeParts = slot.SlotTime.Split(':');
                     if (!int.TryParse(timeParts[0], out var hour) || !int.TryParse(timeParts[1], out var minute))
-                        throw new Exception($"Invalid time format: {slot.Time}");
+                        throw new Exception($"Invalid time format: {slot.SlotTime}");
 
                     var slotTime = new TimeSpan(hour, minute, 0);
 
                     if (!IsWithinWorkingHours(slotTime, workingHours))
-                        throw new Exception($"Slot time {slot.Time} is outside working hours. Working hours: {workingHours.WorkingStartTime:hh\\:mm} - {workingHours.WorkingEndTime:hh\\:mm}");
+                        throw new Exception($"Slot time {slot.SlotTime} is outside working hours. Working hours: {workingHours.WorkingStartTime:hh\\:mm} - {workingHours.WorkingEndTime:hh\\:mm}");
 
                     var slotDateTimeUtc = new DateTime(
                         dayUtc.Year, dayUtc.Month, dayUtc.Day,
@@ -111,7 +111,7 @@ namespace Dactra.Services.Implementation
                     g => g.Key,
                     g => g.Select(s => new SlotItemDto
                     {
-                        Time = s.SlotDateTimeUtc.ToString("HH:mm"),
+                        SlotTime = s.SlotDateTimeUtc.ToString("HH:mm"),
                         IsBooked = s.IsBooked
                     }).ToList()
                 );
@@ -130,7 +130,7 @@ namespace Dactra.Services.Implementation
                     g => g.Key,
                     g => g.Select(s => new SlotItemDto
                     {
-                        Time = s.SlotDateTimeUtc.ToString("HH:mm"),
+                        SlotTime = s.SlotDateTimeUtc.ToString("HH:mm"),
                         IsBooked = s.IsBooked
                     }).ToList()
                 );
@@ -191,6 +191,50 @@ namespace Dactra.Services.Implementation
             { 
                 throw new Exception($"Error updating working hours for doctor {doctorId}", ex);
             }
+        }
+
+        public async Task<DoctorFreeSlotsDto> GetAllFreeSlotsAsync(int doctorId)
+        {
+            var slots = await _repo.FindAsync(x => x.DoctorId == doctorId && !x.IsBooked);
+
+            var grouped = slots
+                .OrderBy(s => s.SlotDateTimeUtc)
+                .GroupBy(s => s.SlotDateTimeUtc.ToString("dd-MM-yyyy"))
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(s => new FreeSlotDto
+                    {
+                        SlotId = s.Id,
+                        SlotTime = TimeOnly.FromDateTime(s.SlotDateTimeUtc),
+                        IsBooked = s.IsBooked
+                    }).ToList()
+                );
+
+            return new DoctorFreeSlotsDto { Slots = grouped };
+        }
+
+        public async Task<DoctorFreeSlotsDto> GetFreeSlotsAsync(int doctorId, DateTime fromUtc, DateTime toUtc)
+        {
+            var slots = await _repo.FindAsync(x =>
+                x.DoctorId == doctorId &&
+                !x.IsBooked &&
+                x.SlotDateTimeUtc >= fromUtc &&
+                x.SlotDateTimeUtc <= toUtc);
+
+            var grouped = slots
+                .OrderBy(s => s.SlotDateTimeUtc)
+                .GroupBy(s => s.SlotDateTimeUtc.ToString("dd-MM-yyyy"))
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(s => new FreeSlotDto
+                    {
+                        SlotId = s.Id,
+                        SlotTime = TimeOnly.FromDateTime(s.SlotDateTimeUtc),
+                        IsBooked = s.IsBooked
+                    }).ToList()
+                );
+
+            return new DoctorFreeSlotsDto { Slots = grouped };
         }
     }
 }
