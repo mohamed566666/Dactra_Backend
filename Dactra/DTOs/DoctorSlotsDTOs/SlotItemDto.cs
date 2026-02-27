@@ -2,7 +2,7 @@
 {
     public class SlotItemDto
     {
-        public string Time { get; set; } = "5:00";
+        public string SlotTime { get; set; } 
         public bool IsBooked { get; set; } = false;
     }
 }

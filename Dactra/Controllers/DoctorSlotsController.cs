@@ -11,7 +11,6 @@ namespace Dactra.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Doctor")]
     public class DoctorSlotsController : ControllerBase
     {
         private readonly IDoctorSlotService _service;
@@ -34,6 +33,7 @@ namespace Dactra.Controllers
         }
 
         [HttpGet("myworking-hours")]
+        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> GetWorkingHours()
         {
             var doctorId = await GetDoctorIdFromTokenAsync();
@@ -70,6 +70,7 @@ namespace Dactra.Controllers
         }
 
         [HttpPut("working-details")]
+        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> UpdateWorkingHours([FromBody] WorkingHoursDTO workingHours)
         {
             var doctorId = await GetDoctorIdFromTokenAsync();
@@ -96,16 +97,26 @@ namespace Dactra.Controllers
 
 
         [HttpPost("save-slots")]
-        public async Task<IActionResult> SaveSlots([FromBody] DoctorSlotsDto dto)
+        [Authorize(Roles = "Doctor")]
+        public async Task<IActionResult> SaveSlots([FromBody] DoctorSlotsRequestDto dto)
         {
             var doctorId = await GetDoctorIdFromTokenAsync();
             if (doctorId == null) return Unauthorized();
-
-            await _service.SaveSlotsAsync(doctorId.Value, dto.Slots);
+            try {await _service.SaveSlotsAsync(doctorId.Value, dto.Slots);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
             return Ok(new { message = "Slots saved successfully" });
         }
 
         [HttpGet("all-slots")]
+        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> GetAllSlots()
         {
             var doctorId = await GetDoctorIdFromTokenAsync();
@@ -115,7 +126,16 @@ namespace Dactra.Controllers
             return Ok(slots);
         }
 
+        [HttpGet("all-slots{doctorId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllSlots(int doctorId)
+        {
+            var slots = await _service.GetAllFreeSlotsAsync(doctorId);
+            return Ok(slots);
+        }
+
         [HttpGet("range-slots-by-time")]
+        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> GetSlotsRange([FromQuery] DateTime fromUtc, [FromQuery] DateTime toUtc)
         {
             var doctorId = await GetDoctorIdFromTokenAsync();
@@ -125,7 +145,16 @@ namespace Dactra.Controllers
             return Ok(slots);
         }
 
+        [HttpGet("range-slots-by-time{doctorId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetSlotsRange(int doctorId , [FromQuery] DateTime fromUtc, [FromQuery] DateTime toUtc)
+        {
+            var slots = await _service.GetFreeSlotsAsync(doctorId, fromUtc, toUtc);
+            return Ok(slots);
+        }
+
         [HttpDelete("slots-on-day")]
+        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> DeleteSlotsByDay([FromQuery] DateTime dayUtc)
         {
             var doctorId = await GetDoctorIdFromTokenAsync();
@@ -136,6 +165,7 @@ namespace Dactra.Controllers
         }
 
         [HttpDelete("delete-slot{slotId}")]
+        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> DeleteSlot(int slotId)
         {
             var doctorId = await GetDoctorIdFromTokenAsync();
