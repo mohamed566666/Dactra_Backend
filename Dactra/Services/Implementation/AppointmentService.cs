@@ -42,8 +42,10 @@ namespace Dactra.Services.Implementation
                  {
                     appointment0.Slot.IsReserved = false;
                     appointment0.Slot.ReservedUntil = null;
+                    appointment0.Slot.IsBooked = false;
+                     
 
-                   _context.PatientAppointments.Remove(appointment0);
+                    _context.PatientAppointments.Remove(appointment0);
                  }
 
                    await _context.SaveChangesAsync();
@@ -65,6 +67,7 @@ namespace Dactra.Services.Implementation
                 //if (slot.SlotDateTimeUtc <= DateTime.Now)
                 //    throw new Exception("Cannot book past slot");
                 slot.IsReserved = true;
+                slot.IsBooked=true;
                 slot.ReservedUntil = DateTime.UtcNow.AddMinutes(5);
 
 
