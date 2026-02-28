@@ -46,14 +46,14 @@ namespace Dactra.Services.Implementation
                    _context.PatientAppointments.Remove(appointment0);
                  }
 
-                                await _context.SaveChangesAsync();
+                   await _context.SaveChangesAsync();
 
                 var slot = await _context.DoctorAvailabilitySlots
                     .Include(s => s.Doctor)
                     .FirstOrDefaultAsync(x => x.Id == slotId);
 
                 if (slot == null)
-                    throw new Exception("Slot not found");
+                    throw new Exception($"Slot not found {slotId}");
                 //if (slot.IsBooked || (slot.IsReserved && slot.ReservedUntil > DateTime.UtcNow))
                 //{
                 //    throw new Exception("Slot is currently reserved by another patient");
