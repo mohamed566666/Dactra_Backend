@@ -19,17 +19,22 @@ public class SlotReservationCleanupService : BackgroundService
                 using var scope = _scopeFactory.CreateScope();
                 var _context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                var expiredSlots = await _context.DoctorAvailabilitySlots
-                    .Where(s => s.IsReserved && s.ReservedUntil <= DateTime.UtcNow)
+
+                    var expiredAppointments = await _context.PatientAppointments
+                    .Include(a => a.Slot)
+                    .Where(a => a.Status == AppointmentStatus.Pending &&
+                                a.BookedAt <= DateTime.UtcNow.AddMinutes(-1))
                     .ToListAsync(stoppingToken);
 
-                foreach (var slot in expiredSlots)
+                foreach (var appointment in expiredAppointments)
                 {
-                    slot.IsReserved = false;
-                    slot.ReservedUntil = null;
+                    appointment.Slot.IsReserved = false;
+                    appointment.Slot.ReservedUntil = null;
+
+                    _context.PatientAppointments.Remove(appointment);
                 }
 
-                if (expiredSlots.Any())
+                if (expiredAppointments.Any())
                     await _context.SaveChangesAsync(stoppingToken);
             }
             catch (Exception ex)

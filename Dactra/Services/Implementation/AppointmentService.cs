@@ -29,6 +29,25 @@ namespace Dactra.Services.Implementation
 
             try
             {
+                var now = DateTime.UtcNow;
+                var expiredAppointments = await _context.PatientAppointments
+                    .Include(a => a.Slot)
+                    .Where(a =>
+                      a.SlotId == slotId &&
+                      a.Status == AppointmentStatus.Pending &&
+                      a.BookedAt <= now.AddMinutes(-5))
+                      .ToListAsync();
+
+                 foreach (var appointment0 in expiredAppointments)
+                 {
+                    appointment0.Slot.IsReserved = false;
+                    appointment0.Slot.ReservedUntil = null;
+
+                   _context.PatientAppointments.Remove(appointment0);
+                 }
+
+                                await _context.SaveChangesAsync();
+
                 var slot = await _context.DoctorAvailabilitySlots
                     .Include(s => s.Doctor)
                     .FirstOrDefaultAsync(x => x.Id == slotId);
@@ -40,16 +59,16 @@ namespace Dactra.Services.Implementation
                 //    throw new Exception("Slot is currently reserved by another patient");
                 //}
 
-                //if (slot.IsBooked)
-                //    throw new Exception("Slot already booked");
+                if (slot.IsBooked)
+                    throw new Exception("Slot already booked");
 
                 //if (slot.SlotDateTimeUtc <= DateTime.Now)
-                    //    throw new Exception("Cannot book past slot");
-                    slot.IsReserved = true;
-                slot.ReservedUntil = DateTime.UtcNow.AddMinutes(10);
+                //    throw new Exception("Cannot book past slot");
+                slot.IsReserved = true;
+                slot.ReservedUntil = DateTime.UtcNow.AddMinutes(5);
 
 
-                await _context.SaveChangesAsync();
+                
                 // Create Payment
                 var payment = new Payment
                 {
@@ -61,18 +80,18 @@ namespace Dactra.Services.Implementation
                 };
 
                 _context.Payments.Add(payment);
-                await _context.SaveChangesAsync();
 
+                await _context.SaveChangesAsync();
                 var appointment = new PatientAppointment
                 {
                     PatientId = patientId,
                     PaymentId = payment.Id,
                     SlotId = slot.Id,
                     Status = AppointmentStatus.Pending,
-                    BookedAt = DateTime.Now
+                    BookedAt = DateTime.UtcNow
                 };
-
-                  _appointmentRepository.BookeAsync(appointment);
+                  await _context.SaveChangesAsync();
+                 await _appointmentRepository.BookeAsync(appointment);
 
                 await _hub.Clients.Group($"Doctor_{slot.DoctorId}")
                     .SendAsync("AppointmentBooked", new
