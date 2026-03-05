@@ -2,6 +2,6 @@
 {
     public interface IPaymentService
     {
-        Task<string> GetPaymentUrl(decimal amount, string email);
+        Task<string> GetPaymentUrl(Payment payment, string email);
     }
 }

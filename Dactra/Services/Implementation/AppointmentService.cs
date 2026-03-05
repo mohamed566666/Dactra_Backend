@@ -107,7 +107,7 @@ namespace Dactra.Services.Implementation
                 var patientProfile = await _patientProfileRepository.GetByIdAsync(patientId);
 
                 var paymentUrl = await _paymentService.GetPaymentUrl(
-                    payment.Amount,
+                    payment,
                     patientProfile.User.UserName 
                 );
 
