@@ -150,7 +150,7 @@ namespace Dactra.Services.Implementation
             {
                 var appointment = await _context.PatientAppointments
                     .Include(a => a.Slot)
-                    .FirstOrDefaultAsync(a =>
+                    .FirstOrDefaultAsync(a => 
                         a.Id == appointmentId &&
                         a.PatientId == patientId);
 
@@ -168,6 +168,7 @@ namespace Dactra.Services.Implementation
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+                _paymentService.RefundAppointmentAsync(slot.Id);
 
                 await _hub.Clients.Group($"Doctor_{slot.DoctorId}")
                     .SendAsync("AppointmentCancelled", new

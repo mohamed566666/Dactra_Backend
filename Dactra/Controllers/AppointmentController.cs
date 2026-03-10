@@ -17,10 +17,10 @@ namespace Dactra.Controllers
             _service = service;
             _context = context;
         }
-        [HttpPost ("Book")]
-        public async Task<IActionResult> BookAppointment (int scheduleTableId)
+        [HttpPost("Book")]
+        public async Task<IActionResult> BookAppointment(int scheduleTableId)
         {
-          
+
             try
             {
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -33,12 +33,28 @@ namespace Dactra.Controllers
                 return Ok(new { appointmentId = res });
 
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return BadRequest(new { message = e.Message });
             }
         }
-    
+        [HttpPost("refund")]
+        public async Task<IActionResult> Refund(int appointmentid)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Invalid token");
+            var patient = await _context.Patients
+                   .FirstOrDefaultAsync(p => p.UserId == userId);
 
+            bool result = await _service.CancelAppointmentAsync(appointmentid,patient.Id);
+
+            if (result)
+                return Ok(new { success = true, message = "All payments refunded successfully." });
+            else
+                return BadRequest(new { success = false, message = "Some refunds failed. Check logs." });
+
+
+        }
     }
 }

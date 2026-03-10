@@ -3,5 +3,6 @@
     public interface IPaymentService
     {
         Task<string> GetPaymentUrl(Payment payment, string email);
+        Task<bool> RefundAppointmentAsync(int appointmentId);
     }
 }
