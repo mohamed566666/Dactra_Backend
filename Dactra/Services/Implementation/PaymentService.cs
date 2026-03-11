@@ -32,10 +32,10 @@ namespace Dactra.Services.Implementation
         {
             try
             {
-                // 1️⃣ جلب بيانات المستخدم
+           
                 var user = await _patientProfileRepository.GetByUserEmail(email);
 
-                // 2️⃣ طلب auth token من Paymob
+               
                 var authResponse = await _httpClient.PostAsJsonAsync(
                     "https://accept.paymob.com/api/auth/tokens",
                     new { api_key = _settings.ApiKey });
@@ -45,7 +45,7 @@ namespace Dactra.Services.Implementation
                 string token = authDoc.RootElement.GetProperty("token").GetString()
                                ?? throw new ApplicationException("Paymob auth token not found");
 
-                // 3️⃣ إنشاء order جديد
+              
                 var orderResponse = await _httpClient.PostAsJsonAsync(
                     "https://accept.paymob.com/api/ecommerce/orders",
                     new
@@ -61,11 +61,10 @@ namespace Dactra.Services.Implementation
                 using var orderDoc = JsonDocument.Parse(orderString);
                 int orderId = orderDoc.RootElement.GetProperty("id").GetInt32();
 
-                // حفظ order_id في قاعدة البيانات
                 payment.PaymobOrderId = orderId.ToString();
                 await _context.SaveChangesAsync();
 
-                // 4️⃣ طلب payment key
+              
                 var paymentKeyResponse = await _httpClient.PostAsJsonAsync(
                     "https://accept.paymob.com/api/acceptance/payment_keys",
                     new
@@ -109,7 +108,7 @@ namespace Dactra.Services.Implementation
                 string paymentToken = paymentTokenElement.GetString()
                                       ?? throw new ApplicationException("Payment token is null");
 
-                // 5️⃣ استخدام الـ iframe الصحيح من config
+                
                 string iframeUrl = _settings.IframeId.Replace("{payment_key_obtained_previously}", paymentToken);
                 return iframeUrl;
             }

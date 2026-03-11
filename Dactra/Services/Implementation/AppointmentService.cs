@@ -79,7 +79,8 @@ namespace Dactra.Services.Implementation
                     Status=paymentStatus.Pending,
                     Currency = "EGP",
                     Method = "Credit Card",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    isRefunded=false
                 };
 
                 _context.Payments.Add(payment);
@@ -92,6 +93,7 @@ namespace Dactra.Services.Implementation
                     SlotId = slot.Id,
                     Status = AppointmentStatus.Pending,
                     BookedAt = DateTime.UtcNow
+
                 };
                   await _context.SaveChangesAsync();
                  await _appointmentRepository.BookeAsync(appointment);
@@ -151,7 +153,7 @@ namespace Dactra.Services.Implementation
                 var appointment = await _context.PatientAppointments
                     .Include(a => a.Slot)
                     .FirstOrDefaultAsync(a => 
-                        a.Id == appointmentId &&
+                        a.SlotId == appointmentId &&
                         a.PatientId == patientId);
 
                 if (appointment == null)
@@ -168,7 +170,7 @@ namespace Dactra.Services.Implementation
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
-                _paymentService.RefundAppointmentAsync(slot.Id);
+                await _paymentService.RefundAppointmentAsync(slot.Id);
 
                 await _hub.Clients.Group($"Doctor_{slot.DoctorId}")
                     .SendAsync("AppointmentCancelled", new

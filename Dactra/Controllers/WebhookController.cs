@@ -42,7 +42,7 @@ namespace Dactra.Controllers
             if (success)
             {
                 payment.Status = paymentStatus.Confirmed;
-
+                payment.PaymobTransactionId = data.Obj.Order.Transaction_Id;
                 var appointment = await _context.PatientAppointments
                     .FirstOrDefaultAsync(a => a.PaymentId == payment.Id);
 
