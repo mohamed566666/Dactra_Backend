@@ -42,18 +42,20 @@ namespace Dactra.Services.Implementation
                  {
                     appointment0.Slot.IsReserved = false;
                     appointment0.Slot.ReservedUntil = null;
+                    appointment0.Slot.IsBooked = false;
+                     
 
-                   _context.PatientAppointments.Remove(appointment0);
+                    _context.PatientAppointments.Remove(appointment0);
                  }
 
-                                await _context.SaveChangesAsync();
+                   await _context.SaveChangesAsync();
 
                 var slot = await _context.DoctorAvailabilitySlots
                     .Include(s => s.Doctor)
                     .FirstOrDefaultAsync(x => x.Id == slotId);
 
                 if (slot == null)
-                    throw new Exception("Slot not found");
+                    throw new Exception($"Slot not found {slotId}");
                 //if (slot.IsBooked || (slot.IsReserved && slot.ReservedUntil > DateTime.UtcNow))
                 //{
                 //    throw new Exception("Slot is currently reserved by another patient");
@@ -65,6 +67,7 @@ namespace Dactra.Services.Implementation
                 //if (slot.SlotDateTimeUtc <= DateTime.Now)
                 //    throw new Exception("Cannot book past slot");
                 slot.IsReserved = true;
+                slot.IsBooked=true;
                 slot.ReservedUntil = DateTime.UtcNow.AddMinutes(5);
 
 
@@ -76,7 +79,8 @@ namespace Dactra.Services.Implementation
                     Status=paymentStatus.Pending,
                     Currency = "EGP",
                     Method = "Credit Card",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    isRefunded=false
                 };
 
                 _context.Payments.Add(payment);
@@ -89,6 +93,7 @@ namespace Dactra.Services.Implementation
                     SlotId = slot.Id,
                     Status = AppointmentStatus.Pending,
                     BookedAt = DateTime.UtcNow
+
                 };
                   await _context.SaveChangesAsync();
                  await _appointmentRepository.BookeAsync(appointment);
@@ -104,7 +109,7 @@ namespace Dactra.Services.Implementation
                 var patientProfile = await _patientProfileRepository.GetByIdAsync(patientId);
 
                 var paymentUrl = await _paymentService.GetPaymentUrl(
-                    payment.Amount,
+                    payment,
                     patientProfile.User.UserName 
                 );
 
@@ -147,8 +152,8 @@ namespace Dactra.Services.Implementation
             {
                 var appointment = await _context.PatientAppointments
                     .Include(a => a.Slot)
-                    .FirstOrDefaultAsync(a =>
-                        a.Id == appointmentId &&
+                    .FirstOrDefaultAsync(a => 
+                        a.SlotId == appointmentId &&
                         a.PatientId == patientId);
 
                 if (appointment == null)
@@ -165,6 +170,7 @@ namespace Dactra.Services.Implementation
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+                await _paymentService.RefundAppointmentAsync(slot.Id);
 
                 await _hub.Clients.Group($"Doctor_{slot.DoctorId}")
                     .SendAsync("AppointmentCancelled", new

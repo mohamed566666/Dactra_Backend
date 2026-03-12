@@ -28,6 +28,7 @@
         public bool IsHmacVerified { get; set; } = false;
 
         public DateTime? ExpiresAt { get; set; }
+        public bool isRefunded { get; set; } = false;
 
         public List<PatientAppointment> PatientAppointments { get; set; } = new List<PatientAppointment>();
     }
