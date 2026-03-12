@@ -78,12 +78,21 @@ builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 
+builder.Services.AddScoped<IPostRepository, PostRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<IPostLikeRepository, PostLikeRepository>();
+builder.Services.AddScoped<ISavedPostRepository, SavedPostRepository>();
+builder.Services.AddScoped<ITagRepository, TagRepository>();
+builder.Services.AddScoped<IPostTagRepository, PostTagRepository>();
+
 
 #endregion
 
 #region Services
 
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+builder.Services.AddHttpClient("OpenAI");
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserProfileFactory, UserProfileFactory>();
@@ -116,6 +125,13 @@ builder.Services.AddScoped<IDoctorSlotService, DoctorSlotService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 
+
+builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IPostLikeService, PostLikeService>();
+builder.Services.AddScoped<ISavedPostService, SavedPostService>();
+builder.Services.AddScoped<ITagService, TagService>();
+builder.Services.AddScoped<IAITaggingService, AITaggingService>();
 
 
 
@@ -262,6 +278,7 @@ app.MapControllers();
 app.MapHub<QuestionsHub>("/questionsHub");
 app.MapHub<AppointmentHub>("/appointmentHub");
 app.MapHub<DoctorScheduleHub>("/doctorScheduleHub");
+app.MapHub<PostHub>("/hubs/posts");
 
 #endregion
 

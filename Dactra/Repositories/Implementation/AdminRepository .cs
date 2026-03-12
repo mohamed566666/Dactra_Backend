@@ -239,7 +239,7 @@ namespace Dactra.Repositories.Implementation
                 .Select(p => new postInfoDto
                 {
                     id = p.Id.ToString(),
-                    title = p.title,
+                    //title = p.title,
                     FullName = p.Doctor.FirstName + " " + p.Doctor.LastName,
                     createdAt = p.CreatedAt,
                     isDeleted = p.isDeleted

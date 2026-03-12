@@ -7,24 +7,22 @@
 
         [Required]
         public string Content { get; set; } = string.Empty;
-        [Required]
-        public string title { get; set; } = string.Empty;
 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        [Required]
-        public int MajorsId { get; set; }
-
-        [ForeignKey(nameof(MajorsId))]
-        public Majors Category { get; set; } = null!;
 
         [Required]
         public int DoctorId { get; set; }
 
         [ForeignKey(nameof(DoctorId))]
         public DoctorProfile Doctor { get; set; } = null!;
+        public DateTime? UpdatedAt { get; set; }
         public bool isDeleted { get; set; } = false;
+
+        public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+        public ICollection<PostLike> Likes { get; set; } = new List<PostLike>();
+        public ICollection<SavedPost> SavedBy { get; set; } = new List<SavedPost>();
+        public ICollection<PostTag> PostTags { get; set; } = new List<PostTag>();
 
     }
 }

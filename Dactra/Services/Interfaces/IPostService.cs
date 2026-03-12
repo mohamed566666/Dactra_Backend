@@ -1,11 +1,15 @@
-﻿namespace Dactra.Services.Interfaces
+﻿using Dactra.DTOs;
+using Dactra.DTOs.PostDTOs;
+namespace Dactra.Services.Interfaces
 {
     public interface IPostService
     {
-        Task<IEnumerable<Post>> GetAllAsync();
-        Task<Post?> GetByIdAsync(int id);
-        Task<Post> CreateAsync(Post post);
-        Task<bool> UpdateAsync(int postId, int doctorId, UpdatePostDto dto);
-        Task<bool> DeleteAsync(int postId, int doctorId);
+        Task<PostResponseDto> GetByIdAsync(int id, string? currentUserId = null);
+        Task<PagedResultDto<PostResponseDto>> GetAllAsync(int page, int pageSize, string? currentUserId = null);
+        Task<PagedResultDto<PostResponseDto>> GetByDoctorIdAsync(int doctorId, int page, int pageSize);
+        Task<PagedResultDto<PostResponseDto>> GetByTagAsync(int tagId, int page, int pageSize);
+        Task<PostResponseDto> CreateAsync(CreatePostDto dto, int doctorId);
+        Task<PostResponseDto> UpdateAsync(int id, UpdatePostDto dto, int doctorId);
+        Task DeleteAsync(int id, int doctorId);
     }
 }

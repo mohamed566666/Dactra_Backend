@@ -33,6 +33,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<Allergy> Allergies { get; set; }
     public DbSet<ChronicDisease> ChronicDiseases { get; set; }
     public DbSet<DoctorAvailabilitySlot> DoctorAvailabilitySlots { get; set; }
+    public DbSet<Comment> comments { get; set; }
+    public DbSet<PostLike> PostLikes { get; set; }
+    public DbSet<SavedPost> SavedPosts { get; set; }
+    public DbSet<Tag> Tags { get; set; }
+    public DbSet<PostTag> PostTags { get; set; }
+
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -111,5 +118,26 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         .WithOne(x => x.Slot)
         .HasForeignKey<PatientAppointment>(x => x.SlotId)
         .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PostTag>()
+               .HasKey(pt => new { pt.PostId, pt.TagId });
+
+        modelBuilder.Entity<PostTag>()
+            .HasOne(pt => pt.Post)
+            .WithMany(p => p.PostTags)
+            .HasForeignKey(pt => pt.PostId);
+
+        modelBuilder.Entity<PostTag>()
+            .HasOne(pt => pt.Tag)
+            .WithMany(t => t.PostTags)
+            .HasForeignKey(pt => pt.TagId);
+
+        modelBuilder.Entity<SavedPost>()
+            .HasIndex(sp => new { sp.UserId, sp.PostId })
+            .IsUnique();
+
+        modelBuilder.Entity<PostLike>()
+            .HasIndex(pl => new { pl.UserId, pl.PostId })
+            .IsUnique();
     }
 }
