@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260311222216_addisRefunded")]
+    partial class addisRefunded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -128,25 +131,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "a97a298f-4318-424e-8d5d-8bf52e4a0610",
+                            Id = "22062af6-5566-47ca-8fd6-35eb7f499190",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "8429bd83-296f-4faa-ba3e-b9402ffdb61a",
+                            Id = "89c4059d-5987-4340-9fd4-9226abe4350c",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "ab2d790a-235b-4d8a-9f24-c771182744ee",
+                            Id = "fdd4e5ad-cdd5-4b40-9d04-ee3debdedb26",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "87316509-38ff-4523-aa2a-b90c3e5c85fe",
+                            Id = "1fb9e6ae-5194-4b13-a4e7-f743b5fdd2be",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -269,42 +272,6 @@ namespace Dactra.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Cities");
-                });
-
-            modelBuilder.Entity("Dactra.Models.Comment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ParentCommentId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PostId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ParentCommentId");
-
-                    b.HasIndex("PostId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("comments");
                 });
 
             modelBuilder.Entity("Dactra.Models.Complaint", b =>
@@ -690,14 +657,15 @@ namespace Dactra.Migrations
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("MajorsId")
+                    b.Property<int>("MajorsId")
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<bool>("isDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -706,49 +674,6 @@ namespace Dactra.Migrations
                     b.HasIndex("MajorsId");
 
                     b.ToTable("Posts");
-                });
-
-            modelBuilder.Entity("Dactra.Models.PostLike", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PostId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PostId");
-
-                    b.HasIndex("UserId", "PostId")
-                        .IsUnique();
-
-                    b.ToTable("PostLikes");
-                });
-
-            modelBuilder.Entity("Dactra.Models.PostTag", b =>
-                {
-                    b.Property<int>("PostId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TagId")
-                        .HasColumnType("int");
-
-                    b.HasKey("PostId", "TagId");
-
-                    b.HasIndex("TagId");
-
-                    b.ToTable("PostTags");
                 });
 
             modelBuilder.Entity("Dactra.Models.Prescription", b =>
@@ -891,34 +816,6 @@ namespace Dactra.Migrations
                     b.ToTable("Ratings");
                 });
 
-            modelBuilder.Entity("Dactra.Models.SavedPost", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("PostId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("SavedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PostId");
-
-                    b.HasIndex("UserId", "PostId")
-                        .IsUnique();
-
-                    b.ToTable("SavedPosts");
-                });
-
             modelBuilder.Entity("Dactra.Models.ServiceProviderProfile", b =>
                 {
                     b.Property<int>("Id")
@@ -1006,24 +903,6 @@ namespace Dactra.Migrations
                     b.HasIndex("Score");
 
                     b.ToTable("SiteReviews");
-                });
-
-            modelBuilder.Entity("Dactra.Models.Tag", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("Dactra.Models.TestService", b =>
@@ -1357,32 +1236,6 @@ namespace Dactra.Migrations
                     b.Navigation("Question");
                 });
 
-            modelBuilder.Entity("Dactra.Models.Comment", b =>
-                {
-                    b.HasOne("Dactra.Models.Comment", "ParentComment")
-                        .WithMany("Replies")
-                        .HasForeignKey("ParentCommentId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("Dactra.Models.Post", "Post")
-                        .WithMany("Comments")
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Dactra.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("ParentComment");
-
-                    b.Navigation("Post");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Dactra.Models.Complaint", b =>
                 {
                     b.HasOne("Dactra.Models.ApplicationUser", "User")
@@ -1495,40 +1348,15 @@ namespace Dactra.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Dactra.Models.Majors", null)
+                    b.HasOne("Dactra.Models.Majors", "Category")
                         .WithMany("Post")
                         .HasForeignKey("MajorsId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Category");
 
                     b.Navigation("Doctor");
-                });
-
-            modelBuilder.Entity("Dactra.Models.PostLike", b =>
-                {
-                    b.HasOne("Dactra.Models.Post", null)
-                        .WithMany("Likes")
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Dactra.Models.PostTag", b =>
-                {
-                    b.HasOne("Dactra.Models.Post", "Post")
-                        .WithMany("PostTags")
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Dactra.Models.Tag", "Tag")
-                        .WithMany("PostTags")
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Post");
-
-                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("Dactra.Models.PrescriptionWithMedicin", b =>
@@ -1605,25 +1433,6 @@ namespace Dactra.Migrations
                     b.Navigation("Patient");
 
                     b.Navigation("Provider");
-                });
-
-            modelBuilder.Entity("Dactra.Models.SavedPost", b =>
-                {
-                    b.HasOne("Dactra.Models.Post", "Post")
-                        .WithMany("SavedBy")
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Dactra.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Post");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Dactra.Models.ServiceProviderProfile", b =>
@@ -1758,11 +1567,6 @@ namespace Dactra.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Dactra.Models.Comment", b =>
-                {
-                    b.Navigation("Replies");
-                });
-
             modelBuilder.Entity("Dactra.Models.Complaint", b =>
                 {
                     b.Navigation("Attachments");
@@ -1803,17 +1607,6 @@ namespace Dactra.Migrations
                     b.Navigation("PatientAppointments");
                 });
 
-            modelBuilder.Entity("Dactra.Models.Post", b =>
-                {
-                    b.Navigation("Comments");
-
-                    b.Navigation("Likes");
-
-                    b.Navigation("PostTags");
-
-                    b.Navigation("SavedBy");
-                });
-
             modelBuilder.Entity("Dactra.Models.Prescription", b =>
                 {
                     b.Navigation("PatientAppointment");
@@ -1829,11 +1622,6 @@ namespace Dactra.Migrations
             modelBuilder.Entity("Dactra.Models.ServiceProviderProfile", b =>
                 {
                     b.Navigation("Ratings");
-                });
-
-            modelBuilder.Entity("Dactra.Models.Tag", b =>
-                {
-                    b.Navigation("PostTags");
                 });
 
             modelBuilder.Entity("Dactra.Models.TestService", b =>

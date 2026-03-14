@@ -41,19 +41,26 @@ namespace Dactra.Services.Implementation
             return await MapToResponseDtoAsync(post, currentUserId);
         }
 
-        public async Task<PagedResultDto<PostResponseDto>> GetAllAsync(int page, int pageSize, string? currentUserId = null)
+        public async Task<PostFeedResponseDto> GetAllAsync(int page, int pageSize, string? currentUserId = null)
         {
             var (posts, total) = await _postRepo.GetAllAsync(page, pageSize, currentUserId);
             var items = new List<PostResponseDto>();
             foreach (var p in posts)
                 items.Add(await MapToResponseDtoAsync(p, currentUserId));
+            UserPostStatsDto stats = currentUserId != null
+                ? await _postRepo.GetUserStatsAsync(currentUserId)
+                : new UserPostStatsDto();
 
-            return new PagedResultDto<PostResponseDto>
+            return new PostFeedResponseDto
             {
-                Items = items,
-                TotalCount = total,
-                Page = page,
-                PageSize = pageSize
+                Posts = new PagedResultDto<PostResponseDto>
+                {
+                    Items = items,
+                    TotalCount = total,
+                    Page = page,
+                    PageSize = pageSize
+                },
+                Stats = stats
             };
         }
 
@@ -192,6 +199,7 @@ namespace Dactra.Services.Implementation
                 UpdatedAt = post.UpdatedAt,
                 LikesCount = post.Likes?.Count ?? 0,
                 CommentsCount = post.Comments?.Count ?? 0,
+                SavesCount = post.SavedBy?.Count ?? 0,
                 IsLikedByCurrentUser = isLiked,
                 IsSavedByCurrentUser = isSaved,
                 Doctor = post.Doctor == null ? null! : new DoctorSummaryDto
@@ -206,6 +214,23 @@ namespace Dactra.Services.Implementation
                     Id = pt.Tag.Id,
                     Name = pt.Tag.Name
                 }).ToList() ?? new List<TagDto>()
+            };
+        }
+
+        public async Task<PagedResultDto<PostResponseDto>> GetMyFilteredPostsAsync(PostFilterDto filter, string userId, int page, int pageSize)
+        {
+            var (posts, total) = await _postRepo.GetFilteredAsync(filter, userId, page, pageSize);
+
+            var items = new List<PostResponseDto>();
+            foreach (var p in posts)
+                items.Add(await MapToResponseDtoAsync(p, userId));
+
+            return new PagedResultDto<PostResponseDto>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = page,
+                PageSize = pageSize
             };
         }
     }

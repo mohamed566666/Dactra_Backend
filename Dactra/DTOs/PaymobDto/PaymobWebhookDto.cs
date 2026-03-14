@@ -2,7 +2,10 @@
 {
     public class PaymobWebhookDto
     {
-        public string? Event { get; set; } 
+        [JsonPropertyName("event")]
+        public string? EventName { get; set; }
+
+        [JsonPropertyName("obj")]
         public WebhookObject Obj { get; set; } = new WebhookObject();
     }
 }

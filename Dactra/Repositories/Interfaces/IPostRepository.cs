@@ -1,4 +1,6 @@
-﻿namespace Dactra.Repositories.Interfaces
+﻿using Dactra.DTOs.PostDTOs;
+
+namespace Dactra.Repositories.Interfaces
 {
     public interface IPostRepository
     {
@@ -12,5 +14,7 @@
         Task SoftDeleteAsync(int id);
         Task<bool> ExistsAsync(int id);
         Task<bool> BelongsToDoctorAsync(int postId, int doctorId);
+        Task<(List<Post> Posts, int TotalCount)> GetFilteredAsync(PostFilterDto filter, string userId, int page, int pageSize);
+        Task<UserPostStatsDto> GetUserStatsAsync(string userId);
     }
 }

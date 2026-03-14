@@ -17,10 +17,10 @@ namespace Dactra.Controllers
             _service = service;
             _context = context;
         }
-        [HttpPost ("Book")]
-        public async Task<IActionResult> BookAppointment (int scheduleTableId)
+        [HttpPost("Book")]
+        public async Task<IActionResult> BookAppointment(int scheduleTableId)
         {
-          
+
             try
             {
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -33,51 +33,28 @@ namespace Dactra.Controllers
                 return Ok(new { appointmentId = res });
 
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return BadRequest(new { message = e.Message });
             }
         }
-        [HttpPost("paymob/webhook")]
-        public async Task<IActionResult> PaymobWebhook([FromBody] PaymobWebhookDto data)
+        [HttpPost("refund")]
+        public async Task<IActionResult> Refund(int appointmentid)
         {
-            var orderId = data.Obj.Order.Id;
-            var success = data.Obj.Success;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Invalid token");
+            var patient = await _context.Patients
+                   .FirstOrDefaultAsync(p => p.UserId == userId);
 
-            var payment = await _context.Payments
-                .FirstOrDefaultAsync(p => p.PaymobOrderId == orderId);
+            bool result = await _service.CancelAppointmentAsync(appointmentid,patient.Id);
 
-            if (payment == null)
-                return NotFound();
-
-            if (success)
-            {
-                payment.Status = paymentStatus.Confirmed;
-
-                var appointment = await _context.PatientAppointments
-                    .FirstOrDefaultAsync(a => a.PaymentId == payment.Id);
-
-                appointment.Status = AppointmentStatus.Confirmed;
-
-                var slot = await _context.DoctorAvailabilitySlots
-                    .FirstOrDefaultAsync(s => s.Id == appointment.SlotId);
-
-                slot.IsBooked = true;
-
-                await _context.SaveChangesAsync();
-                slot.IsBooked = true;
-                slot.IsReserved = false;
-                slot.ReservedUntil = null;
-                await _context.SaveChangesAsync();
-
-            }
+            if (result)
+                return Ok(new { success = true, message = "All payments refunded successfully." });
             else
-            {
-                payment.Status = paymentStatus.Failed;
-            }
+                return BadRequest(new { success = false, message = "Some refunds failed. Check logs." });
 
-            return Ok();
+
         }
-
     }
 }

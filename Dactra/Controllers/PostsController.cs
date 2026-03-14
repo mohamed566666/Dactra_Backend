@@ -341,6 +341,24 @@ namespace Dactra.Controllers
             }
         }
 
+        [HttpGet("filterOn")]
+        public async Task<ActionResult<PagedResultDto<PostResponseDto>>> GetMyPosts([FromQuery] PostFilterDto filter,[FromQuery] int page = 1,[FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var userId = GetUserId();
+                return Ok(await _postService.GetMyFilteredPostsAsync(filter, userId, page, pageSize));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         // ── Helpers ───────────────────────────────────────────────────────────────
 
         private string GetUserId()

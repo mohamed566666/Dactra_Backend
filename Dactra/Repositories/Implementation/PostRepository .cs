@@ -1,6 +1,8 @@
-﻿namespace Dactra.Repositories.Implementation
+﻿using Dactra.DTOs.PostDTOs;
+
+namespace Dactra.Repositories.Implementation
 {
-    public class PostRepository: IPostRepository
+    public class PostRepository : IPostRepository
     {
         private readonly ApplicationDbContext _context;
 
@@ -113,5 +115,49 @@
 
         public async Task<bool> BelongsToDoctorAsync(int postId, int doctorId)
             => await _context.Posts.AnyAsync(p => p.Id == postId && p.DoctorId == doctorId && !p.isDeleted);
+
+        public async Task<(List<Post> Posts, int TotalCount)> GetFilteredAsync(PostFilterDto filter, string userId, int page, int pageSize)
+        {
+            var query = _context.Posts
+                .Where(p => !p.isDeleted)
+                .Include(p => p.Doctor)
+                .Include(p => p.Likes)
+                .Include(p => p.Comments)
+                .Include(p => p.SavedBy)
+                .Include(p => p.PostTags).ThenInclude(pt => pt.Tag)
+                .AsQueryable();
+
+            query = filter switch
+            {
+                PostFilterDto.Liked => query.Where(p => p.Likes.Any(l => l.UserId == userId)),
+                PostFilterDto.Saved => query.Where(p => p.SavedBy.Any(s => s.UserId == userId)),
+                PostFilterDto.Commented => query.Where(p => p.Comments.Any(c => c.UserId == userId)),
+                _ => query
+            };
+
+            query = query.OrderByDescending(p => p.CreatedAt);
+
+            var total = await query.CountAsync();
+            var posts = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            return (posts, total);
+        }
+
+        public async Task<UserPostStatsDto> GetUserStatsAsync(string userId)
+        {
+            var liked = await _context.PostLikes.CountAsync(l => l.UserId == userId);
+            var saved = await _context.SavedPosts.CountAsync(s => s.UserId == userId);
+            var commented = await _context.comments
+                                .Where(c => c.UserId == userId)
+                                .Select(c => c.PostId)
+                                .Distinct()
+                                .CountAsync();
+
+            return new UserPostStatsDto
+            {
+                TotalLiked = liked,
+                TotalSaved = saved,
+                TotalCommented = commented
+            };
+        }
     }
 }

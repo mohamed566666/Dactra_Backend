@@ -13,5 +13,6 @@ namespace Dactra.DTOs.PostDTOs
         public bool IsLikedByCurrentUser { get; set; }
         public bool IsSavedByCurrentUser { get; set; }
         public List<TagDto> Tags { get; set; } = new();
+        public int SavesCount { get; set; }
     }
 }
