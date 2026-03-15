@@ -89,6 +89,24 @@ namespace Dactra.Controllers
             }
         }
 
+        [HttpGet("my-posts")]
+        public async Task<ActionResult<PagedResultDto<PostResponseDto>>> GetMyPosts([FromQuery] int page = 1,[FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var doctorId = await GetDoctorId();
+                return Ok(await _postService.GetByDoctorIdAsync(doctorId, page, pageSize));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         [HttpGet("tag/{tagId:int}")]
         [AllowAnonymous]
         public async Task<ActionResult<PagedResultDto<PostResponseDto>>> GetByTag(
@@ -342,6 +360,7 @@ namespace Dactra.Controllers
         }
 
         [HttpGet("filterOn")]
+        [AllowAnonymous]
         public async Task<ActionResult<PagedResultDto<PostResponseDto>>> GetMyPosts([FromQuery] PostFilterDto filter,[FromQuery] int page = 1,[FromQuery] int pageSize = 10)
         {
             try
