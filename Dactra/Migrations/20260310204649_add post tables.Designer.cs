@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260310204649_add post tables")]
+    partial class addposttables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -128,25 +131,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "5e8c9731-3036-4da9-a654-006082f07c0f",
+                            Id = "a97a298f-4318-424e-8d5d-8bf52e4a0610",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "9e2f58d1-286e-47e1-b40c-40446829cbba",
+                            Id = "8429bd83-296f-4faa-ba3e-b9402ffdb61a",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "201b3adb-ef92-4ce2-b851-6b340b9ffd43",
+                            Id = "ab2d790a-235b-4d8a-9f24-c771182744ee",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "acc96a67-7748-4aea-ba30-68774f563129",
+                            Id = "87316509-38ff-4523-aa2a-b90c3e5c85fe",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -663,9 +666,6 @@ namespace Dactra.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
-
-                    b.Property<bool>("isRefunded")
-                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -1505,13 +1505,11 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Dactra.Models.PostLike", b =>
                 {
-                    b.HasOne("Dactra.Models.Post", "Post")
+                    b.HasOne("Dactra.Models.Post", null)
                         .WithMany("Likes")
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-
-                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("Dactra.Models.PostTag", b =>

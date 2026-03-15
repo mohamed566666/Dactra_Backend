@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SignalR Post Hub Tester</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #d4d4d4; }
+        h2 { color: #569cd6; }
+        input, textarea { background: #2d2d2d; color: #d4d4d4; border: 1px solid #555; padding: 8px; border-radius: 4px; width: 300px; }
+        button { background: #0e639c; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin: 4px; }
+        button:hover { background: #1177bb; }
+        button.red { background: #c0392b; }
+        #log { background: #2d2d2d; border: 1px solid #555; padding: 10px; height: 400px; overflow-y: auto; border-radius: 4px; margin-top: 10px; }
+        .event { margin: 4px 0; padding: 4px 8px; border-radius: 3px; }
+        .green { border-left: 3px solid #4ec9b0; }
+        .yellow { border-left: 3px solid #dcdcaa; }
+        .red-ev { border-left: 3px solid #f44747; }
+        .info { border-left: 3px solid #569cd6; }
+        .status { font-weight: bold; margin-bottom: 10px; }
+        .connected { color: #4ec9b0; }
+        .disconnected { color: #f44747; }
+        label { display: block; margin-top: 10px; margin-bottom: 4px; color: #9cdcfe; font-size: 13px; }
+        .section { background: #252526; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<h2>🔌 SignalR Post Hub Tester</h2>
+
+<div class="section">
+    <label>Hub URL</label>
+    <input id="hubUrl" value="https://localhost:7000/hubs/posts" style="width:400px" />
+
+    <label>JWT Token (بدون Bearer)</label>
+    <textarea id="token" rows="3" style="width:400px" placeholder="eyJhbGci..."></textarea>
+
+    <br><br>
+    <button onclick="connect()">🔗 Connect</button>
+    <button class="red" onclick="disconnect()">❌ Disconnect</button>
+    <p class="status">Status: <span id="status" class="disconnected">Disconnected</span></p>
+</div>
+
+<div class="section">
+    <label>Post ID (للانضمام لمجموعة بوست معين)</label>
+    <input id="postId" type="number" value="1" style="width:100px" />
+    <br><br>
+    <button onclick="joinPost()">📌 Join Post Group</button>
+    <button onclick="leavePost()">🚪 Leave Post Group</button>
+</div>
+
+<div class="section">
+    <b>📋 Events Log</b>
+    <button onclick="clearLog()" style="float:right; background:#555">Clear</button>
+    <div id="log"></div>
+</div>
+
+<script>
+    let connection = null;
+
+    function log(message, type = 'info') {
+        const div = document.getElementById('log');
+        const classMap = { info: 'info', success: 'green', warning: 'yellow', error: 'red-ev' };
+        const time = new Date().toLocaleTimeString();
+        div.innerHTML += `<div class="event ${classMap[type]}">[${time}] ${message}</div>`;
+        div.scrollTop = div.scrollHeight;
+    }
+
+    function clearLog() {
+        document.getElementById('log').innerHTML = '';
+    }
+
+    async function connect() {
+        const url = document.getElementById('hubUrl').value;
+        const token = document.getElementById('token').value.trim();
+
+        connection = new signalR.HubConnectionBuilder()
+            .withUrl(url, token ? { accessTokenFactory: () => token } : {})
+            .withAutomaticReconnect()
+            .build();
+
+        // ── Register all events ──────────────────────────────────────────────
+        connection.on("PostCreated", data => {
+            log(`🆕 PostCreated → ID: ${data.id} | "${data.content?.substring(0, 60)}..."`, 'success');
+        });
+
+        connection.on("PostUpdated", data => {
+            log(`✏️ PostUpdated → ID: ${data.id} | "${data.content?.substring(0, 60)}..."`, 'warning');
+        });
+
+        connection.on("PostDeleted", data => {
+            log(`🗑️ PostDeleted → postId: ${data.postId}`, 'error');
+        });
+
+        connection.on("CommentAdded", data => {
+            log(`💬 CommentAdded → commentId: ${data.id} | postId: ${data.postId} | "${data.content}"`, 'success');
+        });
+
+        connection.on("CommentUpdated", data => {
+            log(`✏️ CommentUpdated → commentId: ${data.id} | "${data.content}"`, 'warning');
+        });
+
+        connection.on("CommentDeleted", data => {
+            log(`🗑️ CommentDeleted → commentId: ${data.commentId} | postId: ${data.postId}`, 'error');
+        });
+
+        connection.on("LikeUpdated", data => {
+            log(`❤️ LikeUpdated → postId: ${data.postId} | total: ${data.totalLikes} | liked: ${data.isLiked}`, 'warning');
+        });
+
+        connection.onreconnecting(() => {
+            document.getElementById('status').textContent = 'Reconnecting...';
+            document.getElementById('status').className = 'disconnected';
+            log('⚠️ Reconnecting...', 'warning');
+        });
+
+        connection.onreconnected(() => {
+            document.getElementById('status').textContent = 'Connected';
+            document.getElementById('status').className = 'connected';
+            log('✅ Reconnected!', 'success');
+        });
+
+        connection.onclose(() => {
+            document.getElementById('status').textContent = 'Disconnected';
+            document.getElementById('status').className = 'disconnected';
+            log('❌ Connection closed', 'error');
+        });
+
+        try {
+            await connection.start();
+            document.getElementById('status').textContent = 'Connected ✅';
+            document.getElementById('status').className = 'connected';
+            log(`✅ Connected to ${url}`, 'success');
+        } catch (err) {
+            log(`❌ Connection failed: ${err}`, 'error');
+        }
+    }
+
+    async function disconnect() {
+        if (connection) {
+            await connection.stop();
+            connection = null;
+        }
+    }
+
+    async function joinPost() {
+        const postId = parseInt(document.getElementById('postId').value);
+        if (!connection) return log('❌ Not connected', 'error');
+        try {
+            await connection.invoke("JoinPostGroup", postId);
+            log(`📌 Joined post_${postId} group`, 'success');
+        } catch (err) {
+            log(`❌ JoinPostGroup failed: ${err}`, 'error');
+        }
+    }
+
+    async function leavePost() {
+        const postId = parseInt(document.getElementById('postId').value);
+        if (!connection) return log('❌ Not connected', 'error');
+        try {
+            await connection.invoke("LeavePostGroup", postId);
+            log(`🚪 Left post_${postId} group`, 'warning');
+        } catch (err) {
+            log(`❌ LeavePostGroup failed: ${err}`, 'error');
+        }
+    }
+</script>
+
+</body>
+</html>
