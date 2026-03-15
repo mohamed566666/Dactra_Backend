@@ -20,57 +20,70 @@
         {
             if (!availableTags.Any()) return new List<string>();
 
-            var apiKey = _configuration["OpenAI:ApiKey"];
-            var model = _configuration["OpenAI:Model"] ?? "gpt-4o-mini";
+            var apiKey = _configuration["AITagging:ApiKey"];
+            var model = _configuration["AITagging:Model"] ?? "gemini-2.0-flash";
+
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                _logger.LogError("AITagging: API key is missing.");
+                return new List<string>();
+            }
 
             var tagsJson = JsonSerializer.Serialize(availableTags);
-
             var prompt = $"""
-                You are a medical content tagging assistant.
-                
-                Given the following medical post content, select the most relevant tags from the predefined list below.
-                Return ONLY a JSON array of tag names that match. Return an empty array [] if none match.
-                Do not invent new tags. Only use tags from the provided list.
-                Select between 1 and 5 tags maximum.
-                
-                Available Tags:
-                {tagsJson}
-                
-                Post Content:
-                {content}
-                
-                Respond ONLY with a JSON array, e.g.: ["Cardiology", "Hypertension"]
-                """;
+        You are a medical content tagging assistant.
+        Given the following medical post content, select the most relevant tags from the predefined list below.
+        Return ONLY a JSON array of tag names that match. Return an empty array [] if none match.
+        Do not invent new tags. Only use tags from the provided list.
+        Select between 1 and 5 tags maximum.
+
+        Available Tags:
+        {tagsJson}
+
+        Post Content:
+        {content}
+
+        Respond ONLY with a JSON array, e.g.: ["Cardiology", "Hypertension"]
+        """;
 
             var requestBody = new
             {
-                model,
-                messages = new[]
+                contents = new[]
                 {
-                    new { role = "user", content = prompt }
-                },
-                temperature = 0.2,
-                max_tokens = 200
+            new { parts = new[] { new { text = prompt } } }
+        }
             };
 
             var json = JsonSerializer.Serialize(requestBody);
-            var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
-            request.Headers.Add("Authorization", $"Bearer {apiKey}");
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
             try
             {
                 var response = await _httpClient.SendAsync(request);
-                response.EnsureSuccessStatusCode();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorBody = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("AITagging: Gemini request failed. Status={Status}, Error={Error}",
+                        response.StatusCode, errorBody);
+                    return new List<string>();
+                }
 
                 var responseJson = await response.Content.ReadAsStringAsync();
-                using var doc = JsonDocument.Parse(responseJson);
+                _logger.LogInformation("AITagging: Raw Gemini response = {Response}", responseJson);
 
+                using var doc = JsonDocument.Parse(responseJson);
                 var rawText = doc.RootElement
-                    .GetProperty("choices")[0]
-                    .GetProperty("message")
+                    .GetProperty("candidates")[0]
                     .GetProperty("content")
+                    .GetProperty("parts")[0]
+                    .GetProperty("text")
                     .GetString() ?? "[]";
+
+                _logger.LogInformation("AITagging: AI returned text = '{RawText}'", rawText);
 
                 rawText = rawText.Trim();
                 if (rawText.StartsWith("```")) rawText = rawText.Split('\n', 2)[1];
@@ -78,13 +91,17 @@
 
                 var extractedTags = JsonSerializer.Deserialize<List<string>>(rawText.Trim()) ?? new List<string>();
 
-                return extractedTags
+                var matchedTags = extractedTags
                     .Where(t => availableTags.Any(a => string.Equals(a, t, StringComparison.OrdinalIgnoreCase)))
                     .ToList();
+
+                _logger.LogInformation("AITagging: Final matched tags = [{Tags}]", string.Join(", ", matchedTags));
+
+                return matchedTags;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "AI tagging failed for content. Returning empty tag list.");
+                _logger.LogError(ex, "AITagging: Exception occurred.");
                 return new List<string>();
             }
         }

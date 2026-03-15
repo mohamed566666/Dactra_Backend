@@ -121,10 +121,12 @@ namespace Dactra.Repositories.Implementation
             var query = _context.Posts
                 .Where(p => !p.isDeleted)
                 .Include(p => p.Doctor)
+                    .ThenInclude(d => d.specialization)
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
                 .Include(p => p.SavedBy)
-                .Include(p => p.PostTags).ThenInclude(pt => pt.Tag)
+                .Include(p => p.PostTags)
+                    .ThenInclude(pt => pt.Tag)
                 .AsQueryable();
 
             query = filter switch
@@ -144,8 +146,8 @@ namespace Dactra.Repositories.Implementation
 
         public async Task<UserPostStatsDto> GetUserStatsAsync(string userId)
         {
-            var liked = await _context.PostLikes.CountAsync(l => l.UserId == userId);
-            var saved = await _context.SavedPosts.CountAsync(s => s.UserId == userId);
+            var liked = await _context.PostLikes.Include(l => l.Post).CountAsync(l => l.UserId == userId && !l.Post.isDeleted);
+            var saved = await _context.SavedPosts.Include(l => l.Post).CountAsync(s => s.UserId == userId && !s.Post.isDeleted);
             var commented = await _context.comments
                                 .Where(c => c.UserId == userId)
                                 .Select(c => c.PostId)
