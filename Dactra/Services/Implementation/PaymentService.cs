@@ -11,6 +11,7 @@ namespace Dactra.Services.Implementation
         private readonly ApplicationDbContext _context;
         private readonly ILogger<PaymentService> _logger;
         private readonly IAppointmentRepository _appointmentRepository;
+        private readonly IConfiguration _configuration;
 
         public PaymentService(
             HttpClient httpClient,
@@ -18,7 +19,8 @@ namespace Dactra.Services.Implementation
             IPatientProfileRepository patientProfileRepository,
             ApplicationDbContext context,
             ILogger<PaymentService> logger,
-            IAppointmentRepository appointmentRepository)
+            IAppointmentRepository appointmentRepository,
+            IConfiguration configuration)
         {
             _httpClient = httpClient;
             _settings = options.Value;
@@ -26,16 +28,17 @@ namespace Dactra.Services.Implementation
             _context = context;
             _logger = logger;
             _appointmentRepository = appointmentRepository;
+            _configuration = configuration;
         }
 
         public async Task<string> GetPaymentUrl(Payment payment, string email)
         {
             try
             {
-           
+
                 var user = await _patientProfileRepository.GetByUserEmail(email);
 
-               
+
                 var authResponse = await _httpClient.PostAsJsonAsync(
                     "https://accept.paymob.com/api/auth/tokens",
                     new { api_key = _settings.ApiKey });
@@ -45,7 +48,7 @@ namespace Dactra.Services.Implementation
                 string token = authDoc.RootElement.GetProperty("token").GetString()
                                ?? throw new ApplicationException("Paymob auth token not found");
 
-              
+
                 var orderResponse = await _httpClient.PostAsJsonAsync(
                     "https://accept.paymob.com/api/ecommerce/orders",
                     new
@@ -64,7 +67,7 @@ namespace Dactra.Services.Implementation
                 payment.PaymobOrderId = orderId.ToString();
                 await _context.SaveChangesAsync();
 
-              
+
                 var paymentKeyResponse = await _httpClient.PostAsJsonAsync(
                     "https://accept.paymob.com/api/acceptance/payment_keys",
                     new
@@ -89,15 +92,15 @@ namespace Dactra.Services.Implementation
                         currency = "EGP",
                         integration_id = int.Parse(_settings.IntegrationId)
                     });
-                    var captureResponse = await _httpClient.PostAsJsonAsync(
-                   "https://accept.paymob.com/api/acceptance/capture",
-                   new
-                   {
-                       auth_token = token,
-                       transaction_id =int.Parse(_settings.IntegrationId)
-    ,
-                       amount_cents = (int)(payment.Amount * 100)
-                   });
+                var captureResponse = await _httpClient.PostAsJsonAsync(
+               "https://accept.paymob.com/api/acceptance/capture",
+               new
+               {
+                   auth_token = token,
+                   transaction_id = int.Parse(_settings.IntegrationId)
+,
+                   amount_cents = (int)(payment.Amount * 100)
+               });
                 var paymentKeyString = await paymentKeyResponse.Content.ReadAsStringAsync();
                 _logger.LogInformation("Paymob /payment_keys response: {Response}", paymentKeyString);
 
@@ -108,7 +111,7 @@ namespace Dactra.Services.Implementation
                 string paymentToken = paymentTokenElement.GetString()
                                       ?? throw new ApplicationException("Payment token is null");
 
-                
+
                 string iframeUrl = _settings.IframeId.Replace("{payment_key_obtained_previously}", paymentToken);
                 return iframeUrl;
             }
@@ -122,7 +125,7 @@ namespace Dactra.Services.Implementation
         {
             try
             {
-              
+
                 var authResponse = await _httpClient.PostAsJsonAsync(
                     "https://accept.paymob.com/api/auth/tokens",
                     new { api_key = _settings.ApiKey });
@@ -134,7 +137,7 @@ namespace Dactra.Services.Implementation
 
                 int amountCents = (int)(amount * 100);
 
-              
+
                 var captureResponse = await _httpClient.PostAsJsonAsync(
                     "https://accept.paymob.com/api/acceptance/capture",
                     new
@@ -147,7 +150,7 @@ namespace Dactra.Services.Implementation
                 var captureResult = await captureResponse.Content.ReadAsStringAsync();
                 _logger.LogInformation("Paymob Capture response: {Response}", captureResult);
 
-               
+
                 var refundResponse = await _httpClient.PostAsJsonAsync(
                     "https://accept.paymob.com/api/acceptance/void_refund/refund",
                     new
@@ -176,44 +179,129 @@ namespace Dactra.Services.Implementation
         {
 
             var payments = await _context.Payments
-              .Include(p => p.PatientAppointments) 
-              .ThenInclude(pa => pa.Slot)     
+              .Include(p => p.PatientAppointments)
+              .ThenInclude(pa => pa.Slot)
                .ToListAsync();
 
             bool allSuccess = true;
-                try
-                {
-                    
-                    var refundpayment = payments.FirstOrDefault(p=>p.PatientAppointments.Any(pa => pa.SlotId == slotid));
-                    if (refundpayment==null)
-                    {
-                        _logger.LogInformation("Payment {PaymentId} does not include appointment {AppointmentId}, skipping refund.", refundpayment.Id, slotid);
-                     
-                    }
-                    // 1️⃣ Capture + Refund
-                    bool success = await RefundPaymentAsync(int.Parse(refundpayment.PaymobTransactionId), refundpayment.Amount);
+            try
+            {
 
-                    if (success)
-                    {
-                    refundpayment.isRefunded = true;
-                        _context.Update(refundpayment);
-                    }
-                    else
-                    {
-                        allSuccess = false;
-                        _logger.LogWarning("Refund failed for TransactionId {TransactionId}", refundpayment.PaymobTransactionId);
-                    }
+                var refundpayment = payments.FirstOrDefault(p => p.PatientAppointments.Any(pa => pa.SlotId == slotid));
+                if (refundpayment == null)
+                {
+                    _logger.LogInformation("Payment {PaymentId} does not include appointment {AppointmentId}, skipping refund.", refundpayment.Id, slotid);
+
                 }
-                catch (Exception ex)
+                // 1️⃣ Capture + Refund
+                bool success = await RefundPaymentAsync(int.Parse(refundpayment.PaymobTransactionId), refundpayment.Amount);
+
+                if (success)
+                {
+                    refundpayment.isRefunded = true;
+                    _context.Update(refundpayment);
+                }
+                else
                 {
                     allSuccess = false;
-                    _logger.LogError(ex, "Exception during refund for TransactionId {TransactionId}");
+                    _logger.LogWarning("Refund failed for TransactionId {TransactionId}", refundpayment.PaymobTransactionId);
                 }
-            
+            }
+            catch (Exception ex)
+            {
+                allSuccess = false;
+                _logger.LogError(ex, "Exception during refund for TransactionId {TransactionId}");
+            }
+
 
             await _context.SaveChangesAsync();
             return allSuccess;
         }
 
+        public bool ProcessPaymobCallbackAsync(PaymobCallbackRequest callback, string hmacHeader, CancellationToken cancellationToken = default)
+        {
+            // 1. Verify HMAC
+            if (string.IsNullOrEmpty(hmacHeader))
+            {
+                _logger.LogWarning("Callback received without HMAC header");
+                return false;
+            }
+
+            var isValid = VerifyCallbackAsync(callback, hmacHeader);
+
+            if (!isValid)
+            {
+                _logger.LogError("HMAC verification failed");
+                return false;
+            }
+            return true;
+
+        }
+
+
+
+        public bool VerifyCallbackAsync(PaymobCallbackRequest callback, string hmacFromHeader)
+        {
+            try
+            {
+                var obj = callback.obj;
+
+                var concatenatedString =
+                    obj.amount_cents.ToString() +
+                    obj.created_at +
+                    obj.currency +
+                    obj.error_occured.ToString().ToLower() +
+                    obj.has_parent_transaction.ToString().ToLower() +
+                    obj.id.ToString() +
+                    obj.integration_id.ToString() +
+                    obj.is_3d_secure.ToString().ToLower() +
+                    obj.is_auth.ToString().ToLower() +
+                    obj.is_capture.ToString().ToLower() +
+                    obj.is_refunded.ToString().ToLower() +
+                    obj.is_standalone_payment.ToString().ToLower() +
+                    obj.is_voided.ToString().ToLower() +
+                    obj.order.id.ToString() +
+                    obj.owner.ToString() +
+                    obj.pending.ToString().ToLower() +
+                    (obj.source_data?.pan ?? "") +
+                    (obj.source_data?.sub_type ?? "") +
+                    (obj.source_data?.type ?? "") +
+                    obj.success.ToString().ToLower();
+
+                var computedHmac = ComputeHmac(concatenatedString, _configuration["Paymob:HmacSecret"]);
+              
+                var isValid = computedHmac.Equals(hmacFromHeader, StringComparison.OrdinalIgnoreCase);
+
+                if (!isValid)
+                {
+                    _logger.LogWarning(
+                        "HMAC verification failed.\nString: {String}\nExpected: {Computed}\nReceived: {Received}",
+                        concatenatedString,
+                        computedHmac,
+                        hmacFromHeader);
+                }
+
+                return isValid;
+            }
+
+            catch (Exception ex)
+            {
+
+                return false;
+            }
+
+
+        }
+
+        public string ComputeHmac(string data, string secret)
+        {
+           var keyBytes = Encoding.UTF8.GetBytes(secret);
+            var dataBytes = Encoding.UTF8.GetBytes(data);
+            using (var hmac = new HMACSHA256(keyBytes))
+            {
+                var hash= hmac.ComputeHash(dataBytes);
+                return BitConverter.ToString(hash).Replace("-", "").ToLower();
+            }
+        }
     }
 }
