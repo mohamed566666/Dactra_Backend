@@ -17,8 +17,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<Payment> Payments { get; set; }
     public DbSet<Post> Posts { get; set; }
     public DbSet<Majors> Majors { get; set; }
-    public DbSet<Questions> Questions { get; set; }
-    public DbSet<Answer> Answers { get; set; }
     public DbSet<VitalSignType> VitalSignTypes { get; set; }
     public DbSet<VitalSign> VitalSigns { get; set; }
     public DbSet<Rating> Ratings { get; set; }
@@ -38,6 +36,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<SavedPost> SavedPosts { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<PostTag> PostTags { get; set; }
+    public DbSet<Question> Questions { get; set; }
+    public DbSet<QuestionAnswer> QuestionAnswers { get; set; }
+    public DbSet<QuestionInterest> QuestionInterests { get; set; }
+    public DbSet<QuestionSave> QuestionSaves { get; set; }
+    public DbSet<QuestionTag> QuestionTags { get; set; }
 
 
 
@@ -139,5 +142,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         modelBuilder.Entity<PostLike>()
             .HasIndex(pl => new { pl.UserId, pl.PostId })
             .IsUnique();
+        modelBuilder.Entity<QuestionTag>()
+        .HasKey(qt => new { qt.QuestionId, qt.TagId });
     }
 }

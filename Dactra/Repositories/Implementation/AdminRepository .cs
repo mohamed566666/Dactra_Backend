@@ -48,7 +48,7 @@ namespace Dactra.Repositories.Implementation
            
         }
 
-        public async Task DeleteQuestions(Questions questions)
+        public async Task DeleteQuestions(Question questions)
         {
             
             
@@ -116,7 +116,7 @@ namespace Dactra.Repositories.Implementation
             return await _context.MedicalTestProviders.Where(p => p.Type==Enums.MedicalTestProviderType.Lab).CountAsync();
         }
 
-        public async Task<Questions>? GetQuestionsById(string id)
+        public async Task<Question>? GetQuestionsById(string id)
         {
            return  await _context.Questions.FirstOrDefaultAsync(s=>s.Id==int.Parse(id));
         }
