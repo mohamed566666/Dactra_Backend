@@ -9,7 +9,7 @@
         public string Iconpath { get; set; } = string.Empty;
         public string Description { get; set; }= string.Empty;
 
-       public List<Questions> Questions { get; set; } = new List<Questions>();
+       public List<Question> Questions { get; set; } = new List<Question>();
         public List<Post> Post { get; set; } =new List<Post>();
 
     }

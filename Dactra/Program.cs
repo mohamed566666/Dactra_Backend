@@ -1,5 +1,4 @@
-﻿using Dactra.Services.Interfaces;
-
+﻿
 var builder = WebApplication.CreateBuilder(args);
 
 #region Configuration
@@ -72,10 +71,6 @@ builder.Services.AddScoped<IComplaintRepository, ComplaintRepository>();
 builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
 builder.Services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
 
-builder.Services.AddScoped<IPostRepository, PostRepository>();
-
-builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
-builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 
 builder.Services.AddScoped<IPostRepository, PostRepository>();
@@ -84,6 +79,11 @@ builder.Services.AddScoped<IPostLikeRepository, PostLikeRepository>();
 builder.Services.AddScoped<ISavedPostRepository, SavedPostRepository>();
 builder.Services.AddScoped<ITagRepository, TagRepository>();
 builder.Services.AddScoped<IPostTagRepository, PostTagRepository>();
+
+builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+builder.Services.AddScoped<IQuestionAnswerRepository, QuestionAnswerRepository>();
+builder.Services.AddScoped<IQuestionInterestRepository, QuestionInterestRepository>();
+builder.Services.AddScoped<IQuestionSaveRepository, QuestionSaveRepository>();
 
 
 #endregion
@@ -116,10 +116,7 @@ builder.Services.AddScoped<IAllergyService, AllergyService>();
 builder.Services.AddScoped<IChronicDiseaseService, ChronicDiseaseService>();
 builder.Services.AddScoped<ICityService, CityService>();
 builder.Services.AddScoped<ISiteReviewService, SiteReviewService>();
-builder.Services.AddScoped<IComplaintService, ComplaintService>();
-
-builder.Services.AddScoped<IPostService, PostService>();
-builder.Services.AddScoped<IQuestionService, QuestionService>();
+builder.Services.AddScoped<IComplaintService, ComplaintService>();  
 
 builder.Services.AddScoped<IDoctorSlotService, DoctorSlotService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
@@ -133,6 +130,10 @@ builder.Services.AddScoped<ISavedPostService, SavedPostService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<IAITaggingService, AITaggingService>();
 
+builder.Services.AddScoped<IQuestionService, QuestionService>();
+builder.Services.AddScoped<IQuestionAnswerService, QuestionAnswerService>();
+builder.Services.AddScoped<IQuestionInterestService, QuestionInterestService>();
+builder.Services.AddScoped<IQuestionSaveService, QuestionSaveService>();
 
 
 #endregion
@@ -275,7 +276,7 @@ app.UseMiddleware<TokenVersionMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<QuestionsHub>("/questionsHub");
+app.MapHub<QuestionHub>("/hubs/questions");
 app.MapHub<AppointmentHub>("/appointmentHub");
 app.MapHub<DoctorScheduleHub>("/doctorScheduleHub");
 app.MapHub<PostHub>("/hubs/posts");
