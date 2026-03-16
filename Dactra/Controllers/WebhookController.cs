@@ -5,15 +5,19 @@ using Dactra.DTOs.PaymobDto;
 namespace Dactra.Controllers
 {
     [ApiController]
-    [Route("api/payment/webhook")]
+    [Route("api/[controller]")]
     [AllowAnonymous]
     public class PaymentWebhookController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
+        private readonly IPaymentService _paymentService;
 
-        public PaymentWebhookController(ApplicationDbContext context)
+        public PaymentWebhookController(ApplicationDbContext context, IConfiguration configuration, IPaymentService paymentService)
         {
             _context = context;
+            _configuration = configuration;
+            _paymentService = paymentService;
         }
 
         /// <summary>
@@ -25,24 +29,29 @@ namespace Dactra.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> PaymobWebhook([FromBody] PaymobWebhookDto data)
+        public async Task<IActionResult> PaymobWebhook([FromBody] PaymobCallbackRequest data)
         {
-            if (data == null || data.Obj == null)
+            if (data == null || data.obj == null)
                 return BadRequest("Webhook data is null");
 
-            var orderId = data.Obj.Order.Id;
-            var success = data.Obj.Success;
+            var orderId = data.obj.order.id;
+            var success = data.obj.success;
 
             var payment = await _context.Payments
                 .FirstOrDefaultAsync(p => p.PaymobOrderId == orderId.ToString());
 
             if (payment == null)
                 return NotFound($"Payment with OrderId {orderId} not found");
+            var hmac = Request.Query["hmac"].FirstOrDefault()
+               ?? Request.Headers["hmac"].FirstOrDefault()
+               ?? Request.Form["hmac"].FirstOrDefault();
 
-            if (success)
+            var flag= _paymentService.ProcessPaymobCallbackAsync(data, hmac, CancellationToken.None);
+
+            if (success&&flag)
             {
                 payment.Status = paymentStatus.Confirmed;
-                payment.PaymobTransactionId = data.Obj.Order.Transaction_Id;
+                payment.PaymobTransactionId = data.obj.id.ToString();
                 var appointment = await _context.PatientAppointments
                     .FirstOrDefaultAsync(a => a.PaymentId == payment.Id);
 
