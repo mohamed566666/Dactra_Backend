@@ -218,7 +218,7 @@ namespace Dactra.Services.Implementation
             return allSuccess;
         }
 
-        public bool ProcessPaymobCallbackAsync(PaymobCallbackRequest callback, string hmacHeader, CancellationToken cancellationToken = default)
+        public async Task<bool> ProcessPaymobCallbackAsync(PaymobCallbackRequest callback, string hmacHeader, CancellationToken cancellationToken = default)
         {
             // 1. Verify HMAC
             if (string.IsNullOrEmpty(hmacHeader))
@@ -227,7 +227,7 @@ namespace Dactra.Services.Implementation
                 return false;
             }
 
-            var isValid = VerifyCallbackAsync(callback, hmacHeader);
+            var isValid =await VerifyCallbackAsync(callback, hmacHeader);
 
             if (!isValid)
             {
@@ -240,7 +240,7 @@ namespace Dactra.Services.Implementation
 
 
 
-        public bool VerifyCallbackAsync(PaymobCallbackRequest callback, string hmacFromHeader)
+        public Task<bool> VerifyCallbackAsync(PaymobCallbackRequest callback, string hmacFromHeader)
         {
             try
             {
@@ -252,16 +252,16 @@ namespace Dactra.Services.Implementation
                     obj.currency +
                     obj.error_occured.ToString().ToLower() +
                     obj.has_parent_transaction.ToString().ToLower() +
-                    obj.id.ToString() +
-                    obj.integration_id.ToString() +
+                    obj.id +
+                    obj.integration_id +
                     obj.is_3d_secure.ToString().ToLower() +
                     obj.is_auth.ToString().ToLower() +
                     obj.is_capture.ToString().ToLower() +
                     obj.is_refunded.ToString().ToLower() +
                     obj.is_standalone_payment.ToString().ToLower() +
                     obj.is_voided.ToString().ToLower() +
-                    obj.order.id.ToString() +
-                    obj.owner.ToString() +
+                    obj.order.id +
+                    obj.owner +
                     obj.pending.ToString().ToLower() +
                     (obj.source_data?.pan ?? "") +
                     (obj.source_data?.sub_type ?? "") +
@@ -281,13 +281,13 @@ namespace Dactra.Services.Implementation
                         hmacFromHeader);
                 }
 
-                return isValid;
+                return Task.FromResult(isValid);
             }
 
             catch (Exception ex)
             {
 
-                return false;
+                return Task.FromResult(false);
             }
 
 
@@ -295,13 +295,15 @@ namespace Dactra.Services.Implementation
 
         public string ComputeHmac(string data, string secret)
         {
-           var keyBytes = Encoding.UTF8.GetBytes(secret);
-            var dataBytes = Encoding.UTF8.GetBytes(data);
-            using (var hmac = new HMACSHA256(keyBytes))
-            {
-                var hash= hmac.ComputeHash(dataBytes);
-                return BitConverter.ToString(hash).Replace("-", "").ToLower();
-            }
+            var keyBytes = Encoding.UTF8.GetBytes(secret);
+
+            using var hmac = new HMACSHA512(keyBytes);
+
+            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
+
+            return BitConverter.ToString(hash)
+                .Replace("-", "")
+                .ToLower();
         }
     }
 }
