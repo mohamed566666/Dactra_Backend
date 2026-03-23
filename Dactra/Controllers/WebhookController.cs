@@ -31,36 +31,46 @@ namespace Dactra.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> PaymobWebhook([FromBody] PaymobCallbackRequest data)
+        public async Task<IActionResult> PaymobWebhook()
         {
             try
             {
-                _logger.LogInformation("Webhook received.");
-                if (data == null || data.obj == null)
-                {
-                    _logger.LogWarning("Webhook data is null.");
-                    return BadRequest("Webhook data is null");
-                }
+                using var reader = new StreamReader(Request.Body);
+                var body = await reader.ReadToEndAsync();
+                var json = JsonDocument.Parse(body);
 
-                var orderId = data.obj.order.id;
-                var success = data.obj.success;
-                _logger.LogInformation("Processing webhook for OrderId={OrderId}, Success={Success}", orderId, success);
+                var obj = json.RootElement.GetProperty("obj");
+
+                var orderId = obj.GetProperty("order").GetProperty("id").GetInt32();
+                var success = obj.GetProperty("success").GetBoolean();
+                return Ok(new { message = "Webhook received. Processing logic is currently disabled for testing." });
+                //_logger.LogInformation("Webhook received.");
+                //if (data == null || data.obj == null)
+                //{
+                //    _logger.LogWarning("Webhook data is null.");
+                //    return BadRequest("Webhook data is null");
+                //}
+                //if (data?.obj?.order==null) { return BadRequest("order is null");    }
+                //var orderId = data.obj.order.id;
+                //var success = data.obj.success;
+                //_logger.LogInformation("Processing webhook for OrderId={OrderId}, Success={Success}", orderId, success);
 
                 var payment = await _context.Payments
                     .FirstOrDefaultAsync(p => p.PaymobOrderId == orderId.ToString());
 
                 if (payment == null)
-                { 
+                {
                     _logger.LogWarning("Payment not found for OrderId={OrderId}", orderId);
-                     return NotFound($"Payment with OrderId {orderId} not found");
+                    return NotFound($"Payment with OrderId {orderId} not found");
                 }
                 var hmac = Request.Query["hmac"].FirstOrDefault()
-                   ?? Request.Headers["hmac"].FirstOrDefault()
-                   ?? Request.Form["hmac"].FirstOrDefault();
+                   ?? Request.Headers["hmac"].FirstOrDefault();
+
                 _logger.LogInformation("HMAC received: {HMAC}", hmac);
 
-                var flag =await _paymentService.ProcessPaymobCallbackAsync(data, hmac, CancellationToken.None);
+                var flag =await _paymentService.ProcessPaymobCallbackAsync(json, hmac, CancellationToken.None);
                 _logger.LogInformation("HMAC validation result: {Flag}", flag);
+
 
 
                 if (success && flag)
@@ -68,7 +78,7 @@ namespace Dactra.Controllers
                     _logger.LogInformation("Updating DB for confirmed payment OrderId={OrderId}", orderId);
 
                     payment.Status = paymentStatus.Confirmed;
-                    payment.PaymobTransactionId = data.obj.id.ToString();
+                    payment.PaymobTransactionId = obj.GetProperty("id").ToString();
                     var appointment = await _context.PatientAppointments
                         .FirstOrDefaultAsync(a => a.PaymentId == payment.Id);
 
@@ -93,7 +103,8 @@ namespace Dactra.Controllers
                         {
                             _logger.LogWarning("Slot not found for AppointmentId={AppointmentId}", appointment.Id);
                         }
-                    }else
+                    }
+                    else
                     {
                         _logger.LogWarning("Appointment not found for PaymentId={PaymentId}", payment.Id);
                     }
@@ -110,7 +121,6 @@ namespace Dactra.Controllers
 
                 }
                 _logger.LogInformation("Webhook processing finished for OrderId={OrderId}", orderId);
-
                 return Ok(new { message = "Webhook processed", orderId, success });
             }
             catch (Exception ex)

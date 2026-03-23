@@ -218,7 +218,7 @@ namespace Dactra.Services.Implementation
             return allSuccess;
         }
 
-        public async Task<bool> ProcessPaymobCallbackAsync(PaymobCallbackRequest callback, string hmacHeader, CancellationToken cancellationToken = default)
+        public async Task<bool> ProcessPaymobCallbackAsync(JsonDocument json, string hmacHeader, CancellationToken cancellationToken = default)
         {
             // 1. Verify HMAC
             if (string.IsNullOrEmpty(hmacHeader))
@@ -227,7 +227,7 @@ namespace Dactra.Services.Implementation
                 return false;
             }
 
-            var isValid =await VerifyCallbackAsync(callback, hmacHeader);
+            var isValid =await VerifyCallbackAsync(json, hmacHeader);
 
             if (!isValid)
             {
@@ -240,33 +240,33 @@ namespace Dactra.Services.Implementation
 
 
 
-        public Task<bool> VerifyCallbackAsync(PaymobCallbackRequest callback, string hmacFromHeader)
+        public Task<bool> VerifyCallbackAsync(JsonDocument callback, string hmacFromHeader)
         {
             try
             {
-                var obj = callback.obj;
+                var obj = callback.RootElement.GetProperty("obj");
 
                 var concatenatedString =
-                    obj.amount_cents.ToString() +
-                    obj.created_at +
-                    obj.currency +
-                    obj.error_occured.ToString().ToLower() +
-                    obj.has_parent_transaction.ToString().ToLower() +
-                    obj.id +
-                    obj.integration_id +
-                    obj.is_3d_secure.ToString().ToLower() +
-                    obj.is_auth.ToString().ToLower() +
-                    obj.is_capture.ToString().ToLower() +
-                    obj.is_refunded.ToString().ToLower() +
-                    obj.is_standalone_payment.ToString().ToLower() +
-                    obj.is_voided.ToString().ToLower() +
-                    obj.order.id +
-                    obj.owner +
-                    obj.pending.ToString().ToLower() +
-                    (obj.source_data?.pan ?? "") +
-                    (obj.source_data?.sub_type ?? "") +
-                    (obj.source_data?.type ?? "") +
-                    obj.success.ToString().ToLower();
+                    obj.GetProperty("amount_cents").GetInt64().ToString() +
+                    obj.GetProperty("created_at").GetString() +
+                    obj.GetProperty("currency").GetString() +
+                    obj.GetProperty("error_occured").GetBoolean().ToString().ToLower() +
+                    obj.GetProperty("has_parent_transaction").GetBoolean().ToString().ToLower() +
+                    obj.GetProperty("id").GetInt32().ToString() +
+                    obj.GetProperty("integration_id").GetInt32().ToString() +
+                    obj.GetProperty("is_3d_secure").GetBoolean().ToString().ToLower() +
+                    obj.GetProperty("is_auth").GetBoolean().ToString().ToLower() +
+                    obj.GetProperty("is_capture").GetBoolean().ToString().ToLower() +
+                    obj.GetProperty("is_refunded").GetBoolean().ToString().ToLower() +
+                    obj.GetProperty("is_standalone_payment").GetBoolean().ToString().ToLower() +
+                    obj.GetProperty("is_voided").GetBoolean().ToString().ToLower() +
+                    obj.GetProperty("order").GetProperty("id").GetInt32().ToString() +
+                    obj.GetProperty("owner").GetInt32().ToString() +
+                    obj.GetProperty("pending").GetBoolean().ToString().ToLower() +
+                    (obj.GetProperty("source_data").TryGetProperty("pan", out var pan) ? pan.GetString() : "") +
+                    (obj.GetProperty("source_data").TryGetProperty("sub_type", out var subType) ? subType.GetString() : "") +
+                    (obj.GetProperty("source_data").TryGetProperty("type", out var type) ? type.GetString() : "") +
+                    obj.GetProperty("success").GetBoolean().ToString().ToLower();
 
                 var computedHmac = ComputeHmac(concatenatedString, _configuration["Paymob:HmacSecret"]);
               
