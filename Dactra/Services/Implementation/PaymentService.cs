@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System.Text.Json;
 
 namespace Dactra.Services.Implementation
@@ -12,6 +13,7 @@ namespace Dactra.Services.Implementation
         private readonly ILogger<PaymentService> _logger;
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IConfiguration _configuration;
+        private readonly string _hmacSecret;
 
         public PaymentService(
             HttpClient httpClient,
@@ -29,6 +31,7 @@ namespace Dactra.Services.Implementation
             _logger = logger;
             _appointmentRepository = appointmentRepository;
             _configuration = configuration;
+            _hmacSecret = _configuration["Paymob:HmacSecret"];
         }
 
         public async Task<string> GetPaymentUrl(Payment payment, string email)
@@ -218,58 +221,114 @@ namespace Dactra.Services.Implementation
             return allSuccess;
         }
 
-        public async Task<bool> ProcessPaymobCallbackAsync(JsonDocument json, string hmacHeader, CancellationToken cancellationToken = default)
+        public async Task<bool> ProcessPaymobCallbackAsync(PaymobCallbackRequest callback, string hmacHeader, CancellationToken cancellationToken = default)
         {
             // 1. Verify HMAC
-            if (string.IsNullOrEmpty(hmacHeader))
+            try
             {
-                _logger.LogWarning("Callback received without HMAC header");
+                if (string.IsNullOrEmpty(hmacHeader))
+                {
+                    _logger.LogWarning("Callback received without HMAC header");
+                    return false;
+                }
+
+                var isValid = await VerifyCallbackAsync(callback, hmacHeader);
+
+                if (!isValid)
+                {
+                    _logger.LogError("HMAC verification failed");
+                    return false;
+                }
+                var orderId = callback.obj.order.id.ToString();
+                var payment = await _context.Payments.FirstOrDefaultAsync(p => p.PaymobOrderId == orderId, cancellationToken);
+                if (payment == null)
+                {
+                    _logger.LogError("Payment not found for Order ID {OrderId}", orderId);
+                    return false;
+                }
+                var callbackJson = JsonConvert.SerializeObject(callback);
+                if (callback.obj.success)
+                {
+                    payment.Status = paymentStatus.Confirmed;
+                    payment.PaymobTransactionId = callback.obj.id.ToString();
+                    var appointment = await _context.PatientAppointments
+                      .FirstOrDefaultAsync(a => a.PaymentId == payment.Id);
+
+                    if (appointment != null)
+                    {
+                        appointment.Status = AppointmentStatus.Confirmed;
+                        _logger.LogInformation("Appointment {AppointmentId} confirmed.", appointment.Id);
+                    }
+                    else {
+                        
+                        _logger.LogWarning("No appointment found for Payment {PaymentId}", payment.Id); 
+                        return false;
+
+                    }
+                    var slot = await _context.DoctorAvailabilitySlots
+                        .FirstOrDefaultAsync(s => s.Id == appointment.SlotId);
+
+                    if (slot != null)
+                    {
+                        slot.IsBooked = true;
+                        slot.IsReserved = false;
+                        slot.ReservedUntil = null;
+                        _logger.LogInformation("Slot {SlotId} updated to booked.", slot.Id);
+
+                    }
+                    else
+                    {
+                        _logger.LogWarning("No slot found for Appointment {AppointmentId}", appointment.Id);
+                        return false;
+                    }
+                    await _context.SaveChangesAsync();
+
+                    return true;
+                }
                 return false;
+
             }
-
-            var isValid =await VerifyCallbackAsync(json, hmacHeader);
-
-            if (!isValid)
+            catch (Exception ex)
             {
-                _logger.LogError("HMAC verification failed");
+                _logger.LogError(ex, "Error processing Paymob callback");
                 return false;
-            }
-            return true;
 
+            }
         }
 
 
 
-        public Task<bool> VerifyCallbackAsync(JsonDocument callback, string hmacFromHeader)
+        public async Task<bool> VerifyCallbackAsync(PaymobCallbackRequest callback, string hmacFromHeader)
         {
             try
             {
-                var obj = callback.RootElement.GetProperty("obj");
+
+                var obj = callback.obj;
 
                 var concatenatedString =
-                    obj.GetProperty("amount_cents").GetInt64().ToString() +
-                    obj.GetProperty("created_at").GetString() +
-                    obj.GetProperty("currency").GetString() +
-                    obj.GetProperty("error_occured").GetBoolean().ToString().ToLower() +
-                    obj.GetProperty("has_parent_transaction").GetBoolean().ToString().ToLower() +
-                    obj.GetProperty("id").GetInt32().ToString() +
-                    obj.GetProperty("integration_id").GetInt32().ToString() +
-                    obj.GetProperty("is_3d_secure").GetBoolean().ToString().ToLower() +
-                    obj.GetProperty("is_auth").GetBoolean().ToString().ToLower() +
-                    obj.GetProperty("is_capture").GetBoolean().ToString().ToLower() +
-                    obj.GetProperty("is_refunded").GetBoolean().ToString().ToLower() +
-                    obj.GetProperty("is_standalone_payment").GetBoolean().ToString().ToLower() +
-                    obj.GetProperty("is_voided").GetBoolean().ToString().ToLower() +
-                    obj.GetProperty("order").GetProperty("id").GetInt32().ToString() +
-                    obj.GetProperty("owner").GetInt32().ToString() +
-                    obj.GetProperty("pending").GetBoolean().ToString().ToLower() +
-                    (obj.GetProperty("source_data").TryGetProperty("pan", out var pan) ? pan.GetString() : "") +
-                    (obj.GetProperty("source_data").TryGetProperty("sub_type", out var subType) ? subType.GetString() : "") +
-                    (obj.GetProperty("source_data").TryGetProperty("type", out var type) ? type.GetString() : "") +
-                    obj.GetProperty("success").GetBoolean().ToString().ToLower();
+                    obj.amount_cents.ToString() +
+                    obj.created_at +
+                    obj.currency +
+                    obj.error_occured.ToString().ToLower() +
+                    obj.has_parent_transaction.ToString().ToLower() +
+                    obj.id.ToString() +
+                    obj.integration_id.ToString() +
+                    obj.is_3d_secure.ToString().ToLower() +
+                    obj.is_auth.ToString().ToLower() +
+                    obj.is_capture.ToString().ToLower() +
+                    obj.is_refunded.ToString().ToLower() +
+                    obj.is_standalone_payment.ToString().ToLower() +
+                    obj.is_voided.ToString().ToLower() +
+                    obj.order.id.ToString() +
+                    obj.owner.ToString() +
+                    obj.pending.ToString().ToLower() +
+                    (obj.source_data?.pan ?? "") +
+                    (obj.source_data?.sub_type ?? "") +
+                    (obj.source_data?.type ?? "") +
+                    obj.success.ToString().ToLower();
 
-                var computedHmac = ComputeHmac(concatenatedString, _configuration["Paymob:HmacSecret"]);
-              
+                var computedHmac = ComputeHmac(concatenatedString, _hmacSecret);
+
                 var isValid = computedHmac.Equals(hmacFromHeader, StringComparison.OrdinalIgnoreCase);
 
                 if (!isValid)
@@ -281,13 +340,13 @@ namespace Dactra.Services.Implementation
                         hmacFromHeader);
                 }
 
-                return Task.FromResult(isValid);
+                return (isValid);
             }
 
             catch (Exception ex)
             {
 
-                return Task.FromResult(false);
+                return false;
             }
 
 
@@ -296,14 +355,12 @@ namespace Dactra.Services.Implementation
         public string ComputeHmac(string data, string secret)
         {
             var keyBytes = Encoding.UTF8.GetBytes(secret);
+            var messageBytes = Encoding.UTF8.GetBytes(data);
 
             using var hmac = new HMACSHA512(keyBytes);
+            var hashBytes = hmac.ComputeHash(messageBytes);
 
-            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
-
-            return BitConverter.ToString(hash)
-                .Replace("-", "")
-                .ToLower();
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
         }
     }
 }
