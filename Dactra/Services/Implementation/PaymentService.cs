@@ -302,32 +302,42 @@ namespace Dactra.Services.Implementation
         {
             try
             {
-
                 var obj = callback.obj;
 
-                var concatenatedString =
-                    obj.amount_cents.ToString() +
-                    obj.created_at +
-                    obj.currency +
-                    obj.error_occured.ToString().ToLower() +
-                    obj.has_parent_transaction.ToString().ToLower() +
-                    obj.id.ToString() +
-                    obj.integration_id.ToString() +
-                    obj.is_3d_secure.ToString().ToLower() +
-                    obj.is_auth.ToString().ToLower() +
-                    obj.is_capture.ToString().ToLower() +
-                    obj.is_refunded.ToString().ToLower() +
-                    obj.is_standalone_payment.ToString().ToLower() +
-                    obj.is_voided.ToString().ToLower() +
-                    obj.order.id.ToString() +
-                    obj.owner.ToString() +
-                    obj.pending.ToString().ToLower() +
-                    (obj.source_data?.pan ?? "") +
-                    (obj.source_data?.sub_type ?? "") +
-                    (obj.source_data?.type ?? "") +
-                    obj.success.ToString().ToLower();
+                // Helper لتأكد كل الحقول موجودة
+                string ToStringSafe(object value) => value?.ToString() ?? "";
+                string ToBoolString(bool? value) => value.HasValue ? value.Value.ToString().ToLower() : "false";
 
-                var computedHmac = ComputeHmac(concatenatedString, _hmacSecret);
+                // ترتيب الحقول حسب Paymob docs
+                var concatenatedString =
+                    ToStringSafe(obj.amount_cents) +
+                    obj.created_at +            // خليه من JSON مباشرة، ISO8601
+                    ToStringSafe(obj.currency) +
+                    ToBoolString(obj.error_occured) +
+                    ToBoolString(obj.has_parent_transaction) +
+                    ToStringSafe(obj.id) +
+                    ToStringSafe(obj.integration_id) +
+                    ToBoolString(obj.is_3d_secure) +
+                    ToBoolString(obj.is_auth) +
+                    ToBoolString(obj.is_capture) +
+                    ToBoolString(obj.is_refunded) +
+                    ToBoolString(obj.is_standalone_payment) +
+                    ToBoolString(obj.is_voided) +
+                    ToStringSafe(obj.order?.id) +
+                    ToStringSafe(obj.owner) +
+                    ToBoolString(obj.pending) +
+                    ToStringSafe(obj.source_data?.pan) +
+                    ToStringSafe(obj.source_data?.sub_type) +
+                    ToStringSafe(obj.source_data?.type) +
+                    ToBoolString(obj.success);
+
+                // احسب HMAC
+                var keyBytes = Encoding.UTF8.GetBytes(_hmacSecret);
+                var messageBytes = Encoding.UTF8.GetBytes(concatenatedString);
+
+                using var hmac = new HMACSHA512(keyBytes);
+                var hashBytes = hmac.ComputeHash(messageBytes);
+                var computedHmac = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
 
                 var isValid = computedHmac.Equals(hmacFromHeader, StringComparison.OrdinalIgnoreCase);
 
@@ -337,19 +347,17 @@ namespace Dactra.Services.Implementation
                         "HMAC verification failed.\nString: {String}\nExpected: {Computed}\nReceived: {Received}",
                         concatenatedString,
                         computedHmac,
-                        hmacFromHeader);
+                        hmacFromHeader
+                    );
                 }
 
-                return (isValid);
+                return isValid;
             }
-
             catch (Exception ex)
             {
-
+                _logger.LogError(ex, "Error in VerifyCallbackAsync");
                 return false;
             }
-
-
         }
 
         public string ComputeHmac(string data, string secret)

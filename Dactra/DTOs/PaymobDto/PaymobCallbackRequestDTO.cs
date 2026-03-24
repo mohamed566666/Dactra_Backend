@@ -15,7 +15,7 @@
         public bool pending { get; set; }
         public bool is_refunded { get; set; }
         public int integration_id { get; set; }
-        public DateTime created_at { get; set; }
+        public string created_at { get; set; }
         public bool error_occured { get; set; }
         public bool has_parent_transaction { get; set; }
         public bool is_3d_secure { get; set; }
