@@ -12,12 +12,14 @@ namespace Dactra.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly IPaymentService _paymentService;
+        private readonly ILogger<PaymentWebhookController> _logger;
 
-        public PaymentWebhookController(ApplicationDbContext context, IConfiguration configuration, IPaymentService paymentService)
+        public PaymentWebhookController(ApplicationDbContext context, IConfiguration configuration, IPaymentService paymentService, ILogger<PaymentWebhookController> logger)
         {
             _context = context;
             _configuration = configuration;
             _paymentService = paymentService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -25,62 +27,35 @@ namespace Dactra.Controllers
         /// </summary>
         /// <param name="data">Webhook payload from Paymob</param>
         /// <returns>200 OK if processed</returns>
-        [HttpPost]
+        [HttpPost("payment-processed")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PaymobWebhook([FromBody] PaymobCallbackRequest data)
         {
-            if (data == null || data.obj == null)
-                return BadRequest("Webhook data is null");
-
-            var orderId = data.obj.order.id;
-            var success = data.obj.success;
-
-            var payment = await _context.Payments
-                .FirstOrDefaultAsync(p => p.PaymobOrderId == orderId.ToString());
-
-            if (payment == null)
-                return NotFound($"Payment with OrderId {orderId} not found");
-            var hmac = Request.Query["hmac"].FirstOrDefault()
-               ?? Request.Headers["hmac"].FirstOrDefault()
-               ?? Request.Form["hmac"].FirstOrDefault();
-
-            var flag= _paymentService.ProcessPaymobCallbackAsync(data, hmac, CancellationToken.None);
-
-            if (success&&flag)
+            try
             {
-                payment.Status = paymentStatus.Confirmed;
-                payment.PaymobTransactionId = data.obj.id.ToString();
-                var appointment = await _context.PatientAppointments
-                    .FirstOrDefaultAsync(a => a.PaymentId == payment.Id);
+                var hmac = Request.Query["hmac"].FirstOrDefault()
+                ?? Request.Headers["hmac"].FirstOrDefault()
+                ?? Request.Form["hmac"].FirstOrDefault();
+                _logger.LogInformation("HMAC received: {HMAC}", hmac);
 
-                if (appointment != null)
-                {
-                    appointment.Status = AppointmentStatus.Confirmed;
-
-                    var slot = await _context.DoctorAvailabilitySlots
-                        .FirstOrDefaultAsync(s => s.Id == appointment.SlotId);
-
-                    if (slot != null)
-                    {
-                        slot.IsBooked = true;
-                        slot.IsReserved = false;
-                        slot.ReservedUntil = null;
-                    }
-                }
-
-                await _context.SaveChangesAsync();
+                var flag =await _paymentService.ProcessPaymobCallbackAsync(data, hmac, CancellationToken.None);
+                _logger.LogInformation("HMAC validation result: {Flag}", flag);
+                return Ok(new { message = "Webhook processed"});
             }
-            else
+            catch (Exception ex)
             {
-                payment.Status = paymentStatus.Failed;
-                await _context.SaveChangesAsync();
+                _logger.LogError(ex, "Error processing Paymob webhook");
+                return StatusCode(500, "Internal server error");
             }
-
-            Console.WriteLine($"Webhook processed: OrderId={orderId}, Success={success}");
-
-            return Ok(new { message = "Webhook processed", orderId, success });
         }
+        [HttpGet("payment-result")]
+        public async Task <IActionResult> PaymentResult()
+        {
+            _logger.LogInformation("PaymentResult page accessed.");
+            return Ok("Payment processed. You can close this page.");
+        }
+
     }
 }

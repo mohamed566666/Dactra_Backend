@@ -19,30 +19,32 @@ public class SlotReservationCleanupService : BackgroundService
                 using var scope = _scopeFactory.CreateScope();
                 var _context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+                var now = DateTime.UtcNow;
+                var expiredAppointments = await _context.PatientAppointments
+                 .Where(a => a.Status == AppointmentStatus.Pending &&
+                             a.BookedAt <= DateTime.UtcNow.AddMinutes(-1))
+                 .Select(a => new { a.Id, a.SlotId })
+                 .ToListAsync();
+                var slotIds = expiredAppointments.Select(x => x.SlotId).ToList();
 
-                    var expiredAppointments = await _context.PatientAppointments
-                    .Include(a => a.Slot)
-                    .Where(a => a.Status == AppointmentStatus.Pending &&
-                                a.BookedAt <= DateTime.UtcNow.AddMinutes(-1))
-                    .ToListAsync(stoppingToken);
+                await _context.DoctorAvailabilitySlots
+                    .Where(s => slotIds.Contains(s.Id))
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(x => x.IsReserved, false)
+                        .SetProperty(x => x.ReservedUntil, (DateTime?)null));
 
-                foreach (var appointment in expiredAppointments)
-                {
-                    appointment.Slot.IsReserved = false;
-                    appointment.Slot.ReservedUntil = null;
+                await _context.PatientAppointments
+                    .Where(a => expiredAppointments.Select(x => x.Id).Contains(a.Id))
+                    .ExecuteDeleteAsync();
 
-                    _context.PatientAppointments.Remove(appointment);
-                }
-
-                if (expiredAppointments.Any())
-                    await _context.SaveChangesAsync(stoppingToken);
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
                 // Optional: log the exception
             }
 
-            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+            await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
         }
     }
 }
