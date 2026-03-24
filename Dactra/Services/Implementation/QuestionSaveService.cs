@@ -45,7 +45,7 @@ namespace Dactra.Services.Implementation
                 Question = new QuestionSummaryDto
                 {
                     Id = s.Question.Id,
-                    Text = s.Question.Text,
+                    Content = s.Question.Text,
                     CreatedAt = s.Question.CreatedAt,
                     AnswersCount = s.Question.Answers?.Count(a => !a.isDeleted) ?? 0,
                     InterestsCount = s.Question.Interests?.Count ?? 0,

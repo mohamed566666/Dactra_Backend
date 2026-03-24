@@ -272,6 +272,7 @@ namespace Dactra.Controllers
         // ── Likes ─────────────────────────────────────────────────────────────────
 
         [HttpPost("{postId:int}/like")]
+        [AllowAnonymous]
         public async Task<ActionResult<PostLikeResponseDto>> ToggleLike(int postId)
         {
             try
@@ -292,6 +293,7 @@ namespace Dactra.Controllers
         // ── Saved Posts ───────────────────────────────────────────────────────────
 
         [HttpPost("{postId:int}/save")]
+        [AllowAnonymous]
         public async Task<ActionResult<object>> ToggleSave(int postId)
         {
             try
@@ -311,6 +313,7 @@ namespace Dactra.Controllers
         }
 
         [HttpGet("saved")]
+        [AllowAnonymous]
         public async Task<ActionResult<PagedResultDto<SavedPostResponseDto>>> GetSaved(
             [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {

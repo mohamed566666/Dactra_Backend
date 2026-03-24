@@ -4,6 +4,6 @@
     {
         [Required]
         [MinLength(10)]
-        public string Text { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
     }
 }

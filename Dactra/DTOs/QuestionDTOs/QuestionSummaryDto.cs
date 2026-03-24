@@ -5,7 +5,7 @@ namespace Dactra.DTOs.QuestionDTOs
     public class QuestionSummaryDto
     {
         public int Id { get; set; }
-        public string Text { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public int AnswersCount { get; set; }
         public int InterestsCount { get; set; }
