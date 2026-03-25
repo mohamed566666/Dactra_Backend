@@ -29,7 +29,7 @@ namespace Dactra.Services.Implementation
             {
                 QuestionId = questionId,
                 UserId = userId,
-                SavedAt = DateTime.UtcNow
+                SavedAt = DateTimeOffset.UtcNow
             });
             return true;
         }

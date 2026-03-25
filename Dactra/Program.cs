@@ -199,8 +199,14 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
-        options.JsonSerializerOptions.ReferenceHandler =
-            ReferenceHandler.IgnoreCycles);
+    {
+        options.JsonSerializerOptions.Converters.Add(new UtcDateTimeConverter());
+
+        options.JsonSerializerOptions.Converters.Add(new UtcDateTimeOffsetConverter());
+
+        options.JsonSerializerOptions.NumberHandling =
+            System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString;
+    });
 
 builder.Services.AddSignalR();
 

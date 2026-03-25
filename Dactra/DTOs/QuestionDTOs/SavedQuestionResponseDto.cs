@@ -4,6 +4,6 @@
     {
         public int Id { get; set; }
         public QuestionSummaryDto Question { get; set; } = null!;
-        public DateTime SavedAt { get; set; }
+        public DateTimeOffset SavedAt { get; set; }
     }
 }

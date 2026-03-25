@@ -35,7 +35,7 @@ namespace Dactra.Services.Implementation
                 {
                     QuestionId = questionId,
                     UserId = userId,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTimeOffset.UtcNow
                 });
                 isInterested = true;
             }

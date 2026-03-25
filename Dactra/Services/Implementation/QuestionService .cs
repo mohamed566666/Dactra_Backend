@@ -122,7 +122,7 @@ namespace Dactra.Services.Implementation
             {
                 Content = dto.Content,
                 PatientId = patientId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTimeOffset.UtcNow
             };
 
             var created = await _questionRepo.CreateAsync(question);
@@ -147,7 +147,7 @@ namespace Dactra.Services.Implementation
                 ?? throw new KeyNotFoundException($"Question {id} not found.");
 
             question.Content = dto.Content;
-            question.UpdatedAt = DateTime.UtcNow;
+            question.UpdatedAt = DateTimeOffset.UtcNow;
 
             await _questionRepo.UpdateAsync(question);
 
