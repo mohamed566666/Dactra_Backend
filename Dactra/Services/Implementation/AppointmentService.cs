@@ -139,7 +139,7 @@ namespace Dactra.Services.Implementation
 
             try
             {
-                var appointment = await _context.PatientAppointments ////// Error
+                var appointment = await _context.PatientAppointments 
                     .Include(a => a.Slot)
                     .FirstOrDefaultAsync(a => 
                         a.SlotId == appointmentId &&
