@@ -294,6 +294,7 @@ namespace Dactra.Controllers
 
         /// <summary>Toggle interest on a question.</summary>
         [HttpPost("{questionId:int}/interest")]
+        [AllowAnonymous]
         public async Task<ActionResult<QuestionInterestResponseDto>> ToggleInterest(int questionId)
         {
             try
@@ -315,6 +316,7 @@ namespace Dactra.Controllers
 
         /// <summary>Toggle save on a question.</summary>
         [HttpPost("{questionId:int}/save")]
+        [AllowAnonymous]
         public async Task<ActionResult<object>> ToggleSave(int questionId)
         {
             try
@@ -334,6 +336,7 @@ namespace Dactra.Controllers
         }
 
         [HttpGet("saved")]
+        [AllowAnonymous]
         public async Task<ActionResult<PagedResultDto<SavedQuestionResponseDto>>> GetSaved(
             [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {

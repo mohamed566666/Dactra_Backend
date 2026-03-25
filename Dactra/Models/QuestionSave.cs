@@ -15,6 +15,6 @@
         [ForeignKey(nameof(UserId))]
         public ApplicationUser User { get; set; } = null!;
 
-        public DateTime SavedAt { get; set; } = DateTime.UtcNow;
+        public DateTimeOffset SavedAt { get; set; } = DateTimeOffset.UtcNow;
     }
 }

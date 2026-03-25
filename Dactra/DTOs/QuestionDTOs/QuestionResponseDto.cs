@@ -5,9 +5,9 @@ namespace Dactra.DTOs.QuestionDTOs
     public class QuestionResponseDto
     {
         public int Id { get; set; }
-        public string Text { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
+        public string Content { get; set; } = string.Empty;
+        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset? UpdatedAt { get; set; }
         public PatientSummaryDto Patient { get; set; } = null!;
         public int AnswersCount { get; set; }
         public int InterestsCount { get; set; }

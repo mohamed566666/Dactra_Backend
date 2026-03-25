@@ -29,7 +29,7 @@ namespace Dactra.Services.Implementation
             {
                 QuestionId = questionId,
                 UserId = userId,
-                SavedAt = DateTime.UtcNow
+                SavedAt = DateTimeOffset.UtcNow
             });
             return true;
         }
@@ -45,7 +45,7 @@ namespace Dactra.Services.Implementation
                 Question = new QuestionSummaryDto
                 {
                     Id = s.Question.Id,
-                    Text = s.Question.Text,
+                    Content = s.Question.Content,
                     CreatedAt = s.Question.CreatedAt,
                     AnswersCount = s.Question.Answers?.Count(a => !a.isDeleted) ?? 0,
                     InterestsCount = s.Question.Interests?.Count ?? 0,

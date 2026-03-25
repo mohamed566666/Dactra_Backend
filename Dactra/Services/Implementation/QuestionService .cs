@@ -120,14 +120,14 @@ namespace Dactra.Services.Implementation
         {
             var question = new Question
             {
-                Text = dto.Text,
+                Content = dto.Content,
                 PatientId = patientId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTimeOffset.UtcNow
             };
 
             var created = await _questionRepo.CreateAsync(question);
 
-            await AssignTagsAsync(created.Id, dto.Text);
+            await AssignTagsAsync(created.Id, dto.Content);
 
             var fullQuestion = await _questionRepo.GetByIdWithDetailsAsync(created.Id)!;
             var responseDto = await MapToResponseDtoAsync(fullQuestion!, null);
@@ -146,12 +146,12 @@ namespace Dactra.Services.Implementation
             var question = await _questionRepo.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Question {id} not found.");
 
-            question.Text = dto.Text;
-            question.UpdatedAt = DateTime.UtcNow;
+            question.Content = dto.Content;
+            question.UpdatedAt = DateTimeOffset.UtcNow;
 
             await _questionRepo.UpdateAsync(question);
 
-            await AssignTagsAsync(id, dto.Text);
+            await AssignTagsAsync(id, dto.Content);
 
             var fullQuestion = await _questionRepo.GetByIdWithDetailsAsync(id)!;
             var responseDto = await MapToResponseDtoAsync(fullQuestion!, null);
@@ -205,7 +205,7 @@ namespace Dactra.Services.Implementation
             return new QuestionResponseDto
             {
                 Id = q.Id,
-                Text = q.Text,
+                Content = q.Content,
                 CreatedAt = q.CreatedAt,
                 UpdatedAt = q.UpdatedAt,
                 AnswersCount = q.Answers?.Count(a => !a.isDeleted) ?? 0,
