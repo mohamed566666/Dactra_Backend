@@ -29,49 +29,37 @@ namespace Dactra.Services.Implementation
 
             try
             {
-                var now = DateTime.UtcNow;
-                var expiredAppointments = await _context.PatientAppointments
-                    .Include(a => a.Slot)
-                    .Where(a =>
-                      a.SlotId == slotId &&
-                      a.Status == AppointmentStatus.Pending &&
-                      a.BookedAt <= now.AddMinutes(-5))
-                      .ToListAsync();
 
-                 foreach (var appointment0 in expiredAppointments)
-                 {
-                    appointment0.Slot.IsReserved = false;
-                    appointment0.Slot.ReservedUntil = null;
-                    appointment0.Slot.IsBooked = false;
-                     
-
-                    _context.PatientAppointments.Remove(appointment0);
-                 }
-
-                   await _context.SaveChangesAsync();
+                using var tx = await _context.Database.BeginTransactionAsync();
 
                 var slot = await _context.DoctorAvailabilitySlots
-                    .Include(s => s.Doctor)
-                    .FirstOrDefaultAsync(x => x.Id == slotId);
+                          .Where(s => s.Id == slotId && !s.IsBooked)
+                          .Include(s => s.Doctor)
+                          .FirstOrDefaultAsync();
 
-                if (slot == null)
-                    throw new Exception($"Slot not found {slotId}");
+                if (slot == null || slot.IsBooked)
+                    throw new Exception("Slot already booked");
+
+                slot.IsBooked = true;
+                slot.IsReserved = true;
+                slot.ReservedUntil = DateTime.UtcNow.AddMinutes(5);
+
+                await _context.SaveChangesAsync();
+
+                await tx.CommitAsync();
                 //if (slot.IsBooked || (slot.IsReserved && slot.ReservedUntil > DateTime.UtcNow))
                 //{
                 //    throw new Exception("Slot is currently reserved by another patient");
                 //}
 
-                if (slot.IsBooked)
-                    throw new Exception("Slot already booked");
+
 
                 //if (slot.SlotDateTimeUtc <= DateTime.Now)
                 //    throw new Exception("Cannot book past slot");
-                slot.IsReserved = true;
-                slot.IsBooked=true;
-                slot.ReservedUntil = DateTime.UtcNow.AddMinutes(5);
 
 
-                
+
+
                 // Create Payment
                 var payment = new Payment
                 {
@@ -95,8 +83,9 @@ namespace Dactra.Services.Implementation
                     BookedAt = DateTime.UtcNow
 
                 };
-                  await _context.SaveChangesAsync();
+
                  await _appointmentRepository.BookeAsync(appointment);
+             
 
                 await _hub.Clients.Group($"Doctor_{slot.DoctorId}")
                     .SendAsync("AppointmentBooked", new
@@ -120,7 +109,7 @@ namespace Dactra.Services.Implementation
                 
                 throw;
             }
-        }
+        } 
 
         public async Task<PatientAppointment?> GetAppointmentByIdAsync(int appointmentId)
         {
@@ -150,7 +139,7 @@ namespace Dactra.Services.Implementation
 
             try
             {
-                var appointment = await _context.PatientAppointments
+                var appointment = await _context.PatientAppointments ////// Error
                     .Include(a => a.Slot)
                     .FirstOrDefaultAsync(a => 
                         a.SlotId == appointmentId &&

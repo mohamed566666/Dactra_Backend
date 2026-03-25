@@ -259,7 +259,7 @@ namespace Dactra.Repositories.Implementation
                 .Select(q => new questionInfoDto
                 {
                     id = q.Id.ToString(),
-                    Content = q.Text,
+                    Content = q.Content,
                     Pname = q.Patient.FirstName + " " + q.Patient.LastName,
                     createdAt = q.CreatedAt,
                     isDeleted = q.isDeleted

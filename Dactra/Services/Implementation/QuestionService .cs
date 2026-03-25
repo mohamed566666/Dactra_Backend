@@ -120,7 +120,7 @@ namespace Dactra.Services.Implementation
         {
             var question = new Question
             {
-                Text = dto.Content,
+                Content = dto.Content,
                 PatientId = patientId,
                 CreatedAt = DateTime.UtcNow
             };
@@ -146,7 +146,7 @@ namespace Dactra.Services.Implementation
             var question = await _questionRepo.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Question {id} not found.");
 
-            question.Text = dto.Content;
+            question.Content = dto.Content;
             question.UpdatedAt = DateTime.UtcNow;
 
             await _questionRepo.UpdateAsync(question);
@@ -205,7 +205,7 @@ namespace Dactra.Services.Implementation
             return new QuestionResponseDto
             {
                 Id = q.Id,
-                Content = q.Text,
+                Content = q.Content,
                 CreatedAt = q.CreatedAt,
                 UpdatedAt = q.UpdatedAt,
                 AnswersCount = q.Answers?.Count(a => !a.isDeleted) ?? 0,

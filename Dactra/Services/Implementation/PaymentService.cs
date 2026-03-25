@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System.Text.Json;
 
 namespace Dactra.Services.Implementation
@@ -12,6 +13,7 @@ namespace Dactra.Services.Implementation
         private readonly ILogger<PaymentService> _logger;
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IConfiguration _configuration;
+        private readonly string _hmacSecret;
 
         public PaymentService(
             HttpClient httpClient,
@@ -29,6 +31,7 @@ namespace Dactra.Services.Implementation
             _logger = logger;
             _appointmentRepository = appointmentRepository;
             _configuration = configuration;
+            _hmacSecret = _configuration["Paymob:HmacSecret"];
         }
 
         public async Task<string> GetPaymentUrl(Payment payment, string email)
@@ -218,58 +221,124 @@ namespace Dactra.Services.Implementation
             return allSuccess;
         }
 
-        public bool ProcessPaymobCallbackAsync(PaymobCallbackRequest callback, string hmacHeader, CancellationToken cancellationToken = default)
+        public async Task<bool> ProcessPaymobCallbackAsync(PaymobCallbackRequest callback, string hmacHeader, CancellationToken cancellationToken = default)
         {
             // 1. Verify HMAC
-            if (string.IsNullOrEmpty(hmacHeader))
+            try
             {
-                _logger.LogWarning("Callback received without HMAC header");
+                if (string.IsNullOrEmpty(hmacHeader))
+                {
+                    _logger.LogWarning("Callback received without HMAC header");
+                    return false;
+                }
+
+                var isValid = await VerifyCallbackAsync(callback, hmacHeader);
+
+                if (!isValid)
+                {
+                    _logger.LogError("HMAC verification failed");
+                    return false;
+                }
+                var orderId = callback.obj.order.id.ToString();
+                var payment = await _context.Payments.FirstOrDefaultAsync(p => p.PaymobOrderId == orderId, cancellationToken);
+                if (payment == null)
+                {
+                    _logger.LogError("Payment not found for Order ID {OrderId}", orderId);
+                    return false;
+                }
+                var callbackJson = JsonConvert.SerializeObject(callback);
+                if (callback.obj.success)
+                {
+                    payment.Status = paymentStatus.Confirmed;
+                    payment.PaymobTransactionId = callback.obj.id.ToString();
+                    var appointment = await _context.PatientAppointments
+                      .FirstOrDefaultAsync(a => a.PaymentId == payment.Id);
+
+                    if (appointment != null)
+                    {
+                        appointment.Status = AppointmentStatus.Confirmed;
+                        _logger.LogInformation("Appointment {AppointmentId} confirmed.", appointment.Id);
+                    }
+                    else {
+                        
+                        _logger.LogWarning("No appointment found for Payment {PaymentId}", payment.Id); 
+                        return false;
+
+                    }
+                    var slot = await _context.DoctorAvailabilitySlots
+                        .FirstOrDefaultAsync(s => s.Id == appointment.SlotId);
+
+                    if (slot != null)
+                    {
+                        slot.IsBooked = true;
+                        slot.IsReserved = false;
+                        slot.ReservedUntil = null;
+                        _logger.LogInformation("Slot {SlotId} updated to booked.", slot.Id);
+
+                    }
+                    else
+                    {
+                        _logger.LogWarning("No slot found for Appointment {AppointmentId}", appointment.Id);
+                        return false;
+                    }
+                    await _context.SaveChangesAsync();
+
+                    return true;
+                }
                 return false;
+
             }
-
-            var isValid = VerifyCallbackAsync(callback, hmacHeader);
-
-            if (!isValid)
+            catch (Exception ex)
             {
-                _logger.LogError("HMAC verification failed");
+                _logger.LogError(ex, "Error processing Paymob callback");
                 return false;
-            }
-            return true;
 
+            }
         }
 
 
 
-        public bool VerifyCallbackAsync(PaymobCallbackRequest callback, string hmacFromHeader)
+        public async Task<bool> VerifyCallbackAsync(PaymobCallbackRequest callback, string hmacFromHeader)
         {
             try
             {
                 var obj = callback.obj;
 
-                var concatenatedString =
-                    obj.amount_cents.ToString() +
-                    obj.created_at +
-                    obj.currency +
-                    obj.error_occured.ToString().ToLower() +
-                    obj.has_parent_transaction.ToString().ToLower() +
-                    obj.id.ToString() +
-                    obj.integration_id.ToString() +
-                    obj.is_3d_secure.ToString().ToLower() +
-                    obj.is_auth.ToString().ToLower() +
-                    obj.is_capture.ToString().ToLower() +
-                    obj.is_refunded.ToString().ToLower() +
-                    obj.is_standalone_payment.ToString().ToLower() +
-                    obj.is_voided.ToString().ToLower() +
-                    obj.order.id.ToString() +
-                    obj.owner.ToString() +
-                    obj.pending.ToString().ToLower() +
-                    (obj.source_data?.pan ?? "") +
-                    (obj.source_data?.sub_type ?? "") +
-                    (obj.source_data?.type ?? "") +
-                    obj.success.ToString().ToLower();
+                // Helper لتأكد كل الحقول موجودة
+                string ToStringSafe(object value) => value?.ToString() ?? "";
+                string ToBoolString(bool? value) => value.HasValue ? value.Value.ToString().ToLower() : "false";
 
-                var computedHmac = ComputeHmac(concatenatedString, _configuration["Paymob:HmacSecret"]);
-              
+                // ترتيب الحقول حسب Paymob docs
+                var concatenatedString =
+                    ToStringSafe(obj.amount_cents) +
+                    obj.created_at +            // خليه من JSON مباشرة، ISO8601
+                    ToStringSafe(obj.currency) +
+                    ToBoolString(obj.error_occured) +
+                    ToBoolString(obj.has_parent_transaction) +
+                    ToStringSafe(obj.id) +
+                    ToStringSafe(obj.integration_id) +
+                    ToBoolString(obj.is_3d_secure) +
+                    ToBoolString(obj.is_auth) +
+                    ToBoolString(obj.is_capture) +
+                    ToBoolString(obj.is_refunded) +
+                    ToBoolString(obj.is_standalone_payment) +
+                    ToBoolString(obj.is_voided) +
+                    ToStringSafe(obj.order?.id) +
+                    ToStringSafe(obj.owner) +
+                    ToBoolString(obj.pending) +
+                    ToStringSafe(obj.source_data?.pan) +
+                    ToStringSafe(obj.source_data?.sub_type) +
+                    ToStringSafe(obj.source_data?.type) +
+                    ToBoolString(obj.success);
+
+                // احسب HMAC
+                var keyBytes = Encoding.UTF8.GetBytes(_hmacSecret);
+                var messageBytes = Encoding.UTF8.GetBytes(concatenatedString);
+
+                using var hmac = new HMACSHA512(keyBytes);
+                var hashBytes = hmac.ComputeHash(messageBytes);
+                var computedHmac = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+
                 var isValid = computedHmac.Equals(hmacFromHeader, StringComparison.OrdinalIgnoreCase);
 
                 if (!isValid)
@@ -278,30 +347,28 @@ namespace Dactra.Services.Implementation
                         "HMAC verification failed.\nString: {String}\nExpected: {Computed}\nReceived: {Received}",
                         concatenatedString,
                         computedHmac,
-                        hmacFromHeader);
+                        hmacFromHeader
+                    );
                 }
 
                 return isValid;
             }
-
             catch (Exception ex)
             {
-
+                _logger.LogError(ex, "Error in VerifyCallbackAsync");
                 return false;
             }
-
-
         }
 
         public string ComputeHmac(string data, string secret)
         {
-           var keyBytes = Encoding.UTF8.GetBytes(secret);
-            var dataBytes = Encoding.UTF8.GetBytes(data);
-            using (var hmac = new HMACSHA256(keyBytes))
-            {
-                var hash= hmac.ComputeHash(dataBytes);
-                return BitConverter.ToString(hash).Replace("-", "").ToLower();
-            }
+            var keyBytes = Encoding.UTF8.GetBytes(secret);
+            var messageBytes = Encoding.UTF8.GetBytes(data);
+
+            using var hmac = new HMACSHA512(keyBytes);
+            var hashBytes = hmac.ComputeHash(messageBytes);
+
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
         }
     }
 }
