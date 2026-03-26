@@ -53,8 +53,12 @@ namespace Dactra.Controllers
         [HttpGet("payment-result")]
         public async Task <IActionResult> PaymentResult()
         {
-            _logger.LogInformation("PaymentResult page accessed.");
-            return Ok("Payment processed. You can close this page.");
+            var success = Request.Query["success"].FirstOrDefault();
+
+            if (success == "true")
+                return Ok("Payment successful ✅");
+
+            return Ok("Payment failed ❌");
         }
 
     }
