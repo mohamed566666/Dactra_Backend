@@ -20,6 +20,7 @@ namespace Dactra.Controllers
         private readonly ISavedPostService _savedPostService;
         private readonly ITagService _tagService;
         private readonly IDoctorService _doctorService;
+        private readonly ICommentLikeService _commentLikeService;
 
         public PostsController(
             IPostService postService,
@@ -27,7 +28,8 @@ namespace Dactra.Controllers
             IPostLikeService likeService,
             ISavedPostService savedPostService,
             ITagService tagService,
-            IDoctorService doctorService)
+            IDoctorService doctorService,
+            ICommentLikeService commentLikeService)
         {
             _postService = postService;
             _commentService = commentService;
@@ -35,6 +37,7 @@ namespace Dactra.Controllers
             _savedPostService = savedPostService;
             _tagService = tagService;
             _doctorService = doctorService;
+            _commentLikeService = commentLikeService;
         }
 
         // ── Posts ────────────────────────────────────────────────────────────────
@@ -194,7 +197,7 @@ namespace Dactra.Controllers
         {
             try
             {
-                return Ok(await _commentService.GetByPostIdAsync(postId));
+                return Ok(await _commentService.GetByPostIdAsync(postId, GetUserId()));
             }
             catch (KeyNotFoundException ex)
             {
@@ -378,6 +381,25 @@ namespace Dactra.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost("comments/{commentId:int}/like")]
+        [AllowAnonymous]
+        public async Task<ActionResult<CommentLikeResponseDto>> ToggleCommentLike(int commentId)
+        {
+            try
+            {
+                var userId = GetUserId();
+                return Ok(await _commentLikeService.ToggleLikeAsync(commentId, userId));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while processing your request.");
             }
         }
 
