@@ -18,5 +18,6 @@
         public Comment? ParentComment { get; set; }
 
         public ICollection<Comment> Replies { get; set; }
+        public ICollection<CommentLike> Likes { get; set; } = new List<CommentLike>();
     }
 }

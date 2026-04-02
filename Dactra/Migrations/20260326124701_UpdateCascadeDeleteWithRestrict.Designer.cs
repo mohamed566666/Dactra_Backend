@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260326124701_UpdateCascadeDeleteWithRestrict")]
+    partial class UpdateCascadeDeleteWithRestrict
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,25 +101,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "5e09748d-a7be-4f47-b9f1-1f5b2f08fa43",
+                            Id = "fb6f78ab-2b05-45c9-87bf-14ba5bc65e76",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "ed70fcb1-824f-4c22-a1a3-5452d51dd951",
+                            Id = "3b3e7182-0968-41fb-92a4-591a0aabe02e",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "4b411c22-9780-45e1-923d-64f3af188299",
+                            Id = "9564b282-959a-41f0-982e-a74a2d3bc63c",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "5a977ac5-4937-4e40-ba28-e5c9ff92d393",
+                            Id = "d03a0cba-e4dd-4325-bf94-8e1d889e71d1",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -275,32 +278,6 @@ namespace Dactra.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("comments");
-                });
-
-            modelBuilder.Entity("Dactra.Models.CommentLike", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CommentId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommentId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("CommentLikes");
                 });
 
             modelBuilder.Entity("Dactra.Models.Complaint", b =>
@@ -1483,17 +1460,6 @@ namespace Dactra.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Dactra.Models.CommentLike", b =>
-                {
-                    b.HasOne("Dactra.Models.Comment", "Comment")
-                        .WithMany("Likes")
-                        .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Comment");
-                });
-
             modelBuilder.Entity("Dactra.Models.Complaint", b =>
                 {
                     b.HasOne("Dactra.Models.ApplicationUser", "User")
@@ -1954,8 +1920,6 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Dactra.Models.Comment", b =>
                 {
-                    b.Navigation("Likes");
-
                     b.Navigation("Replies");
                 });
 

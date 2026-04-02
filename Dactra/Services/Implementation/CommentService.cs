@@ -18,13 +18,18 @@ namespace Dactra.Services.Implementation
             _hub = hub;
         }
 
-        public async Task<List<CommentResponseDto>> GetByPostIdAsync(int postId)
+        public async Task<List<CommentResponseDto>> GetByPostIdAsync(int postId , string? currentUserId = null)
         {
             if (!await _postRepo.ExistsAsync(postId))
                 throw new KeyNotFoundException($"Post {postId} not found.");
 
             var comments = await _commentRepo.GetByPostIdAsync(postId);
-            return comments.Select(MapToDto).ToList();
+            var result = new List<CommentResponseDto>();
+            foreach (var comment in comments)
+            {
+                result.Add(MapToDto(comment , currentUserId));
+            }
+            return result;
         }
 
         public async Task<CommentResponseDto> CreateAsync(int postId, CreateCommentDto dto, string userId)
@@ -45,7 +50,7 @@ namespace Dactra.Services.Implementation
             };
 
             var created = await _commentRepo.CreateAsync(comment);
-            var responseDto = MapToDto(created);
+            var responseDto = MapToDto(created , userId);
 
             await _hub.Clients.Group(PostHub.PostGroupName(postId))
                 .SendAsync("CommentAdded", responseDto);
@@ -86,20 +91,24 @@ namespace Dactra.Services.Implementation
                 .SendAsync("CommentDeleted", new { commentId, postId });
         }
 
-        private static CommentResponseDto MapToDto(Comment c) => new()
+        private static CommentResponseDto MapToDto(Comment c, string? currentUserId = null) => new()
         {
             Id = c.Id,
             Content = c.Content,
             CreatedAt = c.CreatedAt,
             PostId = c.PostId,
             ParentCommentId = c.ParentCommentId,
+            LikesCount = c.Likes?.Count ?? 0,
+            IsLikedByCurrentUser = currentUserId != null &&
+            c.Likes?.Any(l => l.UserId == currentUserId) == true,
             User = c.User == null ? null! : new UserSummaryDto
             {
-                Id = c.User.Id,
+                //Id = c.User.Id,
                 FullName = c.User.UserName,
                 ProfileImageUrl = null
             },
-            Replies = c.Replies?.Select(MapToDto).ToList() ?? new List<CommentResponseDto>()
+            Replies = c.Replies?.Select(r => MapToDto(r, currentUserId)).ToList()
+        ?? new List<CommentResponseDto>()
         };
     }
 }
