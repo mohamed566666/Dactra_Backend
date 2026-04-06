@@ -1,4 +1,6 @@
 ﻿
+using Dactra.Services.Background;
+
 var builder = WebApplication.CreateBuilder(args);
 
 #region Configuration
@@ -84,6 +86,7 @@ builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IQuestionAnswerRepository, QuestionAnswerRepository>();
 builder.Services.AddScoped<IQuestionInterestRepository, QuestionInterestRepository>();
 builder.Services.AddScoped<IQuestionSaveRepository, QuestionSaveRepository>();
+builder.Services.AddScoped<ICommentLikeRepository, CommentLikeRepository>();
 
 
 #endregion
@@ -134,6 +137,8 @@ builder.Services.AddScoped<IQuestionService, QuestionService>();
 builder.Services.AddScoped<IQuestionAnswerService, QuestionAnswerService>();
 builder.Services.AddScoped<IQuestionInterestService, QuestionInterestService>();
 builder.Services.AddScoped<IQuestionSaveService, QuestionSaveService>();
+builder.Services.AddScoped<ICommentLikeService, CommentLikeService>();
+
 
 
 #endregion
@@ -141,6 +146,7 @@ builder.Services.AddScoped<IQuestionSaveService, QuestionSaveService>();
 #region Background Services
 builder.Services.AddHostedService<CleanupExpiredTokensService>();
 builder.Services.AddHostedService<SlotReservationCleanupService>();
+builder.Services.AddHostedService<SlotCleanupBackgroundService>();
 
 builder.Services.AddHttpClient<PaymentService>();
 

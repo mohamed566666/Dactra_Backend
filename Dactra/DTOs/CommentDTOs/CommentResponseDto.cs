@@ -9,5 +9,7 @@
         public int? ParentCommentId { get; set; }
         public UserSummaryDto User { get; set; } = null!;
         public List<CommentResponseDto> Replies { get; set; } = new();
+        public int LikesCount { get; set; }
+        public bool IsLikedByCurrentUser { get; set; }
     }
 }

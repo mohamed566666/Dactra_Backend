@@ -13,7 +13,11 @@
         {
             return await _context.comments
                 .Include(c => c.User)
-                .Include(c => c.Replies).ThenInclude(r => r.User)
+                .Include(c => c.Likes)
+                .Include(c => c.Replies)
+                    .ThenInclude(r => r.User)
+                .Include(c => c.Replies)
+                    .ThenInclude(r => r.Likes)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
@@ -22,10 +26,15 @@
             return await _context.comments
                 .Where(c => c.PostId == postId && c.ParentCommentId == null)
                 .Include(c => c.User)
-                .Include(c => c.Replies).ThenInclude(r => r.User)
+                .Include(c => c.Likes)
+                .Include(c => c.Replies)
+                    .ThenInclude(r => r.User)
+                .Include(c => c.Replies)
+                    .ThenInclude(r => r.Likes)
                 .OrderBy(c => c.CreatedAt)
                 .ToListAsync();
         }
+
 
         public async Task<Comment> CreateAsync(Comment comment)
         {
@@ -59,6 +68,6 @@
             => await _context.comments.AnyAsync(c => c.Id == commentId && c.UserId == userId);
 
         public async Task<int> GetCountByPostIdAsync(int postId)
-            => await _context.comments.CountAsync(c => c.PostId == postId); 
+            => await _context.comments.CountAsync(c => c.PostId == postId);
     }
 }

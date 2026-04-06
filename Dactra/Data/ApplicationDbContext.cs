@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Dactra.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
 {
@@ -41,6 +42,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<QuestionInterest> QuestionInterests { get; set; }
     public DbSet<QuestionSave> QuestionSaves { get; set; }
     public DbSet<QuestionTag> QuestionTags { get; set; }
+    public DbSet<CommentLike> CommentLikes { get; set; }
 
 
 
@@ -48,30 +50,22 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     {
         base.OnModelCreating(modelBuilder);
 
-
         List<ApplicationRole> roles = new List<ApplicationRole>
-        {
-            new ApplicationRole { Name="Admin", NormalizedName="ADMIN" },
-            new ApplicationRole { Name="Doctor", NormalizedName="DOCTOR" },
-            new ApplicationRole { Name="Patient", NormalizedName="PATIENT" },
-            new ApplicationRole { Name="MedicalTestProvider", NormalizedName="MEDICALTESTPROVIDER" }
-        };
-
-        //modelBuilder.Entity<ApplicationUser>().HasQueryFilter(u => !u.isDeleted);
-        //modelBuilder.Entity<Questions>().HasQueryFilter(q => !q.isDeleted);
-        //modelBuilder.Entity<Post>().HasQueryFilter(p => !p.isDeleted);
+    {
+        new ApplicationRole { Name="Admin", NormalizedName="ADMIN" },
+        new ApplicationRole { Name="Doctor", NormalizedName="DOCTOR" },
+        new ApplicationRole { Name="Patient", NormalizedName="PATIENT" },
+        new ApplicationRole { Name="MedicalTestProvider", NormalizedName="MEDICALTESTPROVIDER" }
+    };
 
         modelBuilder.Entity<ApplicationRole>().HasData(roles);
 
-        modelBuilder.Entity<ServiceProviderProfile>()
-        .ToTable("ServiceProviders");
-        modelBuilder.Entity<DoctorProfile>()
-        .ToTable("DoctorProfiles");
-        modelBuilder.Entity<MedicalTestProviderProfile>()
-        .ToTable("MedicalTestProviderProfiles");
+        modelBuilder.Entity<ServiceProviderProfile>().ToTable("ServiceProviders");
+        modelBuilder.Entity<DoctorProfile>().ToTable("DoctorProfiles");
+        modelBuilder.Entity<MedicalTestProviderProfile>().ToTable("MedicalTestProviderProfiles");
 
         modelBuilder.Entity<PrescriptionWithMedicin>()
-    .HasKey(pm => new { pm.PrescriptionId, pm.MedicinesId });
+            .HasKey(pm => new { pm.PrescriptionId, pm.MedicinesId });
 
         modelBuilder.Entity<PrescriptionWithMedicin>()
             .HasOne(pm => pm.Prescription)
@@ -82,58 +76,76 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             .HasOne(pm => pm.Medicines)
             .WithMany(m => m.PrescriptionWithMedicins)
             .HasForeignKey(pm => pm.MedicinesId);
-        foreach (var fk in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
-            fk.DeleteBehavior = DeleteBehavior.NoAction;
 
         modelBuilder.Entity<Complaint>()
-                .HasMany(c => c.Attachments)
-                .WithOne(a => a.Complaint)
-                .HasForeignKey(a => a.ComplaintId)
-                .OnDelete(DeleteBehavior.Cascade);
+            .HasMany(c => c.Attachments)
+            .WithOne(a => a.Complaint)
+            .HasForeignKey(a => a.ComplaintId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Complaint>()
-            .HasIndex(c => c.UserId);
+        modelBuilder.Entity<Complaint>().HasIndex(c => c.UserId);
+        modelBuilder.Entity<ComplaintAttachment>().HasIndex(a => a.ComplaintId);
 
-        modelBuilder.Entity<ComplaintAttachment>()
-            .HasIndex(a => a.ComplaintId);
+        modelBuilder.Entity<SiteReview>().HasIndex(r => r.ReviewerUserId).IsUnique();
+        modelBuilder.Entity<PatientProfile>().HasIndex(p => p.UserId).IsUnique();
+        modelBuilder.Entity<DoctorProfile>().HasIndex(p => p.UserId).IsUnique();
+        modelBuilder.Entity<MedicalTestProviderProfile>().HasIndex(p => p.UserId).IsUnique();
+        modelBuilder.Entity<SiteReview>().HasIndex(r => r.Score);
 
-        modelBuilder.Entity<SiteReview>()
-        .HasIndex(r => r.ReviewerUserId)
-        .IsUnique();
-        modelBuilder.Entity<PatientProfile>()
-            .HasIndex(p => p.UserId)
+        modelBuilder.Entity<DoctorAvailabilitySlot>()
+            .HasIndex(x => new { x.DoctorId, x.SlotDateTimeUtc })
             .IsUnique();
-        modelBuilder.Entity<DoctorProfile>()
-           .HasIndex(p => p.UserId)
-           .IsUnique();
-        modelBuilder.Entity<MedicalTestProviderProfile>()
-           .HasIndex(p => p.UserId)
-           .IsUnique();
-        modelBuilder.Entity<SiteReview>()
-            .HasIndex(r => r.Score);
 
         modelBuilder.Entity<DoctorAvailabilitySlot>()
-        .HasIndex(x => new { x.DoctorId, x.SlotDateTimeUtc })
-        .IsUnique();
+            .HasOne(x => x.Appointment)
+            .WithOne(x => x.Slot)
+            .HasForeignKey<PatientAppointment>(x => x.SlotId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<DoctorAvailabilitySlot>()
-        .HasOne(x => x.Appointment)
-        .WithOne(x => x.Slot)
-        .HasForeignKey<PatientAppointment>(x => x.SlotId)
-        .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<ServiceProviderProfile>()
+            .HasOne(sp => sp.User)
+            .WithMany()
+            .HasForeignKey(sp => sp.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PatientAppointment>()
+            .HasOne(pa => pa.Patient)
+            .WithMany(p => p.Patient_Appointment)
+            .HasForeignKey(pa => pa.PatientId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PatientAppointment>()
+            .HasOne(pa => pa.Payment)
+            .WithMany()
+            .HasForeignKey(pa => pa.PaymentId)
+            .OnDelete(DeleteBehavior.Restrict); 
+
+        modelBuilder.Entity<Question>()
+            .HasOne(q => q.Patient)
+            .WithMany(p => p.questions)
+            .HasForeignKey(q => q.PatientId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<QuestionAnswer>()
+            .HasOne(qa => qa.Doctor)
+            .WithMany()
+            .HasForeignKey(qa => qa.DoctorId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<PostTag>()
-               .HasKey(pt => new { pt.PostId, pt.TagId });
+            .HasKey(pt => new { pt.PostId, pt.TagId });
 
         modelBuilder.Entity<PostTag>()
             .HasOne(pt => pt.Post)
             .WithMany(p => p.PostTags)
-            .HasForeignKey(pt => pt.PostId);
+            .HasForeignKey(pt => pt.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<PostTag>()
             .HasOne(pt => pt.Tag)
             .WithMany(t => t.PostTags)
-            .HasForeignKey(pt => pt.TagId);
+            .HasForeignKey(pt => pt.TagId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<SavedPost>()
             .HasIndex(sp => new { sp.UserId, sp.PostId })
@@ -142,7 +154,44 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         modelBuilder.Entity<PostLike>()
             .HasIndex(pl => new { pl.UserId, pl.PostId })
             .IsUnique();
+
         modelBuilder.Entity<QuestionTag>()
-        .HasKey(qt => new { qt.QuestionId, qt.TagId });
+            .HasKey(qt => new { qt.QuestionId, qt.TagId });
+
+        modelBuilder.Entity<DoctorProfile>()
+            .Property(d => d.ConsultationPrice)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Rating>()
+            .HasOne(r => r.Patient)
+            .WithMany(p => p.Ratings)
+            .HasForeignKey(r => r.PatientId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Rating>()
+            .HasOne(r => r.Provider)
+            .WithMany()
+            .HasForeignKey(r => r.ProviderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Comment>()
+            .HasOne(c => c.Post)
+            .WithMany(p => p.Comments)
+            .HasForeignKey(c => c.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Comment>()
+            .HasOne(c => c.User)
+            .WithMany()
+            .HasForeignKey(c => c.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<CommentLike>()
+            .HasIndex(cl => new { cl.CommentId, cl.UserId })
+            .IsUnique();
+        modelBuilder.Entity<CommentLike>()
+            .HasOne(cl => cl.Comment)
+            .WithMany(c => c.Likes)
+            .HasForeignKey(cl => cl.CommentId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
