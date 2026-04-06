@@ -10,7 +10,7 @@
         public override async Task<IEnumerable<MedicalTestProviderProfile>> GetAllAsync()
         {
             return await _context.MedicalTestProviders
-                .Include(m => m.User)
+                .Include(m => m.User).Include(m=>m.WorkingHours)
                 .ToListAsync();
         }
         public override async Task<MedicalTestProviderProfile?> GetByIdAsync(int id)

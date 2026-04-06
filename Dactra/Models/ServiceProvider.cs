@@ -1,4 +1,6 @@
-﻿namespace Dactra.Models
+﻿using Dactra.Migrations;
+
+namespace Dactra.Models
 {
     public class ServiceProviderProfile : ProfileBase
     {
@@ -21,5 +23,6 @@
         public string About { get; set; } = string.Empty;
         public ApprovalStatus approvalStatus { get; set; } = ApprovalStatus.newPending;
         public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
+        public ICollection<LabsWorkingHour> WorkingHours { get; set; } = new List<LabsWorkingHour>();
     }
 }
