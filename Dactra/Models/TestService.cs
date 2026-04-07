@@ -10,6 +10,7 @@
 
         [Required]
         public string Description { get; set; } = string.Empty;
+        [JsonIgnore]
         public ICollection<ProviderOffering> Offerings { get; set; } = new List<ProviderOffering>();
     }
 }

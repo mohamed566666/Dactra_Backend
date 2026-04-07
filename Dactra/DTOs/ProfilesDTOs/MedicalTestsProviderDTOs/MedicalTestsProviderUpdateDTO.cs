@@ -6,5 +6,6 @@
         public string LicenceNo { get; set; }
         public string Address { get; set; }
         public string About { get; set; }
+        public List<WorkingHourDTO> WorkingHours { get; set; } = new();
     }
 }
