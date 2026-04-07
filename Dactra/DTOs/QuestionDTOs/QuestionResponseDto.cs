@@ -15,5 +15,6 @@ namespace Dactra.DTOs.QuestionDTOs
         public bool IsInterestedByCurrentUser { get; set; }
         public bool IsSavedByCurrentUser { get; set; }
         public List<TagDto> Tags { get; set; } = new();
+        public UserQuestionStatsDto? UserStats { get; set; }
     }
 }

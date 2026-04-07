@@ -43,6 +43,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<QuestionSave> QuestionSaves { get; set; }
     public DbSet<QuestionTag> QuestionTags { get; set; }
     public DbSet<CommentLike> CommentLikes { get; set; }
+    public DbSet<QuestionAnswerLike> QuestionAnswerLikes { get; set; }
 
 
 
@@ -126,12 +127,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             .HasForeignKey(q => q.PatientId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<QuestionAnswer>()
-            .HasOne(qa => qa.Doctor)
-            .WithMany()
-            .HasForeignKey(qa => qa.DoctorId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         modelBuilder.Entity<PostTag>()
             .HasKey(pt => new { pt.PostId, pt.TagId });
 
@@ -192,6 +187,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             .HasOne(cl => cl.Comment)
             .WithMany(c => c.Likes)
             .HasForeignKey(cl => cl.CommentId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<QuestionAnswer>()
+            .HasOne(a => a.Answerer)
+            .WithMany()
+            .HasForeignKey(a => a.AnswererUserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

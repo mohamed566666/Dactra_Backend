@@ -195,9 +195,10 @@ namespace Dactra.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<List<CommentResponseDto>>> GetComments(int postId)
         {
+            var userId = GetUserId();
             try
             {
-                return Ok(await _commentService.GetByPostIdAsync(postId, GetUserId()));
+                return Ok(await _commentService.GetByPostIdAsync(postId, userId));
             }
             catch (KeyNotFoundException ex)
             {
@@ -405,11 +406,11 @@ namespace Dactra.Controllers
 
         // ── Helpers ───────────────────────────────────────────────────────────────
 
-        private string GetUserId()
+        private string? GetUserId()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                throw new UnauthorizedAccessException("User not authenticated.");
+            //if (string.IsNullOrEmpty(userId))
+            //    throw new UnauthorizedAccessException("User not authenticated.");
             return userId;
         }
 

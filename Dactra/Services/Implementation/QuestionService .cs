@@ -202,28 +202,40 @@ namespace Dactra.Services.Implementation
             bool isInterested = currentUserId != null && await _interestRepo.IsInterestedByUserAsync(q.Id, currentUserId);
             bool isSaved = currentUserId != null && await _saveRepo.IsSavedByUserAsync(q.Id, currentUserId);
 
+            UserQuestionStatsDto? userStats = null;
+            if (currentUserId != null)
+            {
+                userStats = await _questionRepo.GetUserQuestionStatsAsync(currentUserId);
+            }
+
             return new QuestionResponseDto
             {
                 Id = q.Id,
                 Content = q.Content,
                 CreatedAt = q.CreatedAt,
                 UpdatedAt = q.UpdatedAt,
-                AnswersCount = q.Answers?.Count(a => !a.isDeleted) ?? 0,
-                InterestsCount = q.Interests?.Count ?? 0,
-                SavesCount = q.SavedBy?.Count ?? 0,
-                IsInterestedByCurrentUser = isInterested,
-                IsSavedByCurrentUser = isSaved,
+
                 Patient = q.Patient == null ? null! : new PatientSummaryDto
                 {
                     Id = q.Patient.Id,
                     FullName = q.Patient.FirstName + " " + q.Patient.LastName,
                     ProfileImageUrl = null
                 },
+
                 Tags = q.QuestionTags?.Select(qt => new TagDto
                 {
                     Id = qt.Tag.Id,
                     Name = qt.Tag.Name
-                }).ToList() ?? new List<TagDto>()
+                }).ToList() ?? new List<TagDto>(),
+
+                AnswersCount = q.Answers?.Count(a => !a.isDeleted && a.ParentAnswerId == null) ?? 0,
+                InterestsCount = q.Interests?.Count ?? 0,
+                SavesCount = q.SavedBy?.Count ?? 0,
+
+                IsInterestedByCurrentUser = isInterested,
+                IsSavedByCurrentUser = isSaved,
+
+                UserStats = userStats
             };
         }
     }

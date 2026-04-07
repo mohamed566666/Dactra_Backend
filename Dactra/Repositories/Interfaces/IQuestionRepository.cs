@@ -4,6 +4,7 @@ namespace Dactra.Repositories.Interfaces
 {
     public interface IQuestionRepository
     {
+        Task<UserQuestionStatsDto> GetUserQuestionStatsAsync(string userId);
         Task<Question?> GetByIdAsync(int id, bool includeDeleted = false);
         Task<Question?> GetByIdWithDetailsAsync(int id);
         Task<(List<Question> Questions, int TotalCount)> GetAllAsync(int page, int pageSize);
