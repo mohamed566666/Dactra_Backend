@@ -118,28 +118,6 @@ namespace Dactra.Repositories.Implementation
             return (items, total);
         }
 
-        public async Task<UserQuestionStatsDto> GetUserStatsAsync(string userId)
-        {
-            var interested = await _context.QuestionInterests
-                .CountAsync(i => i.UserId == userId && !i.Question.isDeleted);
-
-            var saved = await _context.QuestionSaves
-                .CountAsync(s => s.UserId == userId && !s.Question.isDeleted);
-
-            var answered = await _context.QuestionAnswers
-                .Where(a => !a.isDeleted && !a.Question.isDeleted && a.AnswererUserId == userId)
-                .Select(a => a.QuestionId)
-                .Distinct()
-                .CountAsync();
-
-            return new UserQuestionStatsDto
-            {
-                TotalInterested = interested,
-                TotalSaved = saved,
-                TotalAnswered = answered
-            };
-        }
-
         public async Task<Question> CreateAsync(Question question)
         {
             _context.Questions.Add(question);
@@ -201,8 +179,30 @@ namespace Dactra.Repositories.Implementation
                 .Select(a => a.QuestionId)
                 .Distinct()
                 .CountAsync();
+            var shared = await _context.Questions.Include(s => s.Patient)
+                .Where(s => s.Patient.UserId == userId && !s.isDeleted)
+                .CountAsync();
 
             return new UserQuestionStatsDto
+            {
+                TotalInterested = interested,
+                TotalSaved = saved,
+                TotalAnswered = answered,
+                TotalShared = shared
+            };
+        }
+        public async Task<QuestionStatsDto> GetQuestionStatsAsync(int questionId)
+        {
+            var interested = await _context.QuestionInterests
+                .CountAsync(i => i.QuestionId == questionId && !i.Question.isDeleted);
+            var saved = await _context.QuestionSaves
+                .CountAsync(s => s.QuestionId == questionId && !s.Question.isDeleted);
+            var answered = await _context.QuestionAnswers
+                .Where(a => !a.isDeleted && !a.Question.isDeleted && a.QuestionId == questionId)
+                .Select(a => a.Id)
+                .Distinct()
+                .CountAsync();
+            return new QuestionStatsDto
             {
                 TotalInterested = interested,
                 TotalSaved = saved,

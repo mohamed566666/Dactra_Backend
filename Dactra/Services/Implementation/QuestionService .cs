@@ -40,7 +40,7 @@ namespace Dactra.Services.Implementation
                 items.Add(await MapToResponseDtoAsync(q, currentUserId));
 
             var stats = currentUserId != null
-                ? await _questionRepo.GetUserStatsAsync(currentUserId)
+                ? await _questionRepo.GetUserQuestionStatsAsync(currentUserId)
                 : new UserQuestionStatsDto();
 
             return new QuestionFeedResponseDto
@@ -202,11 +202,7 @@ namespace Dactra.Services.Implementation
             bool isInterested = currentUserId != null && await _interestRepo.IsInterestedByUserAsync(q.Id, currentUserId);
             bool isSaved = currentUserId != null && await _saveRepo.IsSavedByUserAsync(q.Id, currentUserId);
 
-            UserQuestionStatsDto? userStats = null;
-            if (currentUserId != null)
-            {
-                userStats = await _questionRepo.GetUserQuestionStatsAsync(currentUserId);
-            }
+            QuestionStatsDto? Stats = await _questionRepo.GetQuestionStatsAsync(q.Id);
 
             return new QuestionResponseDto
             {
@@ -234,8 +230,7 @@ namespace Dactra.Services.Implementation
 
                 IsInterestedByCurrentUser = isInterested,
                 IsSavedByCurrentUser = isSaved,
-
-                UserStats = userStats
+                UserStats = Stats  
             };
         }
     }

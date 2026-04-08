@@ -11,7 +11,7 @@ namespace Dactra.Repositories.Interfaces
         Task<(List<Question> Questions, int TotalCount)> GetByPatientIdAsync(int patientId, int page, int pageSize);
         Task<(List<Question> Questions, int TotalCount)> GetByTagAsync(int tagId, int page, int pageSize);
         Task<(List<Question> Questions, int TotalCount)> GetFilteredAsync(QuestionFilterDto filter, string userId, int page, int pageSize);
-        Task<UserQuestionStatsDto> GetUserStatsAsync(string userId);
+        Task<QuestionStatsDto> GetQuestionStatsAsync(int questionId);
         Task<Question> CreateAsync(Question question);
         Task<Question> UpdateAsync(Question question);
         Task SoftDeleteAsync(int id);
