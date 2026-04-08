@@ -29,7 +29,7 @@
             }
         }
         [HttpPut]
-        [Authorize]
+       
         public async Task<IActionResult> Update(MedicalTestsProviderUpdateDTO medicalTestProviderDTO)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)

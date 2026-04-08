@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260406215806_addWorkingHoursForlabs")]
+    partial class addWorkingHoursForlabs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,25 +101,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "2733cdcb-064d-45d0-af82-9c626e62e609",
+                            Id = "db1b9afd-2731-4710-8c73-b396277f94f6",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "8d6f62e8-1076-49c2-b08c-8c4dacfb849c",
+                            Id = "83222aec-5b93-490a-b2bc-47cdd5a1f3bf",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "a1073bcc-e27f-4400-9af7-ef9a9d11c151",
+                            Id = "7516c7b5-c58a-4d70-9ee5-84f912fc43fc",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "af7f3bd1-4bb4-4ef8-8106-7a49a2e34bfc",
+                            Id = "5c2f275c-432e-44c4-ba84-8a940763d98e",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -893,16 +896,15 @@ namespace Dactra.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AnswererUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("DoctorId")
+                        .HasColumnType("int");
 
                     b.Property<int?>("ParentAnswerId")
                         .HasColumnType("int");
@@ -918,38 +920,13 @@ namespace Dactra.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AnswererUserId");
+                    b.HasIndex("DoctorId");
 
                     b.HasIndex("ParentAnswerId");
 
                     b.HasIndex("QuestionId");
 
                     b.ToTable("QuestionAnswers");
-                });
-
-            modelBuilder.Entity("Dactra.Models.QuestionAnswerLike", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AnswerId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AnswerId");
-
-                    b.ToTable("QuestionAnswerLikes");
                 });
 
             modelBuilder.Entity("Dactra.Models.QuestionInterest", b =>
@@ -1763,10 +1740,10 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Dactra.Models.QuestionAnswer", b =>
                 {
-                    b.HasOne("Dactra.Models.ApplicationUser", "Answerer")
+                    b.HasOne("Dactra.Models.DoctorProfile", "Doctor")
                         .WithMany()
-                        .HasForeignKey("AnswererUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Dactra.Models.QuestionAnswer", "ParentAnswer")
@@ -1779,22 +1756,11 @@ namespace Dactra.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Answerer");
+                    b.Navigation("Doctor");
 
                     b.Navigation("ParentAnswer");
 
                     b.Navigation("Question");
-                });
-
-            modelBuilder.Entity("Dactra.Models.QuestionAnswerLike", b =>
-                {
-                    b.HasOne("Dactra.Models.QuestionAnswer", "Answer")
-                        .WithMany("Likes")
-                        .HasForeignKey("AnswerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Answer");
                 });
 
             modelBuilder.Entity("Dactra.Models.QuestionInterest", b =>
@@ -2105,8 +2071,6 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Dactra.Models.QuestionAnswer", b =>
                 {
-                    b.Navigation("Likes");
-
                     b.Navigation("Replies");
                 });
 

@@ -153,12 +153,14 @@ namespace Dactra.Repositories.Implementation
                                 .Select(c => c.PostId)
                                 .Distinct()
                                 .CountAsync();
+            var totalShared = await _context.Posts.Include(s => s.Doctor).CountAsync(s => s.Doctor.UserId == userId && !s.isDeleted);
 
             return new UserPostStatsDto
             {
                 TotalLiked = liked,
                 TotalSaved = saved,
-                TotalCommented = commented
+                TotalCommented = commented,
+                TotalShared = totalShared
             };
         }
     }

@@ -1,4 +1,6 @@
-﻿namespace Dactra.Mappings
+﻿using Dactra.Migrations;
+
+namespace Dactra.Mappings
 {
     public class MedicalTestsProviderMapper : Profile
     {
@@ -8,7 +10,13 @@
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.User, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
-                .ForMember(dest => dest.approvalStatus, opt => opt.Ignore())
+                .ForMember(dest => dest.approvalStatus, opt => opt.Ignore()).ForMember(dest => dest.WorkingHours, opt => opt.MapFrom(src =>
+                    src.WorkingHours.Select(w => new LabsWorkingHour
+                    {
+                        Day = w.Day,
+                        From = w.From,
+                        To = w.To
+                    }).ToList()))
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<MedicalTestsProviderUpdateDTO, MedicalTestProviderProfile>()
@@ -16,6 +24,13 @@
                 .ForMember(dest => dest.User, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.approvalStatus, opt => opt.Ignore())
+                    .ForMember(dest => dest.approvalStatus, opt => opt.Ignore()).ForMember(dest => dest.WorkingHours, opt => opt.MapFrom(src =>
+                    src.WorkingHours.Select(w => new LabsWorkingHour
+                    {
+                        Day = w.Day,
+                        From = w.From,
+                        To = w.To
+                    }).ToList()))
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<MedicalTestProviderProfile, MedicalTestsProviderResponseDTO>()
@@ -25,7 +40,10 @@
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
                 .ForMember(dest => dest.About, opt => opt.MapFrom(src => src.About))
                 .ForMember(dest => dest.Avg_Rating, opt => opt.MapFrom(src => src.Avg_Rating))
-                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type));
+                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type))
+                .ForMember(dest => dest.WorkingHours, opt => opt.MapFrom(src => src.WorkingHours));
+
+            CreateMap<LabsWorkingHour, WorkingHourDTO>();
         }
     }
 }
