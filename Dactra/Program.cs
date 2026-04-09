@@ -138,6 +138,10 @@ builder.Services.AddScoped<IQuestionAnswerService, QuestionAnswerService>();
 builder.Services.AddScoped<IQuestionInterestService, QuestionInterestService>();
 builder.Services.AddScoped<IQuestionSaveService, QuestionSaveService>();
 builder.Services.AddScoped<ICommentLikeService, CommentLikeService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
+
+
 
 
 
@@ -292,6 +296,7 @@ app.MapHub<QuestionHub>("/hubs/questions");
 app.MapHub<AppointmentHub>("/appointmentHub");
 app.MapHub<DoctorScheduleHub>("/doctorScheduleHub");
 app.MapHub<PostHub>("/hubs/posts");
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 #endregion
 
