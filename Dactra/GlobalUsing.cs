@@ -111,6 +111,7 @@ global using Dactra.Mappings;
 // ==================================================
 global using Microsoft.AspNetCore.SignalR;
 global using Dactra.Hubs;
+global using Dactra.SignalR;    
 // ==================================================
 // json
 // ==================================================

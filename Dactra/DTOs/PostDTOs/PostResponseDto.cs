@@ -4,6 +4,7 @@ namespace Dactra.DTOs.PostDTOs
     public class PostResponseDto
     {
         public int Id { get; set; }
+        public string email { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

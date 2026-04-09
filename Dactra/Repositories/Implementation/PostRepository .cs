@@ -22,25 +22,29 @@ namespace Dactra.Repositories.Implementation
         public async Task<Post?> GetByIdWithDetailsAsync(int id, string? currentUserId = null)
         {
             return await _context.Posts
-                .Where(p => p.Id == id && !p.isDeleted)
-                .Include(p => p.Doctor)
-                    .ThenInclude(d => d.specialization)
-                .Include(p => p.Comments.Where(c => c.ParentCommentId == null))
-                    .ThenInclude(c => c.Replies)
-                        .ThenInclude(r => r.User)
-                .Include(p => p.Comments)
-                    .ThenInclude(c => c.User)
-                .Include(p => p.Likes)
-                .Include(p => p.PostTags)
-                    .ThenInclude(pt => pt.Tag)
-                .Include(p => p.SavedBy)
-                .FirstOrDefaultAsync();
+            .Where(p => p.Id == id && !p.isDeleted)
+            .Include(p => p.Doctor)
+                .ThenInclude(d => d.User)
+            .Include(p => p.Doctor)
+                .ThenInclude(d => d.specialization)
+            .Include(p => p.Comments.Where(c => c.ParentCommentId == null))
+                .ThenInclude(c => c.Replies)
+                    .ThenInclude(r => r.User)
+            .Include(p => p.Comments)
+                .ThenInclude(c => c.User)
+            .Include(p => p.Likes)
+            .Include(p => p.PostTags)
+                .ThenInclude(pt => pt.Tag)
+            .Include(p => p.SavedBy)
+            .FirstOrDefaultAsync();
         }
 
         public async Task<(List<Post> Posts, int TotalCount)> GetAllAsync(int page, int pageSize, string? currentUserId = null)
         {
             var query = _context.Posts
                 .Where(p => !p.isDeleted)
+                .Include(p => p.Doctor)
+                    .ThenInclude(d => d.User)
                 .Include(p => p.Doctor)
                     .ThenInclude(d => d.specialization)
                 .Include(p => p.Likes)
@@ -59,6 +63,8 @@ namespace Dactra.Repositories.Implementation
             var query = _context.Posts
                 .Where(p => p.DoctorId == doctorId && !p.isDeleted)
                 .Include(p => p.Doctor)
+                    .ThenInclude(d => d.User)
+                .Include(p => p.Doctor)
                     .ThenInclude(d => d.specialization)
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
@@ -74,6 +80,8 @@ namespace Dactra.Repositories.Implementation
         {
             var query = _context.Posts
                 .Where(p => !p.isDeleted && p.PostTags.Any(pt => pt.TagId == tagId))
+                .Include(p => p.Doctor)
+                    .ThenInclude(d => d.User)
                 .Include(p => p.Doctor)
                     .ThenInclude(d => d.specialization)
                 .Include(p => p.Likes)
@@ -120,6 +128,8 @@ namespace Dactra.Repositories.Implementation
         {
             var query = _context.Posts
                 .Where(p => !p.isDeleted)
+                .Include(p => p.Doctor)
+                    .ThenInclude(d => d.User)
                 .Include(p => p.Doctor)
                     .ThenInclude(d => d.specialization)
                 .Include(p => p.Likes)

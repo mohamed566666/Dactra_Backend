@@ -194,6 +194,7 @@ namespace Dactra.Services.Implementation
             return new PostResponseDto
             {
                 Id = post.Id,
+                email = post.Doctor?.User?.Email,
                 Content = post.Content,
                 CreatedAt = post.CreatedAt,
                 UpdatedAt = post.UpdatedAt,
