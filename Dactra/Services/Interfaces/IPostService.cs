@@ -1,5 +1,6 @@
 ﻿using Dactra.DTOs;
 using Dactra.DTOs.PostDTOs;
+using Dactra.DTOs.TagDTOs;
 namespace Dactra.Services.Interfaces
 {
     public interface IPostService
@@ -12,5 +13,6 @@ namespace Dactra.Services.Interfaces
         Task<PostResponseDto> UpdateAsync(int id, UpdatePostDto dto, int doctorId);
         Task DeleteAsync(int id, int doctorId);
         Task<PagedResultDto<PostResponseDto>> GetMyFilteredPostsAsync(PostFilterDto filter, string userId, int page, int pageSize);
+        Task<List<TagDto>> GetTopTagsAsync(int topCount);
     }
 }

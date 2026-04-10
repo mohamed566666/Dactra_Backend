@@ -21,7 +21,7 @@
             if (!availableTags.Any()) return new List<string>();
 
             var apiKey = _configuration["AITagging:ApiKey"];
-            var model = _configuration["AITagging:Model"] ?? "gemini-2.0-flash";
+            var model = _configuration["AITagging:Model"] ?? "gemini-2.5-flash";
 
             if (string.IsNullOrEmpty(apiKey))
             {
@@ -34,8 +34,7 @@
         You are a medical content tagging assistant.
         Given the following medical post content, select the most relevant tags from the predefined list below.
         Return ONLY a JSON array of tag names that match. Return an empty array [] if none match.
-        Do not invent new tags. Only use tags from the provided list.
-        Select between 1 and 5 tags maximum.
+        Do not invent new tags
 
         Available Tags:
         {tagsJson}

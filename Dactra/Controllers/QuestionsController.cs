@@ -1,6 +1,8 @@
 ﻿using Dactra.DTOs.QuestionDTOs;
-using Microsoft.AspNetCore.Http;
+using Dactra.DTOs.TagDTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Dactra.Controllers
 {
@@ -15,6 +17,8 @@ namespace Dactra.Controllers
         private readonly IQuestionSaveService _saveService;
         private readonly IPatientService _patientService;
         private readonly IDoctorService _doctorService;
+        private readonly IQuestionAnswerLikeService _answerLikeService;
+        private readonly ILogger<QuestionsController> _logger;
 
         public QuestionsController(
             IQuestionService questionService,
@@ -22,7 +26,9 @@ namespace Dactra.Controllers
             IQuestionInterestService interestService,
             IQuestionSaveService saveService,
             IPatientService patientService,
-            IDoctorService doctorService)
+            IDoctorService doctorService,
+            IQuestionAnswerLikeService answerLikeService,
+            ILogger<QuestionsController> logger)
         {
             _questionService = questionService;
             _answerService = answerService;
@@ -30,9 +36,40 @@ namespace Dactra.Controllers
             _saveService = saveService;
             _patientService = patientService;
             _doctorService = doctorService;
+            _answerLikeService = answerLikeService;
+            _logger = logger;
         }
 
-        // ── Questions ─────────────────────────────────────────────────────────
+        private bool IsUserDoctor() => User.IsInRole("Doctor");
+
+        private string GetUserId()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                throw new UnauthorizedAccessException("User not authenticated.");
+            return userId;
+        }
+
+        private string? GetUserIdOrDefault() =>
+            User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        private async Task<int> GetPatientId()
+        {
+            var userId = GetUserId();
+            var profile = await _patientService.GetProfileByUserID(userId);
+            if (profile == null)
+                throw new UnauthorizedAccessException("Patient profile not found.");
+            return profile.Id;
+        }
+
+        private async Task<int> GetDoctorId()
+        {
+            var userId = GetUserId();
+            var profile = await _doctorService.GetProfileByUserIdAsync(userId);
+            if (profile == null)
+                throw new UnauthorizedAccessException("Doctor profile not found.");
+            return profile.Id;
+        }
 
         [HttpGet]
         [AllowAnonymous]
@@ -41,7 +78,7 @@ namespace Dactra.Controllers
         {
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = GetUserIdOrDefault();
                 return Ok(await _questionService.GetAllAsync(page, pageSize, userId));
             }
             catch (Exception ex)
@@ -56,7 +93,7 @@ namespace Dactra.Controllers
         {
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = GetUserIdOrDefault();
                 return Ok(await _questionService.GetByIdAsync(id, userId));
             }
             catch (KeyNotFoundException ex)
@@ -84,7 +121,6 @@ namespace Dactra.Controllers
             }
         }
 
-        /// <summary>Patient only: Get my questions.</summary>
         [HttpGet("my-questions")]
         [Authorize(Roles = "Patient")]
         public async Task<ActionResult<PagedResultDto<QuestionResponseDto>>> GetMyQuestions(
@@ -105,7 +141,6 @@ namespace Dactra.Controllers
             }
         }
 
-        /// <summary>Filter: Interested | Saved | Answered</summary>
         [HttpGet("filterOn")]
         public async Task<ActionResult<PagedResultDto<QuestionResponseDto>>> GetMyFiltered(
             [FromQuery] QuestionFilterDto filter,
@@ -127,7 +162,6 @@ namespace Dactra.Controllers
             }
         }
 
-        /// <summary>Patient only: Create a question.</summary>
         [HttpPost]
         [Authorize(Roles = "Patient")]
         public async Task<ActionResult<QuestionResponseDto>> Create([FromBody] CreateQuestionDto dto)
@@ -148,7 +182,6 @@ namespace Dactra.Controllers
             }
         }
 
-        /// <summary>Patient only: Update own question.</summary>
         [HttpPut("{id:int}")]
         [Authorize(Roles = "Patient")]
         public async Task<ActionResult<QuestionResponseDto>> Update(int id, [FromBody] UpdateQuestionDto dto)
@@ -172,7 +205,6 @@ namespace Dactra.Controllers
             }
         }
 
-        /// <summary>Patient only: Soft-delete own question.</summary>
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "Patient")]
         public async Task<IActionResult> Delete(int id)
@@ -197,15 +229,18 @@ namespace Dactra.Controllers
             }
         }
 
-        // ── Answers ───────────────────────────────────────────────────────────
-
-        [HttpGet("{questionId:int}/answers")]
+        [HttpGet("{questionId:int}/comments")]
         [AllowAnonymous]
-        public async Task<ActionResult<List<AnswerResponseDto>>> GetAnswers(int questionId)
+        public async Task<ActionResult<PagedResultDto<AnswerResponseDto>>> GetComments(
+            int questionId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
             try
             {
-                return Ok(await _answerService.GetByQuestionIdAsync(questionId));
+                var currentUserId = GetUserIdOrDefault();
+                return Ok(await _answerService.GetTopLevelAnswersByQuestionIdAsync(
+                    questionId, page, pageSize, currentUserId));
             }
             catch (KeyNotFoundException ex)
             {
@@ -217,15 +252,37 @@ namespace Dactra.Controllers
             }
         }
 
-        /// <summary>Doctor only: Answer a question.</summary>
-        [HttpPost("{questionId:int}/answers")]
-        [Authorize(Roles = "Doctor")]
-        public async Task<ActionResult<AnswerResponseDto>> AddAnswer(int questionId, [FromBody] CreateAnswerDto dto)
+        [HttpGet("comments/{parentCommentId:int}/replies")]
+        [AllowAnonymous]
+        public async Task<ActionResult<PagedResultDto<AnswerResponseDto>>> GetReplies(
+            int parentCommentId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
             try
             {
-                var doctorId = await GetDoctorId();
-                return Ok(await _answerService.CreateAsync(questionId, dto, doctorId));
+                var currentUserId = GetUserIdOrDefault();
+                return Ok(await _answerService.GetRepliesByParentAnswerIdAsync(
+                    parentCommentId, page, pageSize, currentUserId));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost("{questionId:int}/comments")]
+        public async Task<ActionResult<AnswerResponseDto>> AddComment(int questionId, [FromBody] CreateAnswerDto dto)
+        {
+            try
+            {
+                var userId = GetUserId();
+                var isDoctor = IsUserDoctor();
+                return Ok(await _answerService.CreateAsync(questionId, dto, userId, isDoctor));
             }
             catch (KeyNotFoundException ex)
             {
@@ -241,15 +298,32 @@ namespace Dactra.Controllers
             }
         }
 
-        /// <summary>Doctor only: Update own answer.</summary>
-        [HttpPut("answers/{answerId:int}")]
-        [Authorize(Roles = "Doctor")]
-        public async Task<ActionResult<AnswerResponseDto>> UpdateAnswer(int answerId, [FromBody] UpdateAnswerDto dto)
+        [HttpPost("comments/{commentId:int}/like")]
+        public async Task<ActionResult<AnswerLikeResponseDto>> ToggleCommentLike(int commentId)
         {
             try
             {
-                var doctorId = await GetDoctorId();
-                return Ok(await _answerService.UpdateAsync(answerId, dto, doctorId));
+                var userId = GetUserId();
+                return Ok(await _answerLikeService.ToggleLikeAsync(commentId, userId));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
+        [HttpPut("comments/{commentId:int}")]
+        public async Task<ActionResult<AnswerResponseDto>> UpdateComment(int commentId, [FromBody] UpdateAnswerDto dto)
+        {
+            try
+            {
+                var userId = GetUserId();
+                var isDoctor = IsUserDoctor();
+                return Ok(await _answerService.UpdateAsync(commentId, dto, userId, isDoctor));
             }
             catch (KeyNotFoundException ex)
             {
@@ -265,15 +339,14 @@ namespace Dactra.Controllers
             }
         }
 
-        /// <summary>Doctor only: Soft-delete own answer.</summary>
-        [HttpDelete("answers/{answerId:int}")]
-        [Authorize(Roles = "Doctor")]
-        public async Task<IActionResult> DeleteAnswer(int answerId)
+        [HttpDelete("comments/{commentId:int}")]
+        public async Task<IActionResult> DeleteComment(int commentId)
         {
             try
             {
-                var doctorId = await GetDoctorId();
-                await _answerService.DeleteAsync(answerId, doctorId);
+                var userId = GetUserId();
+                var isDoctor = IsUserDoctor();
+                await _answerService.DeleteAsync(commentId, userId, isDoctor);
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
@@ -290,11 +363,7 @@ namespace Dactra.Controllers
             }
         }
 
-        // ── Interest ──────────────────────────────────────────────────────────
-
-        /// <summary>Toggle interest on a question.</summary>
         [HttpPost("{questionId:int}/interest")]
-        [AllowAnonymous]
         public async Task<ActionResult<QuestionInterestResponseDto>> ToggleInterest(int questionId)
         {
             try
@@ -312,11 +381,7 @@ namespace Dactra.Controllers
             }
         }
 
-        // ── Save ──────────────────────────────────────────────────────────────
-
-        /// <summary>Toggle save on a question.</summary>
         [HttpPost("{questionId:int}/save")]
-        [AllowAnonymous]
         public async Task<ActionResult<object>> ToggleSave(int questionId)
         {
             try
@@ -336,7 +401,6 @@ namespace Dactra.Controllers
         }
 
         [HttpGet("saved")]
-        [AllowAnonymous]
         public async Task<ActionResult<PagedResultDto<SavedQuestionResponseDto>>> GetSaved(
             [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
@@ -354,7 +418,7 @@ namespace Dactra.Controllers
         [HttpGet("tag/{tagId:int}")]
         [AllowAnonymous]
         public async Task<ActionResult<PagedResultDto<QuestionResponseDto>>> GetByTag(
-    int tagId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+            int tagId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
@@ -366,32 +430,19 @@ namespace Dactra.Controllers
             }
         }
 
-        // ── Helpers ───────────────────────────────────────────────────────────
-
-        private string GetUserId()
+        [HttpGet("top-tags")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<TagDto>>> GetTopTags([FromQuery] int top = 5)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                throw new UnauthorizedAccessException("User not authenticated.");
-            return userId;
-        }
-
-        private async Task<int> GetPatientId()
-        {
-            var userId = GetUserId();
-            var profile = await _patientService.GetProfileByUserID(userId);
-            if (profile == null)
-                throw new UnauthorizedAccessException("Patient profile not found.");
-            return profile.Id;
-        }
-
-        private async Task<int> GetDoctorId()
-        {
-            var userId = GetUserId();
-            var profile = await _doctorService.GetProfileByUserIdAsync(userId);
-            if (profile == null)
-                throw new UnauthorizedAccessException("Doctor profile not found.");
-            return profile.Id;
+            try
+            {
+                top = Math.Clamp(top, 1, 100);
+                return Ok(await _questionService.GetTopTagsAsync(top));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
     }
 }

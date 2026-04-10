@@ -5,13 +5,56 @@
         private readonly ApplicationDbContext _context;
         public QuestionAnswerRepository(ApplicationDbContext context) => _context = context;
 
+        public async Task<(List<QuestionAnswer> Answers, int TotalCount)> GetTopLevelAnswersByQuestionIdAsync(
+            int questionId, int page, int pageSize)
+        {
+            var query = _context.QuestionAnswers
+                .Where(a => a.QuestionId == questionId
+                         && !a.isDeleted
+                         && a.ParentAnswerId == null)
+                .Include(a => a.Answerer)
+                .Include(a => a.Likes)
+                .OrderBy(a => a.CreatedAt);
+
+            var total = await query.CountAsync();
+
+            var answers = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (answers, total);
+        }
+
+        public async Task<(List<QuestionAnswer> Replies, int TotalCount)> GetRepliesByParentAnswerIdAsync(
+            int parentAnswerId, int page, int pageSize)
+        {
+            var query = _context.QuestionAnswers
+                .Where(a => a.ParentAnswerId == parentAnswerId && !a.isDeleted)
+                .Include(a => a.Answerer)
+                .Include(a => a.Likes)
+                .OrderBy(a => a.CreatedAt);
+
+            var total = await query.CountAsync();
+
+            var replies = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (replies, total);
+        }
+
+        public async Task<int> GetRepliesCountAsync(int parentAnswerId)
+            => await _context.QuestionAnswers
+                .CountAsync(a => a.ParentAnswerId == parentAnswerId && !a.isDeleted);
+
         public async Task<QuestionAnswer?> GetByIdAsync(int id)
         {
             return await _context.QuestionAnswers
                 .Where(a => !a.isDeleted)
-                .Include(a => a.Doctor).ThenInclude(d => d.specialization)
-                .Include(a => a.Replies.Where(r => !r.isDeleted))
-                    .ThenInclude(r => r.Doctor).ThenInclude(d => d.specialization)
+                .Include(a => a.Answerer)
+                .Include(a => a.Likes)
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
 
@@ -19,9 +62,8 @@
         {
             return await _context.QuestionAnswers
                 .Where(a => a.QuestionId == questionId && !a.isDeleted && a.ParentAnswerId == null)
-                .Include(a => a.Doctor).ThenInclude(d => d.specialization)
-                .Include(a => a.Replies.Where(r => !r.isDeleted))
-                    .ThenInclude(r => r.Doctor).ThenInclude(d => d.specialization)
+                .Include(a => a.Answerer)
+                .Include(a => a.Likes)
                 .OrderBy(a => a.CreatedAt)
                 .ToListAsync();
         }
@@ -30,8 +72,7 @@
         {
             _context.QuestionAnswers.Add(answer);
             await _context.SaveChangesAsync();
-            await _context.Entry(answer).Reference(a => a.Doctor).LoadAsync();
-            await _context.Entry(answer.Doctor).Reference(d => d.specialization).LoadAsync();
+            await _context.Entry(answer).Reference(a => a.Answerer).LoadAsync();
             return answer;
         }
 
@@ -55,10 +96,15 @@
         public async Task<bool> ExistsAsync(int id)
             => await _context.QuestionAnswers.AnyAsync(a => a.Id == id && !a.isDeleted);
 
-        public async Task<bool> BelongsToDoctorAsync(int answerId, int doctorId)
-            => await _context.QuestionAnswers.AnyAsync(a => a.Id == answerId && a.DoctorId == doctorId && !a.isDeleted);
+        public async Task<bool> BelongsToUserAsync(int answerId, string userId)
+            => await _context.QuestionAnswers.AnyAsync(a => a.Id == answerId && a.AnswererUserId == userId && !a.isDeleted);
 
-        public async Task<int> GetActiveCountByQuestionIdAsync(int questionId)
-            => await _context.QuestionAnswers.CountAsync(a => a.QuestionId == questionId && !a.isDeleted);
+        public async Task<Question?> GetQuestionByAnswerIdAsync(int answerId)
+            => await _context.QuestionAnswers
+                .Where(a => a.Id == answerId && !a.isDeleted)
+                .Include(a => a.Question)
+                    .ThenInclude(q => q.Patient)
+                .Select(a => a.Question)
+                .FirstOrDefaultAsync();
     }
 }

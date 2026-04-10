@@ -10,9 +10,7 @@
 
         [Required]
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-
         public DateTimeOffset? UpdatedAt { get; set; }
-
         public bool isDeleted { get; set; } = false;
 
         [Required]
@@ -21,12 +19,14 @@
         public Question Question { get; set; } = null!;
 
         [Required]
-        public int DoctorId { get; set; }
-        [ForeignKey(nameof(DoctorId))]
-        public DoctorProfile Doctor { get; set; } = null!;
+        public string AnswererUserId { get; set; } = string.Empty;
+        public ApplicationUser Answerer { get; set; } = null!;
+
         public int? ParentAnswerId { get; set; }
         [ForeignKey(nameof(ParentAnswerId))]
         public QuestionAnswer? ParentAnswer { get; set; }
+
         public ICollection<QuestionAnswer> Replies { get; set; } = new List<QuestionAnswer>();
+        public ICollection<QuestionAnswerLike> Likes { get; set; } = new List<QuestionAnswerLike>();
     }
 }

@@ -194,6 +194,7 @@ namespace Dactra.Services.Implementation
             return new PostResponseDto
             {
                 Id = post.Id,
+                email = post.Doctor?.User?.Email,
                 Content = post.Content,
                 CreatedAt = post.CreatedAt,
                 UpdatedAt = post.UpdatedAt,
@@ -233,5 +234,7 @@ namespace Dactra.Services.Implementation
                 PageSize = pageSize
             };
         }
+        public async Task<List<TagDto>> GetTopTagsAsync(int topCount)
+            => await _postRepo.GetTopTagsAsync(topCount);
     }
 }

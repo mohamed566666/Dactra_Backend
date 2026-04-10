@@ -1,16 +1,32 @@
 ﻿using Dactra.DTOs.QuestionDTOs;
+using Dactra.DTOs.TagDTOs;
+using Dactra.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Dactra.Repositories.Implementation
 {
-    public class QuestionRepository: IQuestionRepository
+    public class QuestionRepository : IQuestionRepository
     {
         private readonly ApplicationDbContext _context;
         public QuestionRepository(ApplicationDbContext context) => _context = context;
 
         public async Task<Question?> GetByIdAsync(int id, bool includeDeleted = false)
         {
-            var query = _context.Questions.AsQueryable();
-            if (!includeDeleted) query = query.Where(q => !q.isDeleted);
+            var query = _context.Questions
+                .Include(q => q.Patient)
+                    .ThenInclude(p => p.User)
+                .Include(q => q.Answers.Where(a => !a.isDeleted && a.ParentAnswerId == null))
+                .Include(q => q.Answers.Where(a => !a.isDeleted && a.ParentAnswerId == null))
+                    .ThenInclude(a => a.Replies.Where(r => !r.isDeleted))
+                .Include(q => q.Interests)
+                .Include(q => q.SavedBy)
+                .Include(q => q.QuestionTags)
+                    .ThenInclude(qt => qt.Tag)
+                .AsQueryable();
+
+            if (!includeDeleted)
+                query = query.Where(q => !q.isDeleted);
+
             return await query.FirstOrDefaultAsync(q => q.Id == id);
         }
 
@@ -19,13 +35,10 @@ namespace Dactra.Repositories.Implementation
             return await _context.Questions
                 .Where(q => q.Id == id && !q.isDeleted)
                 .Include(q => q.Patient)
+                    .ThenInclude(p => p.User)
                 .Include(q => q.Answers.Where(a => !a.isDeleted && a.ParentAnswerId == null))
-                    .ThenInclude(a => a.Doctor)
-                        .ThenInclude(d => d.specialization)
                 .Include(q => q.Answers.Where(a => !a.isDeleted && a.ParentAnswerId == null))
                     .ThenInclude(a => a.Replies.Where(r => !r.isDeleted))
-                        .ThenInclude(r => r.Doctor)
-                            .ThenInclude(d => d.specialization)
                 .Include(q => q.Interests)
                 .Include(q => q.SavedBy)
                 .Include(q => q.QuestionTags)
@@ -38,6 +51,7 @@ namespace Dactra.Repositories.Implementation
             var query = _context.Questions
                 .Where(q => !q.isDeleted)
                 .Include(q => q.Patient)
+                    .ThenInclude(p => p.User)
                 .Include(q => q.Answers.Where(a => !a.isDeleted))
                 .Include(q => q.Interests)
                 .Include(q => q.SavedBy)
@@ -54,6 +68,7 @@ namespace Dactra.Repositories.Implementation
             var query = _context.Questions
                 .Where(q => !q.isDeleted && q.PatientId == patientId)
                 .Include(q => q.Patient)
+                    .ThenInclude(p => p.User)
                 .Include(q => q.Answers.Where(a => !a.isDeleted))
                 .Include(q => q.Interests)
                 .Include(q => q.SavedBy)
@@ -65,12 +80,12 @@ namespace Dactra.Repositories.Implementation
             return (items, total);
         }
 
-
         public async Task<(List<Question> Questions, int TotalCount)> GetByTagAsync(int tagId, int page, int pageSize)
         {
             var query = _context.Questions
                 .Where(q => !q.isDeleted && q.QuestionTags.Any(qt => qt.TagId == tagId))
                 .Include(q => q.Patient)
+                    .ThenInclude(p => p.User)
                 .Include(q => q.Answers.Where(a => !a.isDeleted))
                 .Include(q => q.Interests)
                 .Include(q => q.SavedBy)
@@ -88,6 +103,7 @@ namespace Dactra.Repositories.Implementation
             var query = _context.Questions
                 .Where(q => !q.isDeleted)
                 .Include(q => q.Patient)
+                    .ThenInclude(p => p.User)
                 .Include(q => q.Answers.Where(a => !a.isDeleted))
                 .Include(q => q.Interests)
                 .Include(q => q.SavedBy)
@@ -98,7 +114,7 @@ namespace Dactra.Repositories.Implementation
             {
                 QuestionFilterDto.Interested => query.Where(q => q.Interests.Any(i => i.UserId == userId)),
                 QuestionFilterDto.Saved => query.Where(q => q.SavedBy.Any(s => s.UserId == userId)),
-                QuestionFilterDto.Answered => query.Where(q => q.Answers.Any(a => !a.isDeleted && a.Doctor.UserId == userId)),
+                QuestionFilterDto.Answered => query.Where(q => q.Answers.Any(a => !a.isDeleted && a.AnswererUserId == userId)),
                 _ => query
             };
 
@@ -107,28 +123,6 @@ namespace Dactra.Repositories.Implementation
             var total = await query.CountAsync();
             var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             return (items, total);
-        }
-
-        public async Task<UserQuestionStatsDto> GetUserStatsAsync(string userId)
-        {
-            var interested = await _context.QuestionInterests
-                .CountAsync(i => i.UserId == userId && !i.Question.isDeleted);
-
-            var saved = await _context.QuestionSaves
-                .CountAsync(s => s.UserId == userId && !s.Question.isDeleted);
-
-            var answered = await _context.QuestionAnswers
-                .Where(a => !a.isDeleted && !a.Question.isDeleted && a.Doctor.UserId == userId)
-                .Select(a => a.QuestionId)
-                .Distinct()
-                .CountAsync();
-
-            return new UserQuestionStatsDto
-            {
-                TotalInterested = interested,
-                TotalSaved = saved,
-                TotalAnswered = answered
-            };
         }
 
         public async Task<Question> CreateAsync(Question question)
@@ -177,6 +171,65 @@ namespace Dactra.Repositories.Implementation
 
             _context.QuestionTags.AddRange(newTags);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<UserQuestionStatsDto> GetUserQuestionStatsAsync(string userId)
+        {
+            var interested = await _context.QuestionInterests
+                .CountAsync(i => i.UserId == userId && !i.Question.isDeleted);
+
+            var saved = await _context.QuestionSaves
+                .CountAsync(s => s.UserId == userId && !s.Question.isDeleted);
+
+            var answered = await _context.QuestionAnswers
+                .Where(a => !a.isDeleted && !a.Question.isDeleted && a.AnswererUserId == userId)
+                .Select(a => a.QuestionId)
+                .Distinct()
+                .CountAsync();
+            var shared = await _context.Questions.Include(s => s.Patient)
+                .Where(s => s.Patient.UserId == userId && !s.isDeleted)
+                .CountAsync();
+
+            return new UserQuestionStatsDto
+            {
+                TotalInterested = interested,
+                TotalSaved = saved,
+                TotalAnswered = answered,
+                TotalShared = shared
+            };
+        }
+        public async Task<QuestionStatsDto> GetQuestionStatsAsync(int questionId)
+        {
+            var interested = await _context.QuestionInterests
+                .CountAsync(i => i.QuestionId == questionId && !i.Question.isDeleted);
+            var saved = await _context.QuestionSaves
+                .CountAsync(s => s.QuestionId == questionId && !s.Question.isDeleted);
+            var answered = await _context.QuestionAnswers
+                .Where(a => !a.isDeleted && !a.Question.isDeleted && a.QuestionId == questionId)
+                .Select(a => a.Id)
+                .Distinct()
+                .CountAsync();
+            return new QuestionStatsDto
+            {
+                TotalInterested = interested,
+                TotalSaved = saved,
+                TotalAnswered = answered
+            };
+        }
+        public async Task<List<TagDto>> GetTopTagsAsync(int topCount)
+        {
+            return await _context.QuestionTags
+                .Where(qt => !qt.Question.isDeleted)
+                .GroupBy(qt => new { qt.TagId, qt.Tag.Name })
+                .OrderByDescending(g => g.Count())
+                .Take(topCount)
+                .Select(g => new TagDto
+                {
+                    Id = g.Key.TagId,
+                    Name = g.Key.Name,
+                    Count = g.Count()
+                })
+                .ToListAsync();
         }
     }
 }

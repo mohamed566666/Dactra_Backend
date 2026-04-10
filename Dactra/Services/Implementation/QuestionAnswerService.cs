@@ -1,4 +1,6 @@
 ﻿using Dactra.DTOs.QuestionDTOs;
+using Dactra.Services.Interfaces;
+using System.Xml.Schema;
 
 namespace Dactra.Services.Implementation
 {
@@ -7,33 +9,93 @@ namespace Dactra.Services.Implementation
         private readonly IQuestionAnswerRepository _answerRepo;
         private readonly IQuestionRepository _questionRepo;
         private readonly IQuestionInterestRepository _interestRepo;
+        private readonly IDoctorProfileRepository _doctorRepo;
         private readonly IHubContext<QuestionHub> _hub;
+        private readonly IPatientProfileRepository _patientRepo;
 
         public QuestionAnswerService(
             IQuestionAnswerRepository answerRepo,
             IQuestionRepository questionRepo,
             IQuestionInterestRepository interestRepo,
-            IHubContext<QuestionHub> hub)
+            IDoctorProfileRepository doctorRepo,
+            IHubContext<QuestionHub> hub,
+            IPatientProfileRepository patientRepo
+            )
         {
             _answerRepo = answerRepo;
             _questionRepo = questionRepo;
             _interestRepo = interestRepo;
+            _doctorRepo = doctorRepo;
             _hub = hub;
+            _patientRepo = patientRepo;
         }
 
-        public async Task<List<AnswerResponseDto>> GetByQuestionIdAsync(int questionId)
+        public async Task<PagedResultDto<AnswerResponseDto>> GetTopLevelAnswersByQuestionIdAsync(
+            int questionId, int page, int pageSize, string? currentUserId = null)
         {
             if (!await _questionRepo.ExistsAsync(questionId))
                 throw new KeyNotFoundException($"Question {questionId} not found.");
 
-            var answers = await _answerRepo.GetByQuestionIdAsync(questionId);
-            return answers.Select(MapToDto).ToList();
+            var (answers, total) = await _answerRepo.GetTopLevelAnswersByQuestionIdAsync(questionId, page, pageSize);
+
+            var answererIds = answers.Select(a => a.AnswererUserId).Distinct().ToList();
+            var doctorProfiles = new Dictionary<string, DoctorProfile?>();
+            foreach (var uid in answererIds)
+            {
+                doctorProfiles[uid] = await _doctorRepo.GetByUserIdAsync(uid);
+            }
+
+            var items = new List<AnswerResponseDto>();
+            foreach (var a in answers)
+            {
+                var dto = MapToDto(a, currentUserId, doctorProfiles);
+                dto.RepliesCount = await _answerRepo.GetRepliesCountAsync(a.Id);
+                items.Add(dto);
+            }
+
+            return new PagedResultDto<AnswerResponseDto>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
-        public async Task<AnswerResponseDto> CreateAsync(int questionId, CreateAnswerDto dto, int doctorId)
+        public async Task<PagedResultDto<AnswerResponseDto>> GetRepliesByParentAnswerIdAsync(
+            int parentAnswerId, int page, int pageSize, string? currentUserId = null)
         {
-            if (!await _questionRepo.ExistsAsync(questionId))
-                throw new KeyNotFoundException($"Question {questionId} not found.");
+            var parent = await _answerRepo.GetByIdAsync(parentAnswerId)
+                ?? throw new KeyNotFoundException($"Parent answer {parentAnswerId} not found.");
+
+            var (replies, total) = await _answerRepo.GetRepliesByParentAnswerIdAsync(parentAnswerId, page, pageSize);
+
+            var answererIds = replies.Select(a => a.AnswererUserId).Distinct().ToList();
+            var doctorProfiles = new Dictionary<string, DoctorProfile?>();
+            foreach (var uid in answererIds)
+            {
+                doctorProfiles[uid] = await _doctorRepo.GetByUserIdAsync(uid);
+            }
+
+            var items = replies.Select(r => MapToDto(r, currentUserId, doctorProfiles)).ToList();
+
+            return new PagedResultDto<AnswerResponseDto>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+
+        public async Task<AnswerResponseDto> CreateAsync(int questionId, CreateAnswerDto dto, string userId, bool isDoctor)
+        {
+            var question = await _questionRepo.GetByIdAsync(questionId)
+                ?? throw new KeyNotFoundException($"Question {questionId} not found.");
+
+            var isQuestionOwner = question.Patient?.UserId == userId;
+            if (!isDoctor && !isQuestionOwner)
+                throw new UnauthorizedAccessException("Only doctors or the question owner can answer.");
 
             if (dto.ParentAnswerId.HasValue && !await _answerRepo.ExistsAsync(dto.ParentAnswerId.Value))
                 throw new KeyNotFoundException($"Parent answer {dto.ParentAnswerId} not found.");
@@ -42,47 +104,45 @@ namespace Dactra.Services.Implementation
             {
                 Content = dto.Content,
                 QuestionId = questionId,
-                DoctorId = doctorId,
+                AnswererUserId = userId,
                 ParentAnswerId = dto.ParentAnswerId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTimeOffset.UtcNow
             };
 
             var created = await _answerRepo.CreateAsync(answer);
-            var responseDto = MapToDto(created);
+            var doctorProfile = isDoctor ? await _doctorRepo.GetByUserIdAsync(userId) : null;
+            var responseDto = MapToDto(created, userId, new() { [userId] = doctorProfile });
 
             await _hub.Clients.Group(QuestionHub.QuestionGroupName(questionId))
                 .SendAsync("AnswerAdded", responseDto);
 
-            var interestedUserIds = await _interestRepo.GetInterestedUserIdsByQuestionIdAsync(questionId);
-            foreach (var userId in interestedUserIds)
+            if (!dto.ParentAnswerId.HasValue)
             {
-                await _hub.Clients.Group(QuestionHub.UserGroup(userId))
-                    .SendAsync("NewAnswerNotification", new
-                    {
-                        questionId,
-                        answerId = created.Id,
-                        doctorName = created.Doctor == null ? "" :
-                            created.Doctor.FirstName + " " + created.Doctor.LastName,
-                        message = "A doctor answered a question you're interested in."
-                    });
+                var interested = await _interestRepo.GetInterestedUserIdsByQuestionIdAsync(questionId);
+                foreach (var uId in interested.Where(u => u != userId))
+                {
+                    await _hub.Clients.Group(QuestionHub.UserGroup(uId))
+                        .SendAsync("NewAnswerNotification", new { questionId, answerId = created.Id });
+                }
             }
 
             return responseDto;
         }
 
-        public async Task<AnswerResponseDto> UpdateAsync(int answerId, UpdateAnswerDto dto, int doctorId)
+        public async Task<AnswerResponseDto> UpdateAsync(int answerId, UpdateAnswerDto dto, string userId, bool isDoctor)
         {
-            if (!await _answerRepo.BelongsToDoctorAsync(answerId, doctorId))
-                throw new UnauthorizedAccessException("You can only edit your own answers.");
-
             var answer = await _answerRepo.GetByIdAsync(answerId)
                 ?? throw new KeyNotFoundException($"Answer {answerId} not found.");
 
-            answer.Content = dto.Content;
-            answer.UpdatedAt = DateTime.UtcNow;
+            if (answer.AnswererUserId != userId && !isDoctor)
+                throw new UnauthorizedAccessException("You can only edit your own answers.");
 
+            answer.Content = dto.Content;
+            answer.UpdatedAt = DateTimeOffset.UtcNow;
             var updated = await _answerRepo.UpdateAsync(answer);
-            var responseDto = MapToDto(updated);
+
+            var doctorProfile = await _doctorRepo.GetByUserIdAsync(updated.AnswererUserId);
+            var responseDto = MapToDto(updated, userId, new() { [updated.AnswererUserId] = doctorProfile });
 
             await _hub.Clients.Group(QuestionHub.QuestionGroupName(answer.QuestionId))
                 .SendAsync("AnswerUpdated", responseDto);
@@ -90,40 +150,67 @@ namespace Dactra.Services.Implementation
             return responseDto;
         }
 
-        public async Task DeleteAsync(int answerId, int doctorId)
+        public async Task DeleteAsync(int answerId, string userId, bool isDoctor)
         {
-            if (!await _answerRepo.BelongsToDoctorAsync(answerId, doctorId))
-                throw new UnauthorizedAccessException("You can only delete your own answers.");
-
             var answer = await _answerRepo.GetByIdAsync(answerId)
                 ?? throw new KeyNotFoundException($"Answer {answerId} not found.");
 
-            int questionId = answer.QuestionId;
+            if (answer.AnswererUserId != userId && !isDoctor)
+                throw new UnauthorizedAccessException("You can only delete your own answers.");
+
             await _answerRepo.SoftDeleteAsync(answerId);
-
-            await _hub.Clients.Group(QuestionHub.QuestionGroupName(questionId))
-                .SendAsync("AnswerDeleted", new { answerId, questionId });
+            await _hub.Clients.Group(QuestionHub.QuestionGroupName(answer.QuestionId))
+                .SendAsync("AnswerDeleted", new { answerId, questionId = answer.QuestionId });
         }
-
-        private static AnswerResponseDto MapToDto(QuestionAnswer a) => new()
+        private AnswerResponseDto MapToDto(
+            QuestionAnswer a,
+            string? currentUserId,
+            Dictionary<string, DoctorProfile?> doctorProfiles)
         {
-            Id = a.Id,
-            Content = a.Content,
-            CreatedAt = a.CreatedAt,
-            UpdatedAt = a.UpdatedAt,
-            QuestionId = a.QuestionId,
-            ParentAnswerId = a.ParentAnswerId,
-            Doctor = a.Doctor == null ? null! : new DoctorAnswerSummaryDto
+            var doctorProfile = doctorProfiles.GetValueOrDefault(a.AnswererUserId);
+            var isDoctor = doctorProfile != null;
+            var Name = "";
+            if (!isDoctor)
             {
-                Id = a.Doctor.Id,
-                FullName = a.Doctor.FirstName + " " + a.Doctor.LastName,
-                Specialty = a.Doctor.specialization?.Name,
-                ProfileImageUrl = null
-            },
-            Replies = a.Replies?
-                .Where(r => !r.isDeleted)
-                .Select(MapToDto)
-                .ToList() ?? new List<AnswerResponseDto>()
-        };
+                var patientProfileTask = _patientRepo.GetByUserIdAsync(a.AnswererUserId);
+                patientProfileTask.Wait();
+                var patientProfile = patientProfileTask.Result;
+                if (patientProfile != null)
+                {
+                    Name = $"{patientProfile.FirstName} {patientProfile.LastName}";
+                }
+            }
+            else
+            {
+                Name = $"{doctorProfile!.FirstName} {doctorProfile.LastName}";
+            }
+            return new AnswerResponseDto
+            {
+                Id = a.Id,
+                email = a.Answerer?.Email ?? "user",
+                Content = a.Content,
+                CreatedAt = a.CreatedAt,
+                UpdatedAt = a.UpdatedAt,
+                QuestionId = a.QuestionId,
+                ParentAnswerId = a.ParentAnswerId,
+
+                Answerer = new AnswererInfoDto
+                {
+                    FullName = isDoctor
+                        ? $"{doctorProfile!.FirstName} {doctorProfile.LastName}"
+                        : (Name != "" ? Name : (a.Answerer?.UserName ?? "user")),
+                    ProfileImageUrl = null,
+                    IsDoctor = isDoctor,
+                    Specialty = isDoctor ? doctorProfile?.specialization?.Name : null,
+                    YearsOfExperience = isDoctor ? doctorProfile?.YearsOfExperience : null
+                },
+
+                LikesCount = a.Likes?.Count ?? 0,
+                IsLikedByCurrentUser = currentUserId != null &&
+                    a.Likes?.Any(l => l.UserId == currentUserId) == true,
+
+                RepliesCount = 0
+            };
+        }
     }
 }

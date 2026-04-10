@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260402184534_update Questions Answers")]
+    partial class updateQuestionsAnswers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -467,33 +470,6 @@ namespace Dactra.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("EmailVerifications");
-                });
-
-            modelBuilder.Entity("Dactra.Models.LabsWorkingHour", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Day")
-                        .HasColumnType("int");
-
-                    b.Property<TimeSpan>("From")
-                        .HasColumnType("time");
-
-                    b.Property<int>("ServiceProviderProfileId")
-                        .HasColumnType("int");
-
-                    b.Property<TimeSpan>("To")
-                        .HasColumnType("time");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ServiceProviderProfileId");
-
-                    b.ToTable("LabsWorkingHour");
                 });
 
             modelBuilder.Entity("Dactra.Models.Majors", b =>
@@ -1591,17 +1567,6 @@ namespace Dactra.Migrations
                     b.Navigation("DoctorProfile");
                 });
 
-            modelBuilder.Entity("Dactra.Models.LabsWorkingHour", b =>
-                {
-                    b.HasOne("Dactra.Models.ServiceProviderProfile", "ServiceProviderProfile")
-                        .WithMany("WorkingHours")
-                        .HasForeignKey("ServiceProviderProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ServiceProviderProfile");
-                });
-
             modelBuilder.Entity("Dactra.Models.Medicines", b =>
                 {
                     b.HasOne("Dactra.Models.PatientProfile", null)
@@ -2113,8 +2078,6 @@ namespace Dactra.Migrations
             modelBuilder.Entity("Dactra.Models.ServiceProviderProfile", b =>
                 {
                     b.Navigation("Ratings");
-
-                    b.Navigation("WorkingHours");
                 });
 
             modelBuilder.Entity("Dactra.Models.Tag", b =>

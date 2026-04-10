@@ -1,5 +1,6 @@
 ﻿
 using Dactra.Services.Background;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,10 @@ builder.Services.Configure<RateLimitSettings>(
 
 builder.Services.Configure<PaymobSetting>(
     builder.Configuration.GetSection("Paymob"));
+
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
+
 
 #endregion
 
@@ -87,6 +92,7 @@ builder.Services.AddScoped<IQuestionAnswerRepository, QuestionAnswerRepository>(
 builder.Services.AddScoped<IQuestionInterestRepository, QuestionInterestRepository>();
 builder.Services.AddScoped<IQuestionSaveRepository, QuestionSaveRepository>();
 builder.Services.AddScoped<ICommentLikeRepository, CommentLikeRepository>();
+builder.Services.AddScoped<IQuestionAnswerLikeRepository, QuestionAnswerLikeRepository>();
 
 
 #endregion
@@ -138,12 +144,10 @@ builder.Services.AddScoped<IQuestionAnswerService, QuestionAnswerService>();
 builder.Services.AddScoped<IQuestionInterestService, QuestionInterestService>();
 builder.Services.AddScoped<IQuestionSaveService, QuestionSaveService>();
 builder.Services.AddScoped<ICommentLikeService, CommentLikeService>();
+builder.Services.AddScoped<IQuestionAnswerLikeService, QuestionAnswerLikeService>();
+builder.Services.AddScoped<IPhotoService, PhotoService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
-
-
-
-
 
 #endregion
 
@@ -217,6 +221,18 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.NumberHandling =
             System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString;
     });
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = int.MaxValue;
+    options.MultipartHeadersLengthLimit = int.MaxValue;
+});
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = int.MaxValue;
+});
 
 builder.Services.AddSignalR();
 
@@ -300,4 +316,13 @@ app.MapHub<NotificationHub>("/hubs/notifications");
 
 #endregion
 
-app.Run();
+try
+{
+    app.Run();
+}
+catch (Exception ex)
+{
+    Console.WriteLine("=== FATAL ERROR ===");
+    Console.WriteLine(ex.ToString());
+    Console.ReadKey();
+}

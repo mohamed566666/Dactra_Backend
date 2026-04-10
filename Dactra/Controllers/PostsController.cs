@@ -21,6 +21,7 @@ namespace Dactra.Controllers
         private readonly ITagService _tagService;
         private readonly IDoctorService _doctorService;
         private readonly ICommentLikeService _commentLikeService;
+        private readonly ILogger<PostsController> _logger;
 
         public PostsController(
             IPostService postService,
@@ -29,7 +30,8 @@ namespace Dactra.Controllers
             ISavedPostService savedPostService,
             ITagService tagService,
             IDoctorService doctorService,
-            ICommentLikeService commentLikeService)
+            ICommentLikeService commentLikeService,
+            ILogger<PostsController> logger)
         {
             _postService = postService;
             _commentService = commentService;
@@ -38,6 +40,7 @@ namespace Dactra.Controllers
             _tagService = tagService;
             _doctorService = doctorService;
             _commentLikeService = commentLikeService;
+            _logger = logger;
         }
 
         // ── Posts ────────────────────────────────────────────────────────────────
@@ -195,9 +198,10 @@ namespace Dactra.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<List<CommentResponseDto>>> GetComments(int postId)
         {
+            var userId = GetUserId();
             try
             {
-                return Ok(await _commentService.GetByPostIdAsync(postId, GetUserId()));
+                return Ok(await _commentService.GetByPostIdAsync(postId, userId));
             }
             catch (KeyNotFoundException ex)
             {
@@ -403,13 +407,28 @@ namespace Dactra.Controllers
             }
         }
 
+        [HttpGet("top-tags")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<TagDto>>> GetTopTags([FromQuery] int top = 5)
+        {
+            try
+            {
+                top = Math.Clamp(top, 1, 100);
+                return Ok(await _postService.GetTopTagsAsync(top));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         // ── Helpers ───────────────────────────────────────────────────────────────
 
-        private string GetUserId()
+        private string? GetUserId()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                throw new UnauthorizedAccessException("User not authenticated.");
+            //if (string.IsNullOrEmpty(userId))
+            //    throw new UnauthorizedAccessException("User not authenticated.");
             return userId;
         }
 

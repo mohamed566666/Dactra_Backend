@@ -1,4 +1,5 @@
 ﻿using Dactra.DTOs.PostDTOs;
+using Dactra.DTOs.TagDTOs;
 
 namespace Dactra.Repositories.Implementation
 {
@@ -22,25 +23,29 @@ namespace Dactra.Repositories.Implementation
         public async Task<Post?> GetByIdWithDetailsAsync(int id, string? currentUserId = null)
         {
             return await _context.Posts
-                .Where(p => p.Id == id && !p.isDeleted)
-                .Include(p => p.Doctor)
-                    .ThenInclude(d => d.specialization)
-                .Include(p => p.Comments.Where(c => c.ParentCommentId == null))
-                    .ThenInclude(c => c.Replies)
-                        .ThenInclude(r => r.User)
-                .Include(p => p.Comments)
-                    .ThenInclude(c => c.User)
-                .Include(p => p.Likes)
-                .Include(p => p.PostTags)
-                    .ThenInclude(pt => pt.Tag)
-                .Include(p => p.SavedBy)
-                .FirstOrDefaultAsync();
+            .Where(p => p.Id == id && !p.isDeleted)
+            .Include(p => p.Doctor)
+                .ThenInclude(d => d.User)
+            .Include(p => p.Doctor)
+                .ThenInclude(d => d.specialization)
+            .Include(p => p.Comments.Where(c => c.ParentCommentId == null))
+                .ThenInclude(c => c.Replies)
+                    .ThenInclude(r => r.User)
+            .Include(p => p.Comments)
+                .ThenInclude(c => c.User)
+            .Include(p => p.Likes)
+            .Include(p => p.PostTags)
+                .ThenInclude(pt => pt.Tag)
+            .Include(p => p.SavedBy)
+            .FirstOrDefaultAsync();
         }
 
         public async Task<(List<Post> Posts, int TotalCount)> GetAllAsync(int page, int pageSize, string? currentUserId = null)
         {
             var query = _context.Posts
                 .Where(p => !p.isDeleted)
+                .Include(p => p.Doctor)
+                    .ThenInclude(d => d.User)
                 .Include(p => p.Doctor)
                     .ThenInclude(d => d.specialization)
                 .Include(p => p.Likes)
@@ -59,6 +64,8 @@ namespace Dactra.Repositories.Implementation
             var query = _context.Posts
                 .Where(p => p.DoctorId == doctorId && !p.isDeleted)
                 .Include(p => p.Doctor)
+                    .ThenInclude(d => d.User)
+                .Include(p => p.Doctor)
                     .ThenInclude(d => d.specialization)
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
@@ -74,6 +81,8 @@ namespace Dactra.Repositories.Implementation
         {
             var query = _context.Posts
                 .Where(p => !p.isDeleted && p.PostTags.Any(pt => pt.TagId == tagId))
+                .Include(p => p.Doctor)
+                    .ThenInclude(d => d.User)
                 .Include(p => p.Doctor)
                     .ThenInclude(d => d.specialization)
                 .Include(p => p.Likes)
@@ -121,6 +130,8 @@ namespace Dactra.Repositories.Implementation
             var query = _context.Posts
                 .Where(p => !p.isDeleted)
                 .Include(p => p.Doctor)
+                    .ThenInclude(d => d.User)
+                .Include(p => p.Doctor)
                     .ThenInclude(d => d.specialization)
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
@@ -153,13 +164,30 @@ namespace Dactra.Repositories.Implementation
                                 .Select(c => c.PostId)
                                 .Distinct()
                                 .CountAsync();
+            var totalShared = await _context.Posts.Include(s => s.Doctor).CountAsync(s => s.Doctor.UserId == userId && !s.isDeleted);
 
             return new UserPostStatsDto
             {
                 TotalLiked = liked,
                 TotalSaved = saved,
-                TotalCommented = commented
+                TotalCommented = commented,
+                TotalShared = totalShared
             };
+        }
+        public async Task<List<TagDto>> GetTopTagsAsync(int topCount)
+        {
+            return await _context.PostTags
+                .Where(pt => !pt.Post.isDeleted)
+                .GroupBy(pt => new { pt.TagId, pt.Tag.Name })
+                .OrderByDescending(g => g.Count())
+                .Take(topCount)
+                .Select(g => new TagDto
+                {
+                    Id = g.Key.TagId,
+                    Name = g.Key.Name,
+                    Count = g.Count()
+                })
+                .ToListAsync();
         }
     }
 }

@@ -1,10 +1,9 @@
 ﻿namespace Dactra.DTOs.QuestionDTOs
 {
-    public class UserQuestionStatsDto
+    public class QuestionStatsDto
     {
         public int TotalInterested { get; set; }
         public int TotalSaved { get; set; }
         public int TotalAnswered { get; set; }
-        public int TotalShared { get; set; }
     }
 }
