@@ -127,11 +127,15 @@
 
         public async Task UpdateProfileAsync(string id, MedicalTestsProviderUpdateDTO dto)
         {
-            var profile = await _medicalTestProviderProfileRepository.GetByUserIdAsync(id);
+            var profile = await _context.MedicalTestProviders
+                  .Include(x => x.WorkingHours) 
+                  .FirstOrDefaultAsync(x => x.UserId == id);
             if (profile == null)
             {
                 throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
+            _context.LabsWorkingHour.RemoveRange(profile.WorkingHours);
+
             _mapper.Map(dto, profile);
             _medicalTestProviderProfileRepository.Update(profile);
             await _medicalTestProviderProfileRepository.SaveChangesAsync();

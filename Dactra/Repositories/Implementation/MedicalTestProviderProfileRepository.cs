@@ -16,7 +16,7 @@
         public override async Task<MedicalTestProviderProfile?> GetByIdAsync(int id)
         {
             return await _context.MedicalTestProviders
-                .Include(m => m.User)
+                .Include(m => m.User).Include(m => m.WorkingHours)
                 .FirstOrDefaultAsync(m => m.Id == id);
         }
         public async Task<MedicalTestProviderProfile?> GetByUserIdAsync(string userId)
