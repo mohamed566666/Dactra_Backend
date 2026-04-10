@@ -1,4 +1,5 @@
 ﻿using Dactra.DTOs.PostDTOs;
+using Dactra.DTOs.TagDTOs;
 
 namespace Dactra.Repositories.Implementation
 {
@@ -172,6 +173,21 @@ namespace Dactra.Repositories.Implementation
                 TotalCommented = commented,
                 TotalShared = totalShared
             };
+        }
+        public async Task<List<TagDto>> GetTopTagsAsync(int topCount)
+        {
+            return await _context.PostTags
+                .Where(pt => !pt.Post.isDeleted)
+                .GroupBy(pt => new { pt.TagId, pt.Tag.Name })
+                .OrderByDescending(g => g.Count())
+                .Take(topCount)
+                .Select(g => new TagDto
+                {
+                    Id = g.Key.TagId,
+                    Name = g.Key.Name,
+                    Count = g.Count()
+                })
+                .ToListAsync();
         }
     }
 }

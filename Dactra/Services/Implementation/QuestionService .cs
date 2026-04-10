@@ -207,6 +207,7 @@ namespace Dactra.Services.Implementation
             return new QuestionResponseDto
             {
                 Id = q.Id,
+                email = q.Patient?.User?.Email ?? string.Empty,
                 Content = q.Content,
                 CreatedAt = q.CreatedAt,
                 UpdatedAt = q.UpdatedAt,
@@ -233,5 +234,7 @@ namespace Dactra.Services.Implementation
                 UserStats = Stats  
             };
         }
+        public async Task<List<TagDto>> GetTopTagsAsync(int topCount)
+            => await _questionRepo.GetTopTagsAsync(topCount);
     }
 }

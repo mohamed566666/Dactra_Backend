@@ -234,5 +234,7 @@ namespace Dactra.Services.Implementation
                 PageSize = pageSize
             };
         }
+        public async Task<List<TagDto>> GetTopTagsAsync(int topCount)
+            => await _postRepo.GetTopTagsAsync(topCount);
     }
 }

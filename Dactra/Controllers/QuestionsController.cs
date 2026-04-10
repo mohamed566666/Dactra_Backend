@@ -1,4 +1,5 @@
 ﻿using Dactra.DTOs.QuestionDTOs;
+using Dactra.DTOs.TagDTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -17,6 +18,7 @@ namespace Dactra.Controllers
         private readonly IPatientService _patientService;
         private readonly IDoctorService _doctorService;
         private readonly IQuestionAnswerLikeService _answerLikeService;
+        private readonly ILogger<QuestionsController> _logger;
 
         public QuestionsController(
             IQuestionService questionService,
@@ -25,7 +27,8 @@ namespace Dactra.Controllers
             IQuestionSaveService saveService,
             IPatientService patientService,
             IDoctorService doctorService,
-            IQuestionAnswerLikeService answerLikeService)
+            IQuestionAnswerLikeService answerLikeService,
+            ILogger<QuestionsController> logger)
         {
             _questionService = questionService;
             _answerService = answerService;
@@ -34,6 +37,7 @@ namespace Dactra.Controllers
             _patientService = patientService;
             _doctorService = doctorService;
             _answerLikeService = answerLikeService;
+            _logger = logger;
         }
 
         private bool IsUserDoctor() => User.IsInRole("Doctor");
@@ -419,6 +423,21 @@ namespace Dactra.Controllers
             try
             {
                 return Ok(await _questionService.GetByTagAsync(tagId, page, pageSize));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("top-tags")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<TagDto>>> GetTopTags([FromQuery] int top = 5)
+        {
+            try
+            {
+                top = Math.Clamp(top, 1, 100);
+                return Ok(await _questionService.GetTopTagsAsync(top));
             }
             catch (Exception ex)
             {

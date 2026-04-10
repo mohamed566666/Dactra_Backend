@@ -1,4 +1,5 @@
 ﻿using Dactra.DTOs.QuestionDTOs;
+using Dactra.DTOs.TagDTOs;
 
 namespace Dactra.Repositories.Interfaces
 {
@@ -18,5 +19,6 @@ namespace Dactra.Repositories.Interfaces
         Task<bool> ExistsAsync(int id);
         Task<bool> BelongsToPatientAsync(int questionId, int patientId);
         Task AssignTagsAsync(int questionId, List<int> tagIds);
+        Task<List<TagDto>> GetTopTagsAsync(int topCount);
     }
 }

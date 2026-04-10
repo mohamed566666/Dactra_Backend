@@ -44,6 +44,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<QuestionTag> QuestionTags { get; set; }
     public DbSet<CommentLike> CommentLikes { get; set; }
     public DbSet<QuestionAnswerLike> QuestionAnswerLikes { get; set; }
+    public DbSet<LabsWorkingHour> LabsWorkingHour { get; set; }
 
 
 

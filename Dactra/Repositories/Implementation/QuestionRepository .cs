@@ -1,4 +1,5 @@
 ﻿using Dactra.DTOs.QuestionDTOs;
+using Dactra.DTOs.TagDTOs;
 using Dactra.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,7 @@ namespace Dactra.Repositories.Implementation
         {
             var query = _context.Questions
                 .Include(q => q.Patient)
+                    .ThenInclude(p => p.User)
                 .Include(q => q.Answers.Where(a => !a.isDeleted && a.ParentAnswerId == null))
                 .Include(q => q.Answers.Where(a => !a.isDeleted && a.ParentAnswerId == null))
                     .ThenInclude(a => a.Replies.Where(r => !r.isDeleted))
@@ -33,6 +35,7 @@ namespace Dactra.Repositories.Implementation
             return await _context.Questions
                 .Where(q => q.Id == id && !q.isDeleted)
                 .Include(q => q.Patient)
+                    .ThenInclude(p => p.User)
                 .Include(q => q.Answers.Where(a => !a.isDeleted && a.ParentAnswerId == null))
                 .Include(q => q.Answers.Where(a => !a.isDeleted && a.ParentAnswerId == null))
                     .ThenInclude(a => a.Replies.Where(r => !r.isDeleted))
@@ -48,6 +51,7 @@ namespace Dactra.Repositories.Implementation
             var query = _context.Questions
                 .Where(q => !q.isDeleted)
                 .Include(q => q.Patient)
+                    .ThenInclude(p => p.User)
                 .Include(q => q.Answers.Where(a => !a.isDeleted))
                 .Include(q => q.Interests)
                 .Include(q => q.SavedBy)
@@ -64,6 +68,7 @@ namespace Dactra.Repositories.Implementation
             var query = _context.Questions
                 .Where(q => !q.isDeleted && q.PatientId == patientId)
                 .Include(q => q.Patient)
+                    .ThenInclude(p => p.User)
                 .Include(q => q.Answers.Where(a => !a.isDeleted))
                 .Include(q => q.Interests)
                 .Include(q => q.SavedBy)
@@ -80,6 +85,7 @@ namespace Dactra.Repositories.Implementation
             var query = _context.Questions
                 .Where(q => !q.isDeleted && q.QuestionTags.Any(qt => qt.TagId == tagId))
                 .Include(q => q.Patient)
+                    .ThenInclude(p => p.User)
                 .Include(q => q.Answers.Where(a => !a.isDeleted))
                 .Include(q => q.Interests)
                 .Include(q => q.SavedBy)
@@ -97,6 +103,7 @@ namespace Dactra.Repositories.Implementation
             var query = _context.Questions
                 .Where(q => !q.isDeleted)
                 .Include(q => q.Patient)
+                    .ThenInclude(p => p.User)
                 .Include(q => q.Answers.Where(a => !a.isDeleted))
                 .Include(q => q.Interests)
                 .Include(q => q.SavedBy)
@@ -208,6 +215,21 @@ namespace Dactra.Repositories.Implementation
                 TotalSaved = saved,
                 TotalAnswered = answered
             };
+        }
+        public async Task<List<TagDto>> GetTopTagsAsync(int topCount)
+        {
+            return await _context.QuestionTags
+                .Where(qt => !qt.Question.isDeleted)
+                .GroupBy(qt => new { qt.TagId, qt.Tag.Name })
+                .OrderByDescending(g => g.Count())
+                .Take(topCount)
+                .Select(g => new TagDto
+                {
+                    Id = g.Key.TagId,
+                    Name = g.Key.Name,
+                    Count = g.Count()
+                })
+                .ToListAsync();
         }
     }
 }

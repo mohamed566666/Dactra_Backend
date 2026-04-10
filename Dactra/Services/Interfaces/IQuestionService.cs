@@ -1,4 +1,5 @@
 ﻿using Dactra.DTOs.QuestionDTOs;
+using Dactra.DTOs.TagDTOs;
 
 namespace Dactra.Services.Interfaces
 {
@@ -13,5 +14,6 @@ namespace Dactra.Services.Interfaces
         Task<QuestionResponseDto> CreateAsync(CreateQuestionDto dto, int patientId);
         Task<QuestionResponseDto> UpdateAsync(int id, UpdateQuestionDto dto, int patientId);
         Task DeleteAsync(int id, int patientId);
+        Task<List<TagDto>> GetTopTagsAsync(int topCount);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Dactra.DTOs.QuestionDTOs;
 using Dactra.Services.Interfaces;
+using System.Xml.Schema;
 
 namespace Dactra.Services.Implementation
 {
@@ -10,19 +11,23 @@ namespace Dactra.Services.Implementation
         private readonly IQuestionInterestRepository _interestRepo;
         private readonly IDoctorProfileRepository _doctorRepo;
         private readonly IHubContext<QuestionHub> _hub;
+        private readonly IPatientProfileRepository _patientRepo;
 
         public QuestionAnswerService(
             IQuestionAnswerRepository answerRepo,
             IQuestionRepository questionRepo,
             IQuestionInterestRepository interestRepo,
             IDoctorProfileRepository doctorRepo,
-            IHubContext<QuestionHub> hub)
+            IHubContext<QuestionHub> hub,
+            IPatientProfileRepository patientRepo
+            )
         {
             _answerRepo = answerRepo;
             _questionRepo = questionRepo;
             _interestRepo = interestRepo;
             _doctorRepo = doctorRepo;
             _hub = hub;
+            _patientRepo = patientRepo;
         }
 
         public async Task<PagedResultDto<AnswerResponseDto>> GetTopLevelAnswersByQuestionIdAsync(
@@ -157,17 +162,32 @@ namespace Dactra.Services.Implementation
             await _hub.Clients.Group(QuestionHub.QuestionGroupName(answer.QuestionId))
                 .SendAsync("AnswerDeleted", new { answerId, questionId = answer.QuestionId });
         }
-        private static AnswerResponseDto MapToDto(
+        private AnswerResponseDto MapToDto(
             QuestionAnswer a,
             string? currentUserId,
             Dictionary<string, DoctorProfile?> doctorProfiles)
         {
             var doctorProfile = doctorProfiles.GetValueOrDefault(a.AnswererUserId);
             var isDoctor = doctorProfile != null;
-
+            var Name = "";
+            if (!isDoctor)
+            {
+                var patientProfileTask = _patientRepo.GetByUserIdAsync(a.AnswererUserId);
+                patientProfileTask.Wait();
+                var patientProfile = patientProfileTask.Result;
+                if (patientProfile != null)
+                {
+                    Name = $"{patientProfile.FirstName} {patientProfile.LastName}";
+                }
+            }
+            else
+            {
+                Name = $"{doctorProfile!.FirstName} {doctorProfile.LastName}";
+            }
             return new AnswerResponseDto
             {
                 Id = a.Id,
+                email = a.Answerer?.Email ?? "user",
                 Content = a.Content,
                 CreatedAt = a.CreatedAt,
                 UpdatedAt = a.UpdatedAt,
@@ -178,7 +198,7 @@ namespace Dactra.Services.Implementation
                 {
                     FullName = isDoctor
                         ? $"{doctorProfile!.FirstName} {doctorProfile.LastName}"
-                        : (a.Answerer?.UserName ?? "user"),
+                        : (Name != "" ? Name : (a.Answerer?.UserName ?? "user")),
                     ProfileImageUrl = null,
                     IsDoctor = isDoctor,
                     Specialty = isDoctor ? doctorProfile?.specialization?.Name : null,

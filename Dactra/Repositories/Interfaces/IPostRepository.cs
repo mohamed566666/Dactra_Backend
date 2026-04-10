@@ -1,4 +1,5 @@
 ﻿using Dactra.DTOs.PostDTOs;
+using Dactra.DTOs.TagDTOs;
 
 namespace Dactra.Repositories.Interfaces
 {
@@ -16,5 +17,6 @@ namespace Dactra.Repositories.Interfaces
         Task<bool> BelongsToDoctorAsync(int postId, int doctorId);
         Task<(List<Post> Posts, int TotalCount)> GetFilteredAsync(PostFilterDto filter, string userId, int page, int pageSize);
         Task<UserPostStatsDto> GetUserStatsAsync(string userId);
+        Task<List<TagDto>> GetTopTagsAsync(int topCount);
     }
 }
