@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Dactra.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 
 namespace Dactra.Controllers
 {
@@ -10,11 +13,15 @@ namespace Dactra.Controllers
         private readonly INotificationService _notificationService;
         private readonly IPostService _postService;
         private readonly IUserRepository _userRepository;
-        public NotificationController(INotificationService notificationService, IPostService postService, IUserRepository userRepository)
+        private readonly IDoctorSlotService _doctorSlotService;
+        private readonly ApplicationDbContext _context;
+        public NotificationController(INotificationService notificationService, IPostService postService, IUserRepository userRepository, IDoctorSlotService doctorSlotService, ApplicationDbContext context)
         {
             _notificationService = notificationService;
             _postService = postService;
             _userRepository = userRepository;
+            _doctorSlotService = doctorSlotService;
+            _context = context;
         }
         [HttpPost("send-to-me")]
         public async Task<IActionResult> Send([FromBody] NotificationMessageDto dto)
@@ -48,6 +55,22 @@ namespace Dactra.Controllers
 
             return Ok("Notification sent to post owner");
 
+
+        }
+        [HttpPost ("cancel/{Slotid}")]
+        public async Task<IActionResult> cancelAppointmentNotification(int Slotid, [FromBody] NotificationMessageDto dto) 
+        {
+
+            var doctorId= await _doctorSlotService.GetDoctorIdBySlotId(Slotid);
+            var patientId = await _context.PatientAppointments.Where(a => a.SlotId == Slotid)
+                .Select(a => a.PatientId)
+                .FirstOrDefaultAsync();
+            
+            await _notificationService.Send(doctorId.ToString(), dto.Message);
+
+            await _notificationService.Send(patientId.ToString(), dto.Message);
+
+            return Ok("Notification sent to patient and doctor");
 
         }
     }
