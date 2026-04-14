@@ -94,6 +94,8 @@ builder.Services.AddScoped<IQuestionSaveRepository, QuestionSaveRepository>();
 builder.Services.AddScoped<ICommentLikeRepository, CommentLikeRepository>();
 builder.Services.AddScoped<IQuestionAnswerLikeRepository, QuestionAnswerLikeRepository>();
 
+builder.Services.AddScoped<ISponsorshipRepository, SponsorshipRepository>();
+builder.Services.AddScoped<IPatientReferralRepository, PatientReferralRepository>();
 
 #endregion
 
@@ -148,6 +150,9 @@ builder.Services.AddScoped<IQuestionAnswerLikeService, QuestionAnswerLikeService
 builder.Services.AddScoped<IPhotoService, PhotoService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
+
+builder.Services.AddScoped<ISponsorshipService, SponsorshipService>();
+builder.Services.AddScoped<IPatientReferralService, PatientReferralService>();
 
 #endregion
 

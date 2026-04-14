@@ -47,6 +47,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<LabsWorkingHour> LabsWorkingHour { get; set; }
     public DbSet<PatientDoctorCare> PatientDoctorCares { get; set; }
     public DbSet<DoctorMedicalTestSponsor> DoctorMedicalTestSponsors { get; set; }
+    public DbSet<PatientReferral> PatientReferrals { get; set; }
+    public DbSet<PatientReferralItem> PatientReferralItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -235,6 +237,42 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
                   .WithMany(x => x.CounterOffers)
                   .HasForeignKey(x => x.ParentOfferId)
                   .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<PatientReferral>(entity =>
+        {
+            entity.HasOne(x => x.Patient)
+                  .WithMany()
+                  .HasForeignKey(x => x.PatientId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Doctor)
+                  .WithMany()
+                  .HasForeignKey(x => x.DoctorId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Sponsorship)
+                  .WithMany()
+                  .HasForeignKey(x => x.SponsorshipId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(x => new { x.PatientId, x.SponsorshipId });
+        });
+
+        modelBuilder.Entity<PatientReferralItem>(entity =>
+        {
+            entity.HasOne(x => x.PatientReferral)
+                  .WithMany(x => x.ReferralServices)
+                  .HasForeignKey(x => x.PatientReferralId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(x => x.ProviderOffering)
+                  .WithMany()
+                  .HasForeignKey(x => x.ProviderOfferingId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(x => new { x.PatientReferralId, x.ProviderOfferingId })
+                  .IsUnique();
         });
     }
 }
