@@ -19,6 +19,12 @@ builder.Services.Configure<RateLimitSettings>(
 builder.Services.Configure<PaymobSetting>(
     builder.Configuration.GetSection("Paymob"));
 
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 10 * 1024 * 1024;
+    options.MemoryBufferThreshold = 1 * 1024 * 1024;
+});
+
 builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("CloudinarySettings"));
 
@@ -31,7 +37,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(allowedOrigins!)
+        policy.SetIsOriginAllowed(_ => true)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -96,6 +102,7 @@ builder.Services.AddScoped<IQuestionAnswerLikeRepository, QuestionAnswerLikeRepo
 
 builder.Services.AddScoped<ISponsorshipRepository, SponsorshipRepository>();
 builder.Services.AddScoped<IPatientReferralRepository, PatientReferralRepository>();
+builder.Services.AddScoped<IFileService, FileService>();
 
 #endregion
 
@@ -153,6 +160,9 @@ builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 
 builder.Services.AddScoped<ISponsorshipService, SponsorshipService>();
 builder.Services.AddScoped<IPatientReferralService, PatientReferralService>();
+
+builder.Services.AddScoped<IFileStorageService, CloudinaryStorageService>();
+
 
 #endregion
 
