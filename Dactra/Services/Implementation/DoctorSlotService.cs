@@ -236,5 +236,13 @@ namespace Dactra.Services.Implementation
 
             return new DoctorFreeSlotsDto { Slots = grouped };
         }
+
+        public Task<int> GetDoctorIdBySlotId(int SlotId)
+        {
+            var slot = _repo.GetByIdAsync(SlotId).Result ;
+            if (slot == null)
+                throw new Exception($"Slot with id {SlotId} not found");
+            return Task.FromResult(slot.DoctorId);
+        }
     }
 }

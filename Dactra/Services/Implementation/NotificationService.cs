@@ -12,5 +12,9 @@ namespace Dactra.Services.Implementation
         {
             await _hubContext.Clients.User(userId).SendAsync("ReceiveNotification", msg);
         }
+        public async Task Send(string userId, object msg)
+        {
+            await _hubContext.Clients.User(userId).SendAsync("ReceiveNotification", msg);
+        }
     }
 }
