@@ -6,17 +6,38 @@
     {
         private readonly IHomeService _homeService;
         private readonly ISiteReviewService _siteReviewService;
-        public HomeController(IHomeService homeService , ISiteReviewService siteReviewService)
+        private readonly ILogger<HomeController> _logger;
+        public HomeController(IHomeService homeService , ISiteReviewService siteReviewService, ILogger<HomeController> logger)
         {
             _homeService = homeService;
             _siteReviewService = siteReviewService;
+            _logger = logger;
         }
-        [HttpGet("topRatedDoctors/{count}")]
-        public async Task<IActionResult> GetTopRatedDoctors(int count = 10)
+
+        [HttpGet("top-rated-doctors")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(IEnumerable<TopRatedDoctorDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<IEnumerable<TopRatedDoctorDTO>>> GetTopRatedDoctors([FromQuery] int count = 10)
         {
-            var topRatedDoctors = await _homeService.GetTopRatedDoctorsAsync(count);
-            return Ok(topRatedDoctors);
+            try
+            {
+                var doctors = await _homeService.GetTopRatedDoctorsAsync(count);
+                return Ok(doctors);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid parameter: {Message}", ex.Message);
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching top rated doctors");
+                return StatusCode(500, new { message = "an Error occurred while fetching the Data." });
+            }
         }
+
         [HttpGet("review-Statistics")]
         [AllowAnonymous]
         public async Task<IActionResult> GetReviewDistribution()
