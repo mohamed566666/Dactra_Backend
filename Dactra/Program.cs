@@ -1,5 +1,6 @@
 ﻿
 using Dactra.Services.Background;
+using Hangfire;
 using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -148,6 +149,14 @@ builder.Services.AddScoped<IQuestionAnswerLikeService, QuestionAnswerLikeService
 builder.Services.AddScoped<IPhotoService, PhotoService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
+builder.Services.AddScoped<IReminderService, ReminderService>();
+
+builder.Services.AddHangfire(config =>
+    config.UseSqlServerStorage(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    ));
+
+builder.Services.AddHangfireServer();
 
 #endregion
 
@@ -313,6 +322,9 @@ app.MapHub<AppointmentHub>("/appointmentHub");
 app.MapHub<DoctorScheduleHub>("/doctorScheduleHub");
 app.MapHub<PostHub>("/hubs/posts");
 app.MapHub<NotificationHub>("/hubs/notifications");
+
+
+app.UseHangfireDashboard();
 
 #endregion
 
