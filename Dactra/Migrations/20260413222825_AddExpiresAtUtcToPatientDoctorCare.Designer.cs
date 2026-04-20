@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260413222825_AddExpiresAtUtcToPatientDoctorCare")]
+    partial class AddExpiresAtUtcToPatientDoctorCare
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -613,9 +616,6 @@ namespace Dactra.Migrations
                     b.Property<DateTime>("BookedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsReminderSent")
-                        .HasColumnType("bit");
-
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
 
@@ -627,9 +627,6 @@ namespace Dactra.Migrations
 
                     b.Property<int?>("PrescriptionId")
                         .HasColumnType("int");
-
-                    b.Property<string>("ReminderJobId")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SlotId")
                         .HasColumnType("int");

@@ -2,13 +2,11 @@
 {
     public class TopRatedDoctorDTO
     {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string FullName => $"{FirstName} {LastName}";
-        public Majors Specialization { get; set; }
-        public decimal Avg_Rating { get; set; }
-        public int TotalReviews { get; set; }
-        public int YearsOfExperience { get; set; }
-        public string Address { get; set; }
+        public int DoctorId { get; set; }
+        public string DoctorName { get; set; } = string.Empty;
+        public string Specialization { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; } = null;
+        public decimal Rate { get; set; }
+        public int NumberOfRates { get; set; }
     }
 }

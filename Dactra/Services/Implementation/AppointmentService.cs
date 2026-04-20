@@ -88,8 +88,8 @@ namespace Dactra.Services.Implementation
                 };
 
                  await _appointmentRepository.BookeAsync(appointment);
+                await CreateOrRenewCareAsync(patientId, slot.DoctorId);
 
-                
                 var utcTime = DateTime.SpecifyKind(slot.SlotDateTimeUtc, DateTimeKind.Local)
                       .ToUniversalTime();
 
@@ -208,6 +208,32 @@ namespace Dactra.Services.Implementation
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+
+        private async Task CreateOrRenewCareAsync(int patientId, int doctorId)
+        {
+            var existing = await _context.PatientDoctorCares
+                .FirstOrDefaultAsync(x => x.PatientId == patientId
+                                        && x.DoctorId == doctorId);
+
+            if (existing is null)
+            {
+                _context.PatientDoctorCares.Add(new PatientDoctorCare
+                {
+                    PatientId = patientId,
+                    DoctorId = doctorId,
+                    CreatedAtUtc = DateTime.UtcNow,
+                    ExpiresAtUtc = DateTime.UtcNow.AddMonths(1),
+                    IsActive = true
+                });
+            }
+            else
+            {
+                existing.ExpiresAtUtc = DateTime.UtcNow.AddMonths(1);
+                existing.IsActive = true;
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

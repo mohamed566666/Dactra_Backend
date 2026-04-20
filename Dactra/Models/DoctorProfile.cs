@@ -29,6 +29,8 @@
         public ICollection<Post> Posts { get; set; } = new List<Post>();
         public ICollection<DoctorQualification> Qualifications { get; set; } = new List<DoctorQualification>();
         public ICollection<DoctorAvailabilitySlot> AvailableSlots { get; set; } = new List<DoctorAvailabilitySlot>();
+        public ICollection<PatientDoctorCare> PatientCares { get; set; } = new List<PatientDoctorCare>();
+        public ICollection<DoctorMedicalTestSponsor> MedicalTestSponsors { get; set; } = new List<DoctorMedicalTestSponsor>();
         private int CalculateAge(DateTime dob)
         {
             var today = DateTime.UtcNow.Date;

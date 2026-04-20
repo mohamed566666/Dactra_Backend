@@ -45,8 +45,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<CommentLike> CommentLikes { get; set; }
     public DbSet<QuestionAnswerLike> QuestionAnswerLikes { get; set; }
     public DbSet<LabsWorkingHour> LabsWorkingHour { get; set; }
-
-
+    public DbSet<PatientDoctorCare> PatientDoctorCares { get; set; }
+    public DbSet<DoctorMedicalTestSponsor> DoctorMedicalTestSponsors { get; set; }
+    public DbSet<PatientReferral> PatientReferrals { get; set; }
+    public DbSet<PatientReferralItem> PatientReferralItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -194,5 +196,83 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             .WithMany()
             .HasForeignKey(a => a.AnswererUserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PatientDoctorCare>(entity =>
+        {
+            entity.HasIndex(x => new { x.PatientId, x.DoctorId })
+                  .IsUnique();
+
+            entity.HasOne(x => x.Patient)
+                  .WithMany(x => x.DoctorCares)
+                  .HasForeignKey(x => x.PatientId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Doctor)
+                  .WithMany(x => x.PatientCares)
+                  .HasForeignKey(x => x.DoctorId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<DoctorMedicalTestSponsor>(entity =>
+        {
+            entity.Property(x => x.DiscountPercentage)
+                  .HasPrecision(5, 2);
+
+            entity.HasIndex(x => new { x.DoctorId, x.ProviderType });
+
+            entity.Property(x => x.Status)
+                  .HasConversion<int>();
+
+            entity.HasOne(x => x.Doctor)
+                  .WithMany(x => x.MedicalTestSponsors)
+                  .HasForeignKey(x => x.DoctorId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.MedicalTestProvider)
+                  .WithMany(x => x.DoctorSponsors)
+                  .HasForeignKey(x => x.MedicalTestProviderId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.ParentOffer)
+                  .WithMany(x => x.CounterOffers)
+                  .HasForeignKey(x => x.ParentOfferId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<PatientReferral>(entity =>
+        {
+            entity.HasOne(x => x.Patient)
+                  .WithMany()
+                  .HasForeignKey(x => x.PatientId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Doctor)
+                  .WithMany()
+                  .HasForeignKey(x => x.DoctorId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Sponsorship)
+                  .WithMany()
+                  .HasForeignKey(x => x.SponsorshipId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(x => new { x.PatientId, x.SponsorshipId });
+        });
+
+        modelBuilder.Entity<PatientReferralItem>(entity =>
+        {
+            entity.HasOne(x => x.PatientReferral)
+                  .WithMany(x => x.ReferralServices)
+                  .HasForeignKey(x => x.PatientReferralId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(x => x.ProviderOffering)
+                  .WithMany()
+                  .HasForeignKey(x => x.ProviderOfferingId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(x => new { x.PatientReferralId, x.ProviderOfferingId })
+                  .IsUnique();
+        });
     }
 }

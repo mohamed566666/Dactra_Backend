@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260413122541_uodate models")]
+    partial class uodatemodels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,25 +101,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "fbc10989-abea-4b2f-b4fd-9639a7115025",
+                            Id = "915f0201-23f8-422d-9f16-8aa6c041ea1c",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "a198868e-490c-420c-8c04-c481ce06809a",
+                            Id = "ce784964-e586-4806-bdeb-6fdf30023c9e",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "617c84d6-7a45-4af4-be5f-e216fa2ff900",
+                            Id = "1f6d6e72-5418-44ed-9f40-15bfc9e6e7f0",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "268a95e9-f084-405e-a135-dca34e2390c9",
+                            Id = "2ffe301b-7f04-4e2e-b543-b9570cc88cad",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -613,9 +616,6 @@ namespace Dactra.Migrations
                     b.Property<DateTime>("BookedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsReminderSent")
-                        .HasColumnType("bit");
-
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
 
@@ -627,9 +627,6 @@ namespace Dactra.Migrations
 
                     b.Property<int?>("PrescriptionId")
                         .HasColumnType("int");
-
-                    b.Property<string>("ReminderJobId")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SlotId")
                         .HasColumnType("int");
@@ -666,9 +663,6 @@ namespace Dactra.Migrations
 
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("ExpiresAtUtc")
-                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
