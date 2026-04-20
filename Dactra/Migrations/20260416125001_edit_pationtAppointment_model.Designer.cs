@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260416125001_edit_pationtAppointment_model")]
+    partial class edit_pationtAppointment_model
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,25 +101,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "fbc10989-abea-4b2f-b4fd-9639a7115025",
+                            Id = "027f9be8-1aec-480b-8cfc-5241a457d4e9",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "a198868e-490c-420c-8c04-c481ce06809a",
+                            Id = "607c7788-16c1-4a36-908f-0de065f68a5d",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "617c84d6-7a45-4af4-be5f-e216fa2ff900",
+                            Id = "9c8e171b-8d71-44d8-a2ae-74d78e77fa35",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "268a95e9-f084-405e-a135-dca34e2390c9",
+                            Id = "b00fe8ee-1b66-4392-b51c-e2f8985c1fef",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -417,57 +420,6 @@ namespace Dactra.Migrations
                     b.ToTable("DoctorAvailabilitySlots");
                 });
 
-            modelBuilder.Entity("Dactra.Models.DoctorMedicalTestSponsor", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("DiscountPercentage")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<int>("DoctorId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsCounterOffer")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("MedicalTestProviderId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("OfferContent")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ParentOfferId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProviderType")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("RequestedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("RespondedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MedicalTestProviderId");
-
-                    b.HasIndex("ParentOfferId");
-
-                    b.HasIndex("DoctorId", "ProviderType");
-
-                    b.ToTable("DoctorMedicalTestSponsors");
-                });
-
             modelBuilder.Entity("Dactra.Models.DoctorQualification", b =>
                 {
                     b.Property<int>("Id")
@@ -653,39 +605,6 @@ namespace Dactra.Migrations
                     b.ToTable("PatientAppointments");
                 });
 
-            modelBuilder.Entity("Dactra.Models.PatientDoctorCare", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("DoctorId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ExpiresAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("PatientId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DoctorId");
-
-                    b.HasIndex("PatientId", "DoctorId")
-                        .IsUnique();
-
-                    b.ToTable("PatientDoctorCares");
-                });
-
             modelBuilder.Entity("Dactra.Models.PatientProfile", b =>
                 {
                     b.Property<int>("Id")
@@ -740,67 +659,6 @@ namespace Dactra.Migrations
                         .IsUnique();
 
                     b.ToTable("Patients");
-                });
-
-            modelBuilder.Entity("Dactra.Models.PatientReferral", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("DoctorId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PatientId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ReceivedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ReferredAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("SponsorshipId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DoctorId");
-
-                    b.HasIndex("SponsorshipId");
-
-                    b.HasIndex("PatientId", "SponsorshipId");
-
-                    b.ToTable("PatientReferrals");
-                });
-
-            modelBuilder.Entity("Dactra.Models.PatientReferralItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("PatientReferralId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProviderOfferingId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProviderOfferingId");
-
-                    b.HasIndex("PatientReferralId", "ProviderOfferingId")
-                        .IsUnique();
-
-                    b.ToTable("PatientReferralItems");
                 });
 
             modelBuilder.Entity("Dactra.Models.Payment", b =>
@@ -1731,32 +1589,6 @@ namespace Dactra.Migrations
                     b.Navigation("Doctor");
                 });
 
-            modelBuilder.Entity("Dactra.Models.DoctorMedicalTestSponsor", b =>
-                {
-                    b.HasOne("Dactra.Models.DoctorProfile", "Doctor")
-                        .WithMany("MedicalTestSponsors")
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Dactra.Models.MedicalTestProviderProfile", "MedicalTestProvider")
-                        .WithMany("DoctorSponsors")
-                        .HasForeignKey("MedicalTestProviderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Dactra.Models.DoctorMedicalTestSponsor", "ParentOffer")
-                        .WithMany("CounterOffers")
-                        .HasForeignKey("ParentOfferId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Doctor");
-
-                    b.Navigation("MedicalTestProvider");
-
-                    b.Navigation("ParentOffer");
-                });
-
             modelBuilder.Entity("Dactra.Models.DoctorQualification", b =>
                 {
                     b.HasOne("Dactra.Models.DoctorProfile", "DoctorProfile")
@@ -1823,25 +1655,6 @@ namespace Dactra.Migrations
                     b.Navigation("Slot");
                 });
 
-            modelBuilder.Entity("Dactra.Models.PatientDoctorCare", b =>
-                {
-                    b.HasOne("Dactra.Models.DoctorProfile", "Doctor")
-                        .WithMany("PatientCares")
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Dactra.Models.PatientProfile", "Patient")
-                        .WithMany("DoctorCares")
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Doctor");
-
-                    b.Navigation("Patient");
-                });
-
             modelBuilder.Entity("Dactra.Models.PatientProfile", b =>
                 {
                     b.HasOne("Dactra.Models.City", "Address")
@@ -1857,52 +1670,6 @@ namespace Dactra.Migrations
                     b.Navigation("Address");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Dactra.Models.PatientReferral", b =>
-                {
-                    b.HasOne("Dactra.Models.DoctorProfile", "Doctor")
-                        .WithMany()
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Dactra.Models.PatientProfile", "Patient")
-                        .WithMany()
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Dactra.Models.DoctorMedicalTestSponsor", "Sponsorship")
-                        .WithMany()
-                        .HasForeignKey("SponsorshipId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Doctor");
-
-                    b.Navigation("Patient");
-
-                    b.Navigation("Sponsorship");
-                });
-
-            modelBuilder.Entity("Dactra.Models.PatientReferralItem", b =>
-                {
-                    b.HasOne("Dactra.Models.PatientReferral", "PatientReferral")
-                        .WithMany("ReferralServices")
-                        .HasForeignKey("PatientReferralId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Dactra.Models.ProviderOffering", "ProviderOffering")
-                        .WithMany()
-                        .HasForeignKey("ProviderOfferingId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("PatientReferral");
-
-                    b.Navigation("ProviderOffering");
                 });
 
             modelBuilder.Entity("Dactra.Models.Post", b =>
@@ -2286,11 +2053,6 @@ namespace Dactra.Migrations
                     b.Navigation("Appointment");
                 });
 
-            modelBuilder.Entity("Dactra.Models.DoctorMedicalTestSponsor", b =>
-                {
-                    b.Navigation("CounterOffers");
-                });
-
             modelBuilder.Entity("Dactra.Models.Majors", b =>
                 {
                     b.Navigation("Post");
@@ -2307,8 +2069,6 @@ namespace Dactra.Migrations
                 {
                     b.Navigation("Current_Medications");
 
-                    b.Navigation("DoctorCares");
-
                     b.Navigation("Patient_Appointment");
 
                     b.Navigation("Ratings");
@@ -2316,11 +2076,6 @@ namespace Dactra.Migrations
                     b.Navigation("VitalSign");
 
                     b.Navigation("questions");
-                });
-
-            modelBuilder.Entity("Dactra.Models.PatientReferral", b =>
-                {
-                    b.Navigation("ReferralServices");
                 });
 
             modelBuilder.Entity("Dactra.Models.Payment", b =>
@@ -2385,10 +2140,6 @@ namespace Dactra.Migrations
                 {
                     b.Navigation("AvailableSlots");
 
-                    b.Navigation("MedicalTestSponsors");
-
-                    b.Navigation("PatientCares");
-
                     b.Navigation("Posts");
 
                     b.Navigation("Qualifications");
@@ -2396,8 +2147,6 @@ namespace Dactra.Migrations
 
             modelBuilder.Entity("Dactra.Models.MedicalTestProviderProfile", b =>
                 {
-                    b.Navigation("DoctorSponsors");
-
                     b.Navigation("Offerings");
                 });
 #pragma warning restore 612, 618

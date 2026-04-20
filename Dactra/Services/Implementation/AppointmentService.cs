@@ -1,4 +1,5 @@
 ﻿using Google;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -11,16 +12,18 @@ namespace Dactra.Services.Implementation
         private readonly IPaymentService _paymentService ;
         private readonly IPatientProfileRepository _patientProfileRepository;
         private readonly IAppointmentRepository _appointmentRepository;
+        private readonly IReminderService _reminderService;
 
         public AppointmentService(
             ApplicationDbContext context,
-            IHubContext<AppointmentHub> hub,IPaymentService paymentService, IPatientProfileRepository patientProfileRepository,IAppointmentRepository appointmentRepository)
+            IHubContext<AppointmentHub> hub,IPaymentService paymentService, IPatientProfileRepository patientProfileRepository,IAppointmentRepository appointmentRepository, IReminderService reminderService)
         {
             _context = context;
             _hub = hub;
             _paymentService = paymentService;
             _patientProfileRepository = patientProfileRepository;
-             _appointmentRepository = appointmentRepository;
+            _appointmentRepository = appointmentRepository;
+            _reminderService = reminderService;
         }
 
         public async Task<string> BookAppointmentAsync(int patientId, int slotId)
@@ -87,7 +90,32 @@ namespace Dactra.Services.Implementation
                  await _appointmentRepository.BookeAsync(appointment);
                 await CreateOrRenewCareAsync(patientId, slot.DoctorId);
 
+                var utcTime = DateTime.SpecifyKind(slot.SlotDateTimeUtc, DateTimeKind.Local)
+                      .ToUniversalTime();
 
+                if (utcTime <= DateTime.UtcNow)
+                    throw new Exception("Slot time is in the past");
+
+                var reminderTime = utcTime.AddHours(-1);
+                var delay = reminderTime - DateTime.UtcNow;
+
+                if (delay > TimeSpan.Zero)
+                {
+                    var jobId = BackgroundJob.Schedule<ReminderService>(
+                        x => x.SendReminder(appointment.Id),
+                        delay
+                    );
+
+                    appointment.ReminderJobId = jobId;
+                }
+                else
+                {
+                    await _reminderService.SendReminder(appointment.Id);
+                }
+
+                await _context.SaveChangesAsync();
+
+                
                 await _hub.Clients.Group($"Doctor_{slot.DoctorId}")
                     .SendAsync("AppointmentBooked", new
                     {
@@ -161,6 +189,10 @@ namespace Dactra.Services.Implementation
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 await _paymentService.RefundAppointmentAsync(slot.Id);
+                if (!string.IsNullOrEmpty(appointment.ReminderJobId))
+                {
+                    BackgroundJob.Delete(appointment.ReminderJobId);
+                }
 
                 await _hub.Clients.Group($"Doctor_{slot.DoctorId}")
                     .SendAsync("AppointmentCancelled", new

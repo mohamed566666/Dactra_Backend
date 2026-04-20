@@ -21,5 +21,7 @@
         public DoctorAvailabilitySlot Slot { get; set; } = null!;
         public AppointmentStatus Status { get; set; } = AppointmentStatus.Confirmed;
         public DateTime BookedAt { get; set; } = DateTime.UtcNow;
+        public bool IsReminderSent { get; set; } = false;
+        public string? ReminderJobId { get; set; }
     }
 }
