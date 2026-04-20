@@ -5,6 +5,7 @@
         public int Id { get; set; }
         public int DoctorId { get; set; }
         public string DoctorName { get; set; } = string.Empty;
+        public string DoctorSpeciality { get; set; } = string.Empty;
         public int MedicalTestProviderId { get; set; }
         public string ProviderName { get; set; } = string.Empty;
         public MedicalTestProviderType ProviderType { get; set; }

@@ -2,6 +2,7 @@
 {
     public class ActiveSponsorItemDTO
     {
+        public int SponsorshipId { get; set; }
         public int DoctorId { get; set; }
         public string DoctorName { get; set; } = string.Empty;
         public string DoctorSpeciality { get; set; } = string.Empty;

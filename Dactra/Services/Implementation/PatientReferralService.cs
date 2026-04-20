@@ -35,10 +35,10 @@ namespace Dactra.Services.Implementation
 
             // 2. Validate patient is under this doctor's care
             var inCare = await _context.PatientDoctorCares
-    .AnyAsync(x => x.DoctorId == doctorId
-                 && x.PatientId == dto.PatientId
-                 && x.IsActive
-                 && x.ExpiresAtUtc > DateTime.UtcNow);
+                .AnyAsync(x => x.DoctorId == doctorId
+                             && x.PatientId == dto.PatientId
+                             && x.IsActive
+                             && x.ExpiresAtUtc > DateTime.UtcNow);
 
             if (!inCare)
                 throw new InvalidOperationException("Patient is not under your care");
@@ -185,6 +185,81 @@ namespace Dactra.Services.Implementation
             {
                 TotalPatients = patients.Count,
                 Patients = patients
+            };
+        }
+
+        // =============== NEW PAGINATED METHOD ===============
+
+        public async Task<PagedReferralResponseDto> GetProviderReferralsPagedAsync(
+            int providerId,
+            int page = 1,
+            int pageSize = 10,
+            ReferralStatus? status = null)
+        {
+            var pagination = new PaginationDto
+            {
+                Page = page,
+                PageSize = pageSize
+            };
+
+            var pagedResult = await _referralRepo
+                .GetReferralsByProviderPagedAsync(providerId, pagination, status);
+
+            var items = pagedResult.Items.Select(r =>
+            {
+                var discount = r.Sponsorship?.DiscountPercentage ?? 0;
+
+                var services = r.ReferralServices?.Select(s =>
+                {
+                    var price = s.ProviderOffering?.Price ?? 0;
+                    var discountAmount = Math.Round(price * discount / 100, 2);
+                    var priceAfter = Math.Round(price - discountAmount, 2);
+
+                    return new ReferralServiceItemDTO
+                    {
+                        ProviderOfferingId = s.ProviderOfferingId,
+                        ServiceName = s.ProviderOffering?.TestService?.Name ?? string.Empty,
+                        ServiceDescription = s.ProviderOffering?.TestService?.Description ?? string.Empty,
+                        PriceBeforeDiscount = price,
+                        DiscountAmount = discountAmount,
+                        PriceAfterDiscount = priceAfter,
+                        Duration = s.ProviderOffering?.Duration ?? TimeSpan.Zero
+                    };
+                }).ToList() ?? new();
+
+                var totalBefore = services.Sum(x => x.PriceBeforeDiscount);
+                var totalAfter = services.Sum(x => x.PriceAfterDiscount);
+
+                return new PatientReferralResponseDTO
+                {
+                    Id = r.Id,
+                    PatientId = r.PatientId,
+                    PatientName = $"{r.Patient?.FirstName} {r.Patient?.LastName}".Trim(),
+                    PatientPhone = r.Patient?.User?.PhoneNumber ?? string.Empty,
+                    PatientEmail = r.Patient?.User?.Email ?? string.Empty,
+                    DoctorId = r.DoctorId,
+                    DoctorName = $"{r.Doctor?.FirstName} {r.Doctor?.LastName}".Trim(),
+                    SponsorshipId = r.SponsorshipId,
+                    DiscountPercentage = discount,
+                    Status = r.Status,
+                    ReferredAtUtc = r.ReferredAtUtc,
+                    ReceivedAtUtc = r.ReceivedAtUtc,
+                    Services = services,
+                    TotalBeforeDiscount = totalBefore,
+                    TotalAfterDiscount = totalAfter,
+                    TotalSaved = Math.Round(totalBefore - totalAfter, 2)
+                };
+            }).ToList();
+
+            return new PagedReferralResponseDto
+            {
+                Items = items,
+                TotalCount = pagedResult.TotalCount,
+                Page = pagedResult.Page,
+                PageSize = pagedResult.PageSize,
+                TotalPages = pagedResult.TotalPages,
+                HasNextPage = pagedResult.HasNextPage,
+                HasPreviousPage = pagedResult.HasPreviousPage
             };
         }
 

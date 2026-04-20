@@ -1,4 +1,10 @@
 ﻿using Dactra.DTOs.Sponsorship;
+using Dactra.Models;
+using Dactra.Repositories.Interfaces;
+using Dactra.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Dactra.Controllers
 {
@@ -67,16 +73,45 @@ namespace Dactra.Controllers
             }
         }
 
+        // LEGACY - kept for compatibility (returns all data)
+        //[HttpGet("provider/offers/by-status/{status}")]
+        //[Authorize(Roles = "MedicalTestProvider")]
+        //public async Task<IActionResult> GetOffersByStatus(SponsorshipStatus status)
+        //{
+        //    try
+        //    {
+        //        var provider = await GetProviderAsync();
+        //        if (provider is null) return Unauthorized(Error("Provider account not found"));
+
+        //        var result = await _service.GetProviderOffersByStatusAsync(provider.Id, status);
+        //        return Ok(result);
+        //    }
+        //    catch (ArgumentException ex)
+        //    {
+        //        return BadRequest(Error(ex.Message));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, Error("An unexpected error occurred", ex.Message));
+        //    }
+        //}
+
+        // NEW PAGINATED VERSION - RECOMMENDED
         [HttpGet("provider/offers/by-status/{status}")]
         [Authorize(Roles = "MedicalTestProvider")]
-        public async Task<IActionResult> GetOffersByStatus(SponsorshipStatus status)
+        public async Task<IActionResult> GetOffersByStatusPaged(
+            OfferFilterStatus status,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
             try
             {
                 var provider = await GetProviderAsync();
                 if (provider is null) return Unauthorized(Error("Provider account not found"));
 
-                var result = await _service.GetProviderOffersByStatusAsync(provider.Id, status);
+                var result = await _service.GetProviderOffersByFilterPagedAsync(
+                    provider.Id, status, page, pageSize);
+
                 return Ok(result);
             }
             catch (ArgumentException ex)
@@ -89,16 +124,38 @@ namespace Dactra.Controllers
             }
         }
 
+        //// LEGACY - kept for compatibility (returns all data)
+        //[HttpGet("provider/active-sponsors/overview")]
+        //[Authorize(Roles = "MedicalTestProvider")]
+        //public async Task<IActionResult> GetActiveSponsorsOverview()
+        //{
+        //    try
+        //    {
+        //        var provider = await GetProviderAsync();
+        //        if (provider is null) return Unauthorized(Error("Provider account not found"));
+
+        //        var result = await _service.GetActiveSponsorsOverviewAsync(provider.Id);
+        //        return Ok(result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, Error("An unexpected error occurred", ex.Message));
+        //    }
+        //}
+
+        // NEW PAGINATED VERSION - RECOMMENDED
         [HttpGet("provider/active-sponsors/overview")]
         [Authorize(Roles = "MedicalTestProvider")]
-        public async Task<IActionResult> GetActiveSponsorsOverview()
+        public async Task<IActionResult> GetActiveSponsorsOverviewPaged(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
             try
             {
                 var provider = await GetProviderAsync();
                 if (provider is null) return Unauthorized(Error("Provider account not found"));
 
-                var result = await _service.GetActiveSponsorsOverviewAsync(provider.Id);
+                var result = await _service.GetActiveSponsorsOverviewPagedAsync(provider.Id, page, pageSize);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -198,18 +255,61 @@ namespace Dactra.Controllers
             }
         }
 
+        // PAGINATED PROVIDER OFFERS (ALL)
+        [HttpGet("provider/offers")]
+        [Authorize(Roles = "MedicalTestProvider")]
+        public async Task<IActionResult> GetProviderOffersPaged(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var provider = await GetProviderAsync();
+                if (provider is null) return Unauthorized(Error("Provider account not found"));
+
+                var result = await _service.GetProviderOffersPagedAsync(provider.Id, page, pageSize);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Error("An unexpected error occurred", ex.Message));
+            }
+        }
+
         // ─── Doctor Endpoints ──────────────────────────────────────
 
+        //// LEGACY - kept for compatibility (returns all data)
+        //[HttpGet("doctor/offers")]
+        //[Authorize(Roles = "Doctor")]
+        //public async Task<IActionResult> GetDoctorOffers()
+        //{
+        //    try
+        //    {
+        //        var doctor = await GetDoctorAsync();
+        //        if (doctor is null) return Unauthorized(Error("Doctor account not found"));
+
+        //        var result = await _service.GetDoctorOffersAsync(doctor.Id);
+        //        return Ok(result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, Error("An unexpected error occurred", ex.Message));
+        //    }
+        //}
+
+        // NEW PAGINATED VERSION - RECOMMENDED
         [HttpGet("doctor/offers")]
         [Authorize(Roles = "Doctor")]
-        public async Task<IActionResult> GetDoctorOffers()
+        public async Task<IActionResult> GetDoctorOffersPaged(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
             try
             {
                 var doctor = await GetDoctorAsync();
                 if (doctor is null) return Unauthorized(Error("Doctor account not found"));
 
-                var result = await _service.GetDoctorOffersAsync(doctor.Id);
+                var result = await _service.GetDoctorOffersPagedAsync(doctor.Id, page, pageSize);
                 return Ok(result);
             }
             catch (Exception ex)

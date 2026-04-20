@@ -36,9 +36,6 @@
             int providerId,
             SponsorshipStatus status)
         {
-
-
-
             return await _context.DoctorMedicalTestSponsors
                 .Include(x => x.Doctor)
                     .ThenInclude(d => d.specialization)
@@ -132,6 +129,176 @@
                 .GroupBy(x => x.DoctorId)
                 .Select(g => new { DoctorId = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.DoctorId, x => x.Count);
+        }
+
+        // =============== PAGINATED METHODS ===============
+
+        public async Task<PagedResultDto<DoctorMedicalTestSponsor>> GetProviderOffersPagedAsync(
+            int providerId,
+            PaginationDto pagination)
+        {
+            var query = _context.DoctorMedicalTestSponsors
+                .Include(x => x.Doctor)
+                    .ThenInclude(d => d.specialization)
+                .Include(x => x.CounterOffers)
+                .Include(x => x.ParentOffer)
+                .Where(x => x.MedicalTestProviderId == providerId && !x.IsCounterOffer);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(x => x.RequestedAtUtc)
+                .Skip(pagination.Skip)
+                .Take(pagination.PageSize)
+                .ToListAsync();
+
+            return new PagedResultDto<DoctorMedicalTestSponsor>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+        }
+
+        public async Task<PagedResultDto<DoctorMedicalTestSponsor>> GetDoctorOffersPagedAsync(
+            int doctorId,
+            PaginationDto pagination)
+        {
+            var query = _context.DoctorMedicalTestSponsors
+                .Include(x => x.MedicalTestProvider)
+                .Include(x => x.CounterOffers)
+                .Where(x => x.DoctorId == doctorId && !x.IsCounterOffer);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(x => x.RequestedAtUtc)
+                .Skip(pagination.Skip)
+                .Take(pagination.PageSize)
+                .ToListAsync();
+
+            return new PagedResultDto<DoctorMedicalTestSponsor>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+        }
+
+        public async Task<PagedResultDto<DoctorMedicalTestSponsor>> GetProviderOffersByStatusPagedAsync(
+            int providerId,
+            StatusPaginationDto pagination)
+        {
+            var query = _context.DoctorMedicalTestSponsors
+                .Include(x => x.Doctor)
+                    .ThenInclude(d => d.specialization)
+                .Include(x => x.CounterOffers)
+                .Include(x => x.ParentOffer)
+                .Where(x => x.MedicalTestProviderId == providerId && !x.IsCounterOffer);
+
+            if (pagination.Status.HasValue)
+            {
+                query = query.Where(x => x.Status == pagination.Status.Value);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(x => x.RequestedAtUtc)
+                .Skip(pagination.Skip)
+                .Take(pagination.PageSize)
+                .ToListAsync();
+
+            return new PagedResultDto<DoctorMedicalTestSponsor>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+        }
+
+        public async Task<PagedResultDto<DoctorMedicalTestSponsor>> GetActiveSponsorsForProviderPagedAsync(
+            int providerId,
+            PaginationDto pagination)
+        {
+            var query = _context.DoctorMedicalTestSponsors
+                .Include(x => x.Doctor)
+                    .ThenInclude(d => d.specialization)
+                .Where(x => x.MedicalTestProviderId == providerId
+                         && x.Status == SponsorshipStatus.Active);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(x => x.RequestedAtUtc)
+                .Skip(pagination.Skip)
+                .Take(pagination.PageSize)
+                .ToListAsync();
+
+            return new PagedResultDto<DoctorMedicalTestSponsor>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+        }
+        public async Task<PagedResultDto<DoctorMedicalTestSponsor>> GetProviderOffersByFilterPagedAsync(
+    int providerId,
+    OfferFilterStatus filterStatus,
+    PaginationDto pagination)
+        {
+            IQueryable<DoctorMedicalTestSponsor> query;
+
+            if (filterStatus == OfferFilterStatus.Counter)
+            {
+                // Counter offers: IsCounterOffer = true, Status = Pending
+                query = _context.DoctorMedicalTestSponsors
+                    .Include(x => x.Doctor)
+                        .ThenInclude(d => d.specialization)
+                    .Include(x => x.ParentOffer)
+                    .Where(x => x.MedicalTestProviderId == providerId
+                             && x.IsCounterOffer
+                             && x.Status == SponsorshipStatus.Pending);
+            }
+            else if (filterStatus == OfferFilterStatus.Pending)
+            {
+                // Pending offers: IsCounterOffer = false, Status = Pending
+                query = _context.DoctorMedicalTestSponsors
+                    .Include(x => x.Doctor)
+                        .ThenInclude(d => d.specialization)
+                    .Where(x => x.MedicalTestProviderId == providerId
+                             && !x.IsCounterOffer
+                             && x.Status == SponsorshipStatus.Pending);
+            }
+            else // Rejected offers: IsCounterOffer = false, Status = Rejected
+            {
+                query = _context.DoctorMedicalTestSponsors
+                    .Include(x => x.Doctor)
+                        .ThenInclude(d => d.specialization)
+                    .Where(x => x.MedicalTestProviderId == providerId
+                             && !x.IsCounterOffer
+                             && x.Status == SponsorshipStatus.Rejected);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(x => x.RequestedAtUtc)
+                .Skip(pagination.Skip)
+                .Take(pagination.PageSize)
+                .ToListAsync();
+
+            return new PagedResultDto<DoctorMedicalTestSponsor>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
         }
     }
 }

@@ -97,23 +97,23 @@ namespace Dactra.Controllers
 
         // ─── Provider Endpoints ────────────────────────────────────
 
-        [HttpGet("provider/dashboard")]
-        [Authorize(Roles = "MedicalTestProvider")]
-        public async Task<IActionResult> GetProviderDashboard()
-        {
-            try
-            {
-                var provider = await GetProviderAsync();
-                if (provider is null) return Unauthorized(Error("Provider account not found"));
+        //[HttpGet("provider/dashboard")]
+        //[Authorize(Roles = "MedicalTestProvider")]
+        //public async Task<IActionResult> GetProviderDashboard()
+        //{
+        //    try
+        //    {
+        //        var provider = await GetProviderAsync();
+        //        if (provider is null) return Unauthorized(Error("Provider account not found"));
 
-                var result = await _service.GetProviderReferralsDashboardAsync(provider.Id);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, Error("An unexpected error occurred", ex.Message));
-            }
-        }
+        //        var result = await _service.GetProviderReferralsDashboardAsync(provider.Id);
+        //        return Ok(result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, Error("An unexpected error occurred", ex.Message));
+        //    }
+        //}
 
         [HttpPut("provider/receive/{referralId}")]
         [Authorize(Roles = "MedicalTestProvider")]
@@ -138,6 +138,29 @@ namespace Dactra.Controllers
             catch (InvalidOperationException ex)
             {
                 return Conflict(Error(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Error("An unexpected error occurred", ex.Message));
+            }
+        }
+
+        // =============== NEW PAGINATED PROVIDER ENDPOINT ===============
+
+        [HttpGet("provider/referrals")]
+        [Authorize(Roles = "MedicalTestProvider")]
+        public async Task<IActionResult> GetProviderReferralsPaged(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] ReferralStatus? status = null)
+        {
+            try
+            {
+                var provider = await GetProviderAsync();
+                if (provider is null) return Unauthorized(Error("Provider account not found"));
+
+                var result = await _service.GetProviderReferralsPagedAsync(provider.Id, page, pageSize, status);
+                return Ok(result);
             }
             catch (Exception ex)
             {

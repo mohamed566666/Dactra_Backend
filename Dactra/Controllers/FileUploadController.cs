@@ -8,44 +8,23 @@ namespace Dactra.Controllers
     [ApiController]
     public class FileUploadController : ControllerBase
     {
-        private readonly IFileService _fileService;
-        private readonly ILogger<FileUploadController> _logger;
+        //private readonly IFileService _fileService;
+        //private readonly ILogger<FileUploadController> _logger;
 
-        public FileUploadController(IFileService fileService, ILogger<FileUploadController> logger)
+        public FileUploadController()
         {
-            _fileService = fileService;
-            _logger = logger;
+            //_fileService = fileService;
+            //_logger = logger;
         }
 
-        /// <summary>
-        /// رفع ملف إلى Cloudinary
-        /// </summary>
         [HttpPost("upload")]
         [RequestSizeLimit(10 * 1024 * 1024)] // 10 MB
-        public async Task<IActionResult> UploadFile([FromForm] FileUploadRequestDTO request)
+        public async Task<IActionResult> UploadFile(IFormFile file)
         {
-            if (request.File == null || request.File.Length == 0)
-                return BadRequest(new { message = "الملف مطلوب" });
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "ملف غير صالح" });
 
-            var maxMB = 10; // أو اربطه بـ CloudinarySettings.MaxFileSizeMB
-            var result = await _fileService.UploadAsync(request.File, request.Category ?? "general", maxMB);
-
-            return result.Success ? Ok(result) : BadRequest(result);
-        }
-
-        /// <summary>
-        /// حذف ملف من Cloudinary
-        /// </summary>
-        [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteFile([FromQuery] string publicId)
-        {
-            if (string.IsNullOrWhiteSpace(publicId))
-                return BadRequest(new { message = "معرف الملف (PublicId) مطلوب" });
-
-            var success = await _fileService.DeleteAsync(publicId);
-            return success
-                ? Ok(new { message = "تم حذف الملف بنجاح" })
-                : NotFound(new { message = "فشل في الحذف أو الملف غير موجود" });
+            return Ok("احا الشبشب ضاع");
         }
     }
 }
