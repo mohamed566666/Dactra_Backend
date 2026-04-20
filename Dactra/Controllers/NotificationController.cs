@@ -1,4 +1,5 @@
 ﻿using Dactra.Models;
+using Hangfire;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -114,6 +115,13 @@ namespace Dactra.Controllers
             }
 
             return Ok("Notification sent to Admin");
+        }
+
+        [HttpGet("test-job")]
+        public IActionResult TestJob()
+        {
+            BackgroundJob.Enqueue(() => Console.WriteLine("Hello Hangfire 🔥"));
+            return Ok();
         }
     }
 }
