@@ -89,12 +89,14 @@ namespace Dactra.Services.Implementation
 
                  await _appointmentRepository.BookeAsync(appointment);
 
-                var slotTime = slot.SlotDateTimeUtc;
+                
+                var utcTime = DateTime.SpecifyKind(slot.SlotDateTimeUtc, DateTimeKind.Local)
+                      .ToUniversalTime();
 
-                if (slotTime <= DateTime.UtcNow)
+                if (utcTime <= DateTime.UtcNow)
                     throw new Exception("Slot time is in the past");
 
-                var reminderTime = slotTime.AddHours(-1);
+                var reminderTime = utcTime.AddHours(-1);
                 var delay = reminderTime - DateTime.UtcNow;
 
                 if (delay > TimeSpan.Zero)
