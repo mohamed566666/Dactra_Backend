@@ -35,8 +35,8 @@ namespace Dactra.Controllers
             _context = context;
             _userManager = userManager;
         }
-        [HttpPost("send-to-me")]
-        public async Task<IActionResult> Send([FromBody] NotificationMessageDto dto)
+        [HttpPost("me")]
+        public async Task<IActionResult> SendAsync([FromBody] NotificationMessageDto dto)
         {
             var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(currentUserId))
@@ -45,11 +45,11 @@ namespace Dactra.Controllers
                 return BadRequest("UserId and Message are required");
 
 
-            await _notificationService.Send(currentUserId, dto.Message);
+            await _notificationService.SendAsync(currentUserId, dto.Message);
             return Ok("Notification sent");
         }
         [HttpPost("sent-to-doctor/{postId}")]
-        public async Task<IActionResult> sendToDoctor(int postId, [FromBody] NotificationMessageDto dto)
+        public async Task<IActionResult> SendAsyncToDoctor(int postId, [FromBody] NotificationDTO dto)
         {
             var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(currentUserId))
@@ -58,70 +58,113 @@ namespace Dactra.Controllers
             if (post == null)
                 return NotFound($"Post with id {postId} not found");
             if (post.Doctor.Id.ToString() == currentUserId)
-                return BadRequest("Cannot send notification to yourself");
+                return BadRequest("Cannot SendAsync notification to yourself");
             var username = await _userRepository.GetUserByIdAsync(currentUserId);
 
             var message = $"{username.UserName} {dto.Message}";
 
-            await _notificationService.Send(post.Doctor.Id.ToString(), message);
+            await _notificationService.SendAsync(post.Doctor.Id.ToString(), message, dto.Title, dto.Type);
 
             return Ok("Notification sent to post owner");
 
 
         }
         [HttpPost("cancel/{Slotid}")]
-        public async Task<IActionResult> cancelAppointmentNotification(int Slotid, [FromBody] NotificationMessageDto dto)
+        public async Task<IActionResult> cancelAppointmentNotification(int Slotid, [FromBody] NotificationDTO dto)
         {
 
             var doctorId = await _doctorSlotService.GetDoctorIdBySlotId(Slotid);
             var patientId = await _context.PatientAppointments.Where(a => a.SlotId == Slotid)
                 .Select(a => a.PatientId)
                 .FirstOrDefaultAsync();
+            if (patientId == 0)
+                return NotFound("Patient not found");
 
-            await _notificationService.Send(doctorId.ToString(), dto.Message);
+            await _notificationService.SendAsync(doctorId.ToString(), dto.Message, dto.Title, dto.Type,Slotid);
 
-            await _notificationService.Send(patientId.ToString(), dto.Message);
+            await _notificationService.SendAsync(patientId.ToString(), dto.Message, dto.Title, dto.Type,Slotid);
 
             return Ok("Notification sent to patient and doctor");
 
         }
         [HttpPost("bookAppointmentNotification/{id}")]
-        public async Task<IActionResult> bookAppointmentNotification(int id, [FromBody] NotificationMessageDto dto)
+        public async Task<IActionResult> bookAppointmentNotification(int id, [FromBody] NotificationDTO dto)
         {
 
             var doctorId = await _doctorSlotService.GetDoctorIdBySlotId(id);
             var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(currentUserId))
+                return Unauthorized();
 
-            await _notificationService.Send(doctorId.ToString(), dto.Message);
-            await _notificationService.Send(currentUserId.ToString(), dto.Message);
+            await _notificationService.SendAsync(doctorId.ToString(), dto.Message, dto.Title, dto.Type,id);
+            await _notificationService.SendAsync(currentUserId.ToString(), dto.Message, dto.Title, dto.Type,id);
             return Ok("Notification sent to patient and doctor");
         }
         [HttpPost("new-user")]
         public async Task<IActionResult> NewUser([FromBody] NewUserNotificationDto dto)
         {
             var admins = await _userManager.GetUsersInRoleAsync("Admin");
-
-            var notification = new
-            {
-                type = "new_user",
-                userType = dto.UserType,
-                userId = dto.UserId,
-                message = $"new user ({dto.UserType}) registered "
-            };
-
             foreach (var admin in admins)
             {
-                await _notificationService.Send(admin.Id, notification);
+                await _notificationService.SendAsync(admin.Id, $"new user ({dto.UserType}) registered ",null, "new_user");
             }
 
             return Ok("Notification sent to Admin");
         }
-
-        [HttpGet("test-job")]
-        public IActionResult TestJob()
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyNotifications()
         {
-            BackgroundJob.Enqueue(() => Console.WriteLine("Hello Hangfire 🔥"));
-            return Ok();
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(currentUserId))
+                return Unauthorized();
+
+            var notifications = await _context.Notifications
+                .Where(n => n.UserId == currentUserId)
+                .OrderByDescending(n => n.CreatedAtUtc)
+                .ToListAsync();
+
+            return Ok(notifications);
         }
+        [HttpPost("read/{id}")]
+        public async Task<IActionResult> MarkAsRead(int id)
+        {
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(currentUserId))
+                return Unauthorized();
+
+            var notification = await _context.Notifications
+                .FirstOrDefaultAsync(n => n.Id == id && n.UserId == currentUserId);
+
+            if (notification == null)
+                return NotFound("Notification not found");
+
+            notification.IsRead = true;
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Marked as read");
+        }
+        [HttpGet("unread-count")]
+        public async Task<IActionResult> GetUnreadCount()
+        {
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(currentUserId))
+                return Unauthorized();
+
+            var count = await _context.Notifications
+                .CountAsync(n => n.UserId == currentUserId && !n.IsRead);
+
+            return Ok(new { count });
+        }
+
+        //[HttpGet("test-job")]
+        //public IActionResult TestJob()
+        //{
+        //    BackgroundJob.Enqueue(() => Console.WriteLine("Hello Hangfire 🔥"));
+        //    return Ok();
+        //}
     }
 }

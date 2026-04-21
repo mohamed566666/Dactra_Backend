@@ -25,15 +25,10 @@ namespace Dactra.Services.Implementation
             }
 
 
-            var notification = new
-            {
-                type = "Reminder",
-                slotID = slotID,
-                massage = "1 hour left to your appointment"
-            };
-            await _notificationService.Send(appt.PatientId.ToString(), notification);
+         
+            await _notificationService.SendAsync(appt.PatientId.ToString(), "1 hour left to your appointment", "Reminder",null,slotID);
 
-            await _notificationService.Send(appt.Slot.DoctorId.ToString(),notification);
+            await _notificationService.SendAsync(appt.Slot.DoctorId.ToString(), "1 hour left to your appointment", "Reminder", null, slotID);
 
             appt.IsReminderSent = true;
             await _context.SaveChangesAsync();

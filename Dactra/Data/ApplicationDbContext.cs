@@ -49,6 +49,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<DoctorMedicalTestSponsor> DoctorMedicalTestSponsors { get; set; }
     public DbSet<PatientReferral> PatientReferrals { get; set; }
     public DbSet<PatientReferralItem> PatientReferralItems { get; set; }
+    public DbSet<Notifications> Notifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

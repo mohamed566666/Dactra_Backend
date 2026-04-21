@@ -2,7 +2,7 @@
 {
     public interface INotificationService
     {
-        public  Task Send(string userId, string msg);
-        public  Task Send(string userId, object msg);
+        Task SendAsync(string userId, string message, string? title = null, string? type = null, int? entityId = null);
+
     }
 }
