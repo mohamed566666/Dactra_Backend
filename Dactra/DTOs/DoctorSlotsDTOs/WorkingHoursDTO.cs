@@ -2,10 +2,13 @@
 {
     public class WorkingHoursDTO
     {
+        [Required(ErrorMessage = "Slot type is required")]
+        public SlotType SlotType { get; set; } = SlotType.InPerson;
+
         [Required(ErrorMessage = "Working start time is required")]
         [RegularExpression(@"^([01]?[0-9]|2[0-3]):[0-5][0-9]$",
             ErrorMessage = "Time must be in HH:mm format (24-hour)")]
-        public string WorkingStartTime { get; set; } = string.Empty; 
+        public string WorkingStartTime { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Working end time is required")]
         [RegularExpression(@"^([01]?[0-9]|2[0-3]):[0-5][0-9]$",

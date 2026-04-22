@@ -11,7 +11,7 @@
         public MedicalTestProviderType ProviderType { get; set; }
         public string OfferContent { get; set; } = string.Empty;
         public decimal DiscountPercentage { get; set; }
-        public SponsorshipStatus Status { get; set; }
+        public OfferFilterStatus Status { get; set; }
         public bool IsCounterOffer { get; set; }
         public int? ParentOfferId { get; set; }
         public DateTime RequestedAtUtc { get; set; }

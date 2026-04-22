@@ -5,7 +5,7 @@ namespace Dactra.Repositories.Interfaces
     {
         Task<DoctorMedicalTestSponsor?> GetByIdAsync(int id);
         Task<IEnumerable<DoctorMedicalTestSponsor>> GetProviderOffersAsync(int providerId);
-        Task<IEnumerable<DoctorMedicalTestSponsor>> GetProviderOffersByStatusAsync(int providerId, SponsorshipStatus status);
+        Task<IEnumerable<DoctorMedicalTestSponsor>> GetProviderOffersByStatusAsync(int providerId, OfferFilterStatus status);
         Task<IEnumerable<DoctorMedicalTestSponsor>> GetActiveSponsorsForProviderAsync(int providerId);
         Task<DoctorMedicalTestSponsor> CreateAsync(DoctorMedicalTestSponsor entity);
         Task UpdateAsync(DoctorMedicalTestSponsor entity);
@@ -19,5 +19,6 @@ namespace Dactra.Repositories.Interfaces
         Task<PagedResultDto<DoctorMedicalTestSponsor>> GetProviderOffersByStatusPagedAsync(int providerId, StatusPaginationDto pagination);
         Task<PagedResultDto<DoctorMedicalTestSponsor>> GetActiveSponsorsForProviderPagedAsync(int providerId, PaginationDto pagination);
         Task<PagedResultDto<DoctorMedicalTestSponsor>> GetProviderOffersByFilterPagedAsync(int providerId, OfferFilterStatus filterStatus, PaginationDto pagination);
+        Task<bool> DeletePendingOfferAsync(int sponsorshipId, int providerId);
     }
 }

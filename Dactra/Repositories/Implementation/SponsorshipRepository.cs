@@ -34,17 +34,46 @@
 
         public async Task<IEnumerable<DoctorMedicalTestSponsor>> GetProviderOffersByStatusAsync(
             int providerId,
-            SponsorshipStatus status)
+            OfferFilterStatus status)
         {
-            return await _context.DoctorMedicalTestSponsors
-                .Include(x => x.Doctor)
-                    .ThenInclude(d => d.specialization)
-                .Include(x => x.CounterOffers)
-                .Where(x => x.MedicalTestProviderId == providerId
-                         && !x.IsCounterOffer
-                         && x.Status == status)
-                .OrderByDescending(x => x.RequestedAtUtc)
-                .ToListAsync();
+            if (status == OfferFilterStatus.Counter)
+            {
+                return await _context.DoctorMedicalTestSponsors
+                    .Include(x => x.Doctor)
+                        .ThenInclude(d => d.specialization)
+                    .Include(x => x.ParentOffer)
+                    .Include(x => x.CounterOffers)
+                    .Where(x => x.MedicalTestProviderId == providerId
+                             && x.IsCounterOffer
+                             && x.Status == SponsorshipStatus.Pending)
+                    .OrderByDescending(x => x.RequestedAtUtc)
+                    .ToListAsync();
+            }
+            else if (status == OfferFilterStatus.Pending)
+            {
+                return await _context.DoctorMedicalTestSponsors
+                    .Include(x => x.Doctor)
+                        .ThenInclude(d => d.specialization)
+                    .Include(x => x.ParentOffer)
+                    .Include(x => x.CounterOffers)
+                    .Where(x => x.MedicalTestProviderId == providerId
+                             && !x.IsCounterOffer
+                             && x.Status == SponsorshipStatus.Pending)
+                    .OrderByDescending(x => x.RequestedAtUtc)
+                    .ToListAsync();
+            }
+            else
+            {
+                return await _context.DoctorMedicalTestSponsors
+                    .Include(x => x.Doctor)
+                        .ThenInclude(d => d.specialization)
+                    .Include(x => x.ParentOffer)
+                    .Include(x => x.CounterOffers)
+                    .Where(x => x.MedicalTestProviderId == providerId
+                             && x.Status == SponsorshipStatus.Rejected)
+                    .OrderByDescending(x => x.RequestedAtUtc)
+                    .ToListAsync();
+            }
         }
 
         public async Task<IEnumerable<DoctorMedicalTestSponsor>> GetActiveSponsorsForProviderAsync(int providerId)
@@ -52,6 +81,8 @@
             return await _context.DoctorMedicalTestSponsors
                 .Include(x => x.Doctor)
                     .ThenInclude(d => d.specialization)
+                .Include(x => x.ParentOffer)
+                .Include(x => x.CounterOffers)
                 .Where(x => x.MedicalTestProviderId == providerId
                          && x.Status == SponsorshipStatus.Active)
                 .ToListAsync();
@@ -227,6 +258,8 @@
             var query = _context.DoctorMedicalTestSponsors
                 .Include(x => x.Doctor)
                     .ThenInclude(d => d.specialization)
+                .Include(x => x.ParentOffer)
+                .Include(x => x.CounterOffers)
                 .Where(x => x.MedicalTestProviderId == providerId
                          && x.Status == SponsorshipStatus.Active);
 
@@ -260,9 +293,9 @@
                     .Include(x => x.Doctor)
                         .ThenInclude(d => d.specialization)
                     .Include(x => x.ParentOffer)
+                    .Include(x => x.CounterOffers)
                     .Where(x => x.MedicalTestProviderId == providerId
-                             && x.IsCounterOffer
-                             && x.Status == SponsorshipStatus.Pending);
+                             && x.CounterOffers.Any() && x.CounterOffers.First().Status == SponsorshipStatus.Pending);
             }
             else if (filterStatus == OfferFilterStatus.Pending)
             {
@@ -270,6 +303,7 @@
                 query = _context.DoctorMedicalTestSponsors
                     .Include(x => x.Doctor)
                         .ThenInclude(d => d.specialization)
+                      .Include(x => x.CounterOffers)
                     .Where(x => x.MedicalTestProviderId == providerId
                              && !x.IsCounterOffer
                              && x.Status == SponsorshipStatus.Pending);
@@ -279,6 +313,7 @@
                 query = _context.DoctorMedicalTestSponsors
                     .Include(x => x.Doctor)
                         .ThenInclude(d => d.specialization)
+                       .Include(x => x.CounterOffers)
                     .Where(x => x.MedicalTestProviderId == providerId
                              && !x.IsCounterOffer
                              && x.Status == SponsorshipStatus.Rejected);
@@ -299,6 +334,21 @@
                 Page = pagination.Page,
                 PageSize = pagination.PageSize
             };
+        }
+        public async Task<bool> DeletePendingOfferAsync(int sponsorshipId, int providerId)
+        {
+            var offer = await _context.DoctorMedicalTestSponsors
+                .FirstOrDefaultAsync(x => x.Id == sponsorshipId
+                                       && x.MedicalTestProviderId == providerId
+                                       && !x.IsCounterOffer
+                                       && x.Status == SponsorshipStatus.Pending);
+
+            if (offer == null)
+                return false;
+
+            _context.DoctorMedicalTestSponsors.Remove(offer);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }
