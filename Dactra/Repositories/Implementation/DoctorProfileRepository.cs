@@ -192,7 +192,16 @@ namespace Dactra.Repositories.Implementation
             if (workingHours.ConsultationDurationMinutes <= 0)
                 throw new InvalidOperationException("Consultation duration must be greater than 0");
 
-            if (workingHours.SlotType == SlotType.Online)
+            var totalWorkingMinutes = (endTime - startTime).TotalMinutes;
+            if (workingHours.ConsultationDurationMinutes > totalWorkingMinutes)
+            {
+                throw new InvalidOperationException(
+                    $"Consultation duration ({workingHours.ConsultationDurationMinutes} minutes) " +
+                    $"cannot be longer than total working hours period " +
+                    $"({startTime:hh\\:mm} - {endTime:hh\\:mm}) which is {totalWorkingMinutes} minutes.");
+            }
+
+            if (workingHours.Type == SlotType.Online)
             {
                 if (doctor.WorkingStartTime.HasValue && doctor.WorkingEndTime.HasValue)
                     ValidateNoOverlap(

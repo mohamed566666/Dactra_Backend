@@ -71,7 +71,7 @@ namespace Dactra.Controllers
                 var result = await _service.UpdateWorkingHoursAsync(doctorId.Value, workingHours);
                 return Ok(new
                 {
-                    message = $"{workingHours.SlotType} working hours updated successfully",
+                    message = $"{workingHours.Type} working hours updated successfully",
                     data = result
                 });
             }
