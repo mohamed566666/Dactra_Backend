@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260421211318_notificationEntity")]
+    partial class notificationEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,25 +101,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "6730d718-6364-4e61-bc79-e21e84547070",
+                            Id = "5f8761d3-aad3-4033-b72a-3f8b4e7d0f2b",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "51662467-b7b0-474c-8d8e-70bba4b561f3",
+                            Id = "2cef9910-7563-4572-8b49-9e22ca1d456e",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "bef49a33-d7cb-4e81-85e6-689264645f88",
+                            Id = "a42161fe-8d69-49ac-be83-b3a1a9f1f35d",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "10083366-0363-4b3d-82b8-48a7ffa37caf",
+                            Id = "65230b3c-1715-4f43-9275-6af6bfe1b302",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -316,9 +319,6 @@ namespace Dactra.Migrations
 
                     b.Property<string>("AdminResponse")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Against")
-                        .HasColumnType("int");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -1254,42 +1254,6 @@ namespace Dactra.Migrations
                     b.ToTable("Ratings");
                 });
 
-            modelBuilder.Entity("Dactra.Models.Report", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("RelatedEntityId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Reports");
-                });
-
             modelBuilder.Entity("Dactra.Models.SavedPost", b =>
                 {
                     b.Property<int>("Id")
@@ -2193,17 +2157,6 @@ namespace Dactra.Migrations
                     b.Navigation("Patient");
 
                     b.Navigation("Provider");
-                });
-
-            modelBuilder.Entity("Dactra.Models.Report", b =>
-                {
-                    b.HasOne("Dactra.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Dactra.Models.SavedPost", b =>
