@@ -16,12 +16,13 @@ namespace Dactra.Services.Interfaces
         Task<IEnumerable<SponsorshipResponseDTO>> GetDoctorOffersAsync(int doctorId);
         Task<SponsorshipResponseDTO?> GetActiveSponsorshipAsync(int doctorId, MedicalTestProviderType type);
         Task<ProviderOffersSummaryDTO> GetProviderOffersSummaryAsync(int providerId);
-        Task<IEnumerable<ProviderOfferItemDTO>> GetProviderOffersByStatusAsync(int providerId, SponsorshipStatus status);
+        Task<IEnumerable<ProviderOfferItemDTO>> GetProviderOffersByStatusAsync(int providerId, OfferFilterStatus status);
         Task<ActiveSponsorsOverviewDTO> GetActiveSponsorsOverviewAsync(int providerId);
         Task<PagedSponsorshipResponseDto> GetProviderOffersPagedAsync(int providerId, int page = 1, int pageSize = 10);
         Task<PagedSponsorshipResponseDto> GetDoctorOffersPagedAsync(int doctorId, int page = 1, int pageSize = 10);
         Task<PagedSponsorshipResponseDto> GetProviderOffersByStatusPagedAsync(int providerId, SponsorshipStatus? status, int page = 1, int pageSize = 10);
         Task<PagedActiveSponsorsOverviewDTO> GetActiveSponsorsOverviewPagedAsync(int providerId, int page = 1, int pageSize = 10);
         Task<PagedSponsorshipResponseDto> GetProviderOffersByFilterPagedAsync(int providerId,OfferFilterStatus filterStatus,int page = 1,int pageSize = 10);
+        Task<bool> DeletePendingOfferAsync(int sponsorshipId, int providerId);
     }
 }

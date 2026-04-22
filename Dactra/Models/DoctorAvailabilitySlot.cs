@@ -14,5 +14,6 @@ namespace Dactra.Models
         public PatientAppointment? Appointment { get; set; }
         public bool IsReserved { get; set; } = false;
         public DateTime? ReservedUntil { get; set; }
+        public SlotType SlotType { get; set; } = SlotType.InPerson;
     }
 }

@@ -177,23 +177,80 @@ namespace Dactra.Repositories.Implementation
             var doctor = await _context.Doctors.FindAsync(doctorId);
             if (doctor == null)
                 return false;
+
             if (!TimeSpan.TryParseExact(workingHours.WorkingStartTime, "hh\\:mm",
                 CultureInfo.InvariantCulture, out var startTime))
                 throw new InvalidOperationException("Invalid start time format. Use HH:mm (24-hour)");
+
             if (!TimeSpan.TryParseExact(workingHours.WorkingEndTime, "hh\\:mm",
                 CultureInfo.InvariantCulture, out var endTime))
                 throw new InvalidOperationException("Invalid end time format. Use HH:mm (24-hour)");
-            //if (startTime >= endTime)
-            //    throw new InvalidOperationException("Start time must be before end time");
+
+            if (startTime >= endTime)
+                throw new InvalidOperationException("Start time must be before end time");
+
             if (workingHours.ConsultationDurationMinutes <= 0)
                 throw new InvalidOperationException("Consultation duration must be greater than 0");
-            doctor.WorkingStartTime = startTime;
-            doctor.WorkingEndTime = endTime;
-            doctor.ConsultationDurationMinutes = workingHours.ConsultationDurationMinutes;
-            doctor.ConsultationPrice = workingHours.ConsultationPrice;
+
+            var totalWorkingMinutes = (endTime - startTime).TotalMinutes;
+            if (workingHours.ConsultationDurationMinutes > totalWorkingMinutes)
+            {
+                throw new InvalidOperationException(
+                    $"Consultation duration ({workingHours.ConsultationDurationMinutes} minutes) " +
+                    $"cannot be longer than total working hours period " +
+                    $"({startTime:hh\\:mm} - {endTime:hh\\:mm}) which is {totalWorkingMinutes} minutes.");
+            }
+
+            if (workingHours.Type == SlotType.Online)
+            {
+                if (doctor.WorkingStartTime.HasValue && doctor.WorkingEndTime.HasValue)
+                    ValidateNoOverlap(
+                        newStart: startTime,
+                        newEnd: endTime,
+                        existingStart: doctor.WorkingStartTime.Value,
+                        existingEnd: doctor.WorkingEndTime.Value,
+                        newType: "Online",
+                        existingType: "InPerson");
+
+                doctor.OnlineWorkingStartTime = startTime;
+                doctor.OnlineWorkingEndTime = endTime;
+                doctor.OnlineConsultationDurationMinutes = workingHours.ConsultationDurationMinutes;
+                doctor.OnlineConsultationPrice = workingHours.ConsultationPrice;
+            }
+            else
+            {
+                if (doctor.OnlineWorkingStartTime.HasValue && doctor.OnlineWorkingEndTime.HasValue)
+                    ValidateNoOverlap(
+                        newStart: startTime,
+                        newEnd: endTime,
+                        existingStart: doctor.OnlineWorkingStartTime.Value,
+                        existingEnd: doctor.OnlineWorkingEndTime.Value,
+                        newType: "InPerson",
+                        existingType: "Online");
+
+                doctor.WorkingStartTime = startTime;
+                doctor.WorkingEndTime = endTime;
+                doctor.ConsultationDurationMinutes = workingHours.ConsultationDurationMinutes;
+                doctor.ConsultationPrice = workingHours.ConsultationPrice;
+            }
+
             _context.Doctors.Update(doctor);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        private static void ValidateNoOverlap(
+            TimeSpan newStart, TimeSpan newEnd,
+            TimeSpan existingStart, TimeSpan existingEnd,
+            string newType, string existingType)
+        {
+            bool overlaps = newStart < existingEnd && newEnd > existingStart;
+            if (overlaps)
+                throw new InvalidOperationException(
+                    $"{newType} working hours ({newStart:hh\\:mm} - {newEnd:hh\\:mm}) " +
+                    $"overlap with {existingType} working hours " +
+                    $"({existingStart:hh\\:mm} - {existingEnd:hh\\:mm}). " +
+                    $"Working hours must not overlap.");
         }
 
         public async Task<WorkingHoursResponseDTO> GetWorkingHoursAsync(int doctorId)
@@ -205,14 +262,23 @@ namespace Dactra.Repositories.Implementation
             if (doctor == null)
                 throw new KeyNotFoundException($"Doctor with ID {doctorId} not found");
 
-            var response = new WorkingHoursResponseDTO
+            return new WorkingHoursResponseDTO
             {
-                WorkingStartTime = doctor.WorkingStartTime,
-                WorkingEndTime = doctor.WorkingEndTime,
-                ConsultationDurationMinutes = doctor.ConsultationDurationMinutes,
-                ConsultationPrice = doctor.ConsultationPrice,
+                InPerson = new WorkingHoursEntryDTO
+                {
+                    WorkingStartTime = doctor.WorkingStartTime,
+                    WorkingEndTime = doctor.WorkingEndTime,
+                    ConsultationDurationMinutes = doctor.ConsultationDurationMinutes,
+                    ConsultationPrice = doctor.ConsultationPrice
+                },
+                Online = new WorkingHoursEntryDTO
+                {
+                    WorkingStartTime = doctor.OnlineWorkingStartTime,
+                    WorkingEndTime = doctor.OnlineWorkingEndTime,
+                    ConsultationDurationMinutes = doctor.OnlineConsultationDurationMinutes,
+                    ConsultationPrice = doctor.OnlineConsultationPrice
+                }
             };
-            return response;
         }
     }
 }

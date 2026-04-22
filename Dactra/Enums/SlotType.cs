@@ -2,7 +2,7 @@
 {
     public enum SlotType
     {
-        Offline = 0,
+        InPerson = 0,
         Online = 1
     }
 }

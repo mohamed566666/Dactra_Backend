@@ -24,6 +24,11 @@
         public int? ConsultationDurationMinutes { get; set; } = 30;
         public decimal? ConsultationPrice { get; set; } = 200.00m;
 
+        public TimeSpan? OnlineWorkingStartTime { get; set; }
+        public TimeSpan? OnlineWorkingEndTime { get; set; }
+        public int? OnlineConsultationDurationMinutes { get; set; }
+        public decimal? OnlineConsultationPrice { get; set; }
+
         [NotMapped]
         public int YearsOfExperience => CalculateYearsOfExperience(StartingCareerDate);
         public ICollection<Post> Posts { get; set; } = new List<Post>();

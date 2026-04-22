@@ -460,6 +460,29 @@ namespace Dactra.Controllers
             }
         }
 
+        [HttpDelete("provider/offer/{sponsorshipId}")]
+        [Authorize(Roles = "MedicalTestProvider")]
+        public async Task<IActionResult> DeletePendingOffer(int sponsorshipId)
+        {
+            try
+            {
+                var provider = await GetProviderAsync();
+                if (provider is null)
+                    return Unauthorized(Error("Provider account not found"));
+
+                var deleted = await _service.DeletePendingOfferAsync(sponsorshipId, provider.Id);
+
+                if (!deleted)
+                    return NotFound(Error("Offer not found or cannot be deleted. Only pending offers (not counter offers) can be deleted."));
+
+                return Ok(new { success = true, message = "Offer deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Error("An unexpected error occurred", ex.Message));
+            }
+        }
+
         // ─── Helpers ───────────────────────────────────────────────
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;

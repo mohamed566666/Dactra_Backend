@@ -9,7 +9,7 @@
         public decimal DiscountPercentage { get; set; }
         public string Description { get; set; } = string.Empty;
         public DateTime OfferDate { get; set; }
-        public SponsorshipStatus Status { get; set; }
+        public OfferFilterStatus Status { get; set; }
         public OriginalOfferSnapshotDTO? OriginalOffer { get; set; }
     }
 }

@@ -5,5 +5,6 @@
         public int SlotId { get; set; }
         public TimeOnly SlotTime { get; set; }
         public bool IsBooked { get; set; }
+        public SlotType SlotType { get; set; }
     }
 }

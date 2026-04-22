@@ -232,8 +232,16 @@ namespace Dactra.Services.Implementation
 
         public async Task<IEnumerable<ProviderOfferItemDTO>> GetProviderOffersByStatusAsync(
             int providerId,
-            SponsorshipStatus status)
+            OfferFilterStatus status)
         {
+            SponsorshipStatus? dbStatus = status switch
+            {
+                OfferFilterStatus.Pending => SponsorshipStatus.Pending,
+                OfferFilterStatus.Rejected => SponsorshipStatus.Rejected,
+                OfferFilterStatus.Counter => SponsorshipStatus.Pending,
+                _ => null
+            };
+
             var offers = await _sponsorshipRepo
                 .GetProviderOffersByStatusAsync(providerId, status);
 
@@ -253,6 +261,7 @@ namespace Dactra.Services.Implementation
                 patientCounts.TryGetValue(s.DoctorId, out var count);
                 return new ActiveSponsorItemDTO
                 {
+                    SponsorshipId = s.Id,
                     DoctorId = s.DoctorId,
                     DoctorName = s.Doctor is not null
                         ? $"{s.Doctor.FirstName} {s.Doctor.LastName}"
@@ -354,11 +363,9 @@ namespace Dactra.Services.Implementation
             var pagedResult = await _sponsorshipRepo
                 .GetProviderOffersByStatusPagedAsync(providerId, pagination);
 
-            var targetStatus = status ?? SponsorshipStatus.Pending;
-
             return new PagedSponsorshipResponseDto
             {
-                Items = pagedResult.Items.Select(x => MapToResponse(x)).ToList(),
+                Items = pagedResult.Items.Select(MapToResponse).ToList(),
                 TotalCount = pagedResult.TotalCount,
                 Page = pagedResult.Page,
                 PageSize = pagedResult.PageSize,
@@ -424,11 +431,15 @@ namespace Dactra.Services.Implementation
                 HasPreviousPage = pagedResult.HasPreviousPage,
                 TotalDoctors = totalDoctorsCount,
                 TotalPatientsSent = totalPatientsSentSum,
-                AverageDiscount = (double) averageDiscountValue
+                AverageDiscount = (double)averageDiscountValue
             };
         }
 
-        public async Task<PagedSponsorshipResponseDto> GetProviderOffersByFilterPagedAsync(int providerId,OfferFilterStatus filterStatus,int page = 1,int pageSize = 10)
+        public async Task<PagedSponsorshipResponseDto> GetProviderOffersByFilterPagedAsync(
+            int providerId,
+            OfferFilterStatus filterStatus,
+            int page = 1,
+            int pageSize = 10)
         {
             var pagination = new PaginationDto { Page = page, PageSize = pageSize };
 
@@ -437,7 +448,7 @@ namespace Dactra.Services.Implementation
 
             return new PagedSponsorshipResponseDto
             {
-                Items = pagedResult.Items.Select(MapToResponse).ToList(),
+                Items = pagedResult.Items.Select(x => MapToResponseWithFilterStatus(x, filterStatus)).ToList(),
                 TotalCount = pagedResult.TotalCount,
                 Page = pagedResult.Page,
                 PageSize = pagedResult.PageSize,
@@ -449,6 +460,55 @@ namespace Dactra.Services.Implementation
 
         // ─── Mapping ───────────────────────────────────────────────
 
+        private SponsorshipResponseDTO MapToResponseWithFilterStatus(DoctorMedicalTestSponsor x, OfferFilterStatus filterStatus) => new()
+        {
+            Id = x.Id,
+            DoctorId = x.DoctorId,
+            DoctorName = x.Doctor is not null
+        ? $"{x.Doctor.FirstName} {x.Doctor.LastName}"
+        : string.Empty,
+            MedicalTestProviderId = x.MedicalTestProviderId,
+            ProviderName = x.MedicalTestProvider?.Name ?? string.Empty,
+            ProviderType = x.ProviderType,
+            OfferContent = x.OfferContent,
+            DiscountPercentage = x.DiscountPercentage,
+            Status = GetStatusForFilterEndpoint(x, filterStatus),
+            IsCounterOffer = x.IsCounterOffer,
+            ParentOfferId = x.ParentOfferId,
+            RequestedAtUtc = x.RequestedAtUtc,
+            RespondedAtUtc = x.RespondedAtUtc,
+            CounterOffers = x.CounterOffers?.Select(c => MapToResponseWithFilterStatus(c, filterStatus)).ToList() ?? new(),
+            DoctorSpeciality = x.Doctor?.specialization?.Name ?? string.Empty
+        };
+
+        private OfferFilterStatus GetStatusForFilterEndpoint(DoctorMedicalTestSponsor x, OfferFilterStatus filterStatus)
+        {
+            if (filterStatus == OfferFilterStatus.Counter && x.CounterOffers != null && x.CounterOffers.Any())
+                return OfferFilterStatus.Counter;
+
+            if (x.IsCounterOffer && x.Status == SponsorshipStatus.Pending)
+                return OfferFilterStatus.Counter;
+
+            return x.Status switch
+            {
+                SponsorshipStatus.Pending => OfferFilterStatus.Pending,
+                SponsorshipStatus.Rejected => OfferFilterStatus.Rejected,
+                _ => OfferFilterStatus.Pending
+            };
+        }
+
+        private OfferFilterStatus ConvertToOfferFilterStatus(DoctorMedicalTestSponsor x )
+        {
+            if (x.IsCounterOffer && x.Status == SponsorshipStatus.Pending)
+                return OfferFilterStatus.Counter;
+
+            return x.Status switch
+            {
+                SponsorshipStatus.Pending => OfferFilterStatus.Pending,
+                SponsorshipStatus.Rejected => OfferFilterStatus.Rejected,
+                _ => OfferFilterStatus.Pending
+            };
+        }
         private SponsorshipResponseDTO MapToResponse(DoctorMedicalTestSponsor x) => new()
         {
             Id = x.Id,
@@ -461,7 +521,7 @@ namespace Dactra.Services.Implementation
             ProviderType = x.ProviderType,
             OfferContent = x.OfferContent,
             DiscountPercentage = x.DiscountPercentage,
-            Status = x.Status,
+            Status = ConvertToOfferFilterStatus(x),
             IsCounterOffer = x.IsCounterOffer,
             ParentOfferId = x.ParentOfferId,
             RequestedAtUtc = x.RequestedAtUtc,
@@ -470,11 +530,11 @@ namespace Dactra.Services.Implementation
             DoctorSpeciality = x.Doctor?.specialization?.Name ?? string.Empty
         };
 
-        private ProviderOfferItemDTO MapToProviderOfferItem(DoctorMedicalTestSponsor x, SponsorshipStatus requestedStatus)
+        private ProviderOfferItemDTO MapToProviderOfferItem(DoctorMedicalTestSponsor x, OfferFilterStatus requestedStatus)
         {
             OriginalOfferSnapshotDTO? originalSnapshot = null;
 
-            if (requestedStatus == SponsorshipStatus.Cancelled && x.ParentOffer is not null)
+            if (x.IsCounterOffer && x.ParentOffer is not null)
             {
                 originalSnapshot = new OriginalOfferSnapshotDTO
                 {
@@ -499,6 +559,10 @@ namespace Dactra.Services.Implementation
                 Status = requestedStatus,
                 OriginalOffer = originalSnapshot
             };
+        }
+        public async Task<bool> DeletePendingOfferAsync(int sponsorshipId, int providerId)
+        {
+            return await _sponsorshipRepo.DeletePendingOfferAsync(sponsorshipId, providerId);
         }
     }
 }
