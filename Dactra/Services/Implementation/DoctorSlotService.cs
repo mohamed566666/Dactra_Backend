@@ -123,7 +123,7 @@ namespace Dactra.Services.Implementation
         private async Task<DoctorSlotsDto> GetAllSlotsInternalAsync(int doctorId, SlotType slotType)
         {
             var slots = await _repo.FindAsync(x =>
-                x.DoctorId == doctorId && x.SlotType == slotType && x.SlotDateTimeUtc >= DateTime.UtcNow);
+                x.DoctorId == doctorId && x.SlotType == slotType && x.SlotDateTimeUtc >= DateTime.UtcNow.AddDays(-1));
             return MapToDoctorSlotsDto(slots);
         }
 

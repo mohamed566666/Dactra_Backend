@@ -196,7 +196,7 @@ namespace Dactra.Services.Implementation
                 Id = post.Id,
                 email = post.Doctor?.User?.Email,
                 Content = post.Content,
-                CreatedAt = post.CreatedAt,
+                CreatedAt = post.CreatedAt.AddHours(2),
                 UpdatedAt = post.UpdatedAt,
                 LikesCount = post.Likes?.Count ?? 0,
                 CommentsCount = post.Comments?.Count ?? 0,
