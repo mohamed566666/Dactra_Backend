@@ -43,31 +43,28 @@ namespace Dactra.Services.Implementation
                 if (slot == null || slot.IsBooked)
                     throw new Exception("Slot already booked");
 
+                var Time = DateTime.SpecifyKind(slot.SlotDateTimeUtc, DateTimeKind.Local)
+                    .ToUniversalTime();
+
+                if (Time <= DateTime.UtcNow)
+                    throw new Exception("Slot time is in the past");
+
                 slot.IsBooked = true;
                 slot.IsReserved = true;
                 slot.ReservedUntil = DateTime.UtcNow.AddMinutes(5);
 
                 await _context.SaveChangesAsync();
 
-                await tx.CommitAsync();
-                //if (slot.IsBooked || (slot.IsReserved && slot.ReservedUntil > DateTime.UtcNow))
-                //{
-                //    throw new Exception("Slot is currently reserved by another patient");
-                //}
-
-
-
-                //if (slot.SlotDateTimeUtc <= DateTime.Now)
-                //    throw new Exception("Cannot book past slot");
-
-
-
-
                 // Create Payment
+                var isInPerson = slot.SlotType == SlotType.InPerson;
+                var amount = slot.SlotType == SlotType.InPerson
+                    ? slot.Doctor.ConsultationPrice
+                    : slot.Doctor.OnlineConsultationPrice
+                    ?? throw new Exception("Price is not set");
                 var payment = new Payment
                 {
-                    Amount = slot.Doctor.ConsultationPrice ?? throw new Exception("Consultation price is not set"),
-                    Status=paymentStatus.Pending,
+                    Amount = amount ?? throw new Exception("Consultation price is not set"),
+                    Status= isInPerson ? paymentStatus.Confirmed : paymentStatus.Pending,
                     Currency = "EGP",
                     Method = "Credit Card",
                     CreatedAt = DateTime.UtcNow,
@@ -82,7 +79,7 @@ namespace Dactra.Services.Implementation
                     PatientId = patientId,
                     PaymentId = payment.Id,
                     SlotId = slot.Id,
-                    Status = AppointmentStatus.Pending,
+                    Status = isInPerson ? AppointmentStatus.Confirmed : AppointmentStatus.Pending,
                     BookedAt = DateTime.UtcNow
 
                 };
@@ -114,24 +111,36 @@ namespace Dactra.Services.Implementation
                 }
 
                 await _context.SaveChangesAsync();
+                if (slot.SlotType == SlotType.InPerson) 
+                {
+                    slot.IsBooked = true;
+                    slot.IsReserved = false;
+                    slot.ReservedUntil = null;
+                    await _context.SaveChangesAsync();
+                    await tx.CommitAsync();
+                    return "In-person appointment booked successfully. Please proceed to payment.";
+                }
+                else
+                {
 
-                
-                await _hub.Clients.Group($"Doctor_{slot.DoctorId}")
-                    .SendAsync("AppointmentBooked", new
-                    {
-                        SlotId = slot.Id,
-                        AppointmentId = appointment.Id,
-                        SlotDateTime = slot.SlotDateTimeUtc,
-                        PatientId = patientId
-                    });
-                var patientProfile = await _patientProfileRepository.GetByIdAsync(patientId);
 
-                var paymentUrl = await _paymentService.GetPaymentUrl(
-                    payment,
-                    patientProfile.User.UserName 
-                );
+                    await _hub.Clients.Group($"Doctor_{slot.DoctorId}")
+                        .SendAsync("AppointmentBooked", new
+                        {
+                            SlotId = slot.Id,
+                            AppointmentId = appointment.Id,
+                            SlotDateTime = slot.SlotDateTimeUtc,
+                            PatientId = patientId
+                        });
+                    var patientProfile = await _patientProfileRepository.GetByIdAsync(patientId);
 
-                return paymentUrl;
+                    var paymentUrl = await _paymentService.GetPaymentUrl(
+                        payment,
+                        patientProfile.User.UserName
+                    );
+                    await tx.CommitAsync();
+                    return paymentUrl;
+                }
             }
             catch
             {
