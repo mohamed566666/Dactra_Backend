@@ -64,9 +64,13 @@ namespace Dactra.Services.Implementation
 
 
                 // Create Payment
+                var amount = slot.SlotType == SlotType.InPerson
+                    ? slot.Doctor.ConsultationPrice
+                    : slot.Doctor.OnlineConsultationPrice
+                    ?? throw new Exception("Price is not set");
                 var payment = new Payment
                 {
-                    Amount = slot.Doctor.ConsultationPrice ?? throw new Exception("Consultation price is not set"),
+                    Amount = amount ?? throw new Exception("Consultation price is not set"),
                     Status=paymentStatus.Pending,
                     Currency = "EGP",
                     Method = "Credit Card",
