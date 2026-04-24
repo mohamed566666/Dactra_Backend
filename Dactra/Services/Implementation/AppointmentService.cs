@@ -116,6 +116,7 @@ namespace Dactra.Services.Implementation
                     slot.IsBooked = true;
                     slot.IsReserved = false;
                     slot.ReservedUntil = null;
+                    await _context.SaveChangesAsync();
                     await tx.CommitAsync();
                     return "In-person appointment booked successfully. Please proceed to payment.";
                 }
