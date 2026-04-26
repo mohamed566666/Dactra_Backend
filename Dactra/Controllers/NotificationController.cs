@@ -19,13 +19,15 @@ namespace Dactra.Controllers
         private readonly IDoctorSlotService _doctorSlotService;
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IDoctorService _doctorService;
         public NotificationController(
             INotificationService notificationService,
             IPostService postService, 
             IUserRepository userRepository,
             IDoctorSlotService doctorSlotService,
             ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager
+            UserManager<ApplicationUser> userManager,
+            IDoctorService doctorService
             )
         {
             _notificationService = notificationService;
@@ -34,6 +36,7 @@ namespace Dactra.Controllers
             _doctorSlotService = doctorSlotService;
             _context = context;
             _userManager = userManager;
+            _doctorService = doctorService;
         }
         [HttpPost("me")]
         public async Task<IActionResult> SendAsync([FromBody] NotificationMessageDto dto)
@@ -63,7 +66,10 @@ namespace Dactra.Controllers
 
             var message = $"{username.UserName} {dto.Message}";
 
-            await _notificationService.SendAsync(post.Doctor.Id.ToString(), message, dto.Title, dto.Type);
+          
+           var docId = await _context.Doctors.Where(d => d.Id == post.Doctor.Id).Select(d => d.UserId).FirstOrDefaultAsync();
+
+            await _notificationService.SendAsync(docId.ToString(), message, dto.Title, dto.Type,postId);
 
             return Ok("Notification sent to post owner");
 
@@ -144,7 +150,13 @@ namespace Dactra.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok("Marked as read");
+            return Ok(
+                new {
+                    message = $"Marked as read ",
+                    data = notification
+                }
+             );
+          
         }
         [HttpGet("unread-count")]
         public async Task<IActionResult> GetUnreadCount()

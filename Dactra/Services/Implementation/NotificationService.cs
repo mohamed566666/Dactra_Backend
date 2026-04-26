@@ -30,7 +30,7 @@ namespace Dactra.Services.Implementation
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
 
-           
+            Console.WriteLine($"SignalR Target UserId: {userId}");
             await _hubContext.Clients.User(userId)
                 .SendAsync("ReceiveNotification", notification);
         }
