@@ -20,5 +20,6 @@
         public List<string> ChronicDiseases { get; set; } = new();
         public List<VitalSignResponseDTO> vitalSigns { get; set; } = new();
         public string RoleName { get; set; }
+        public string? profileImageUrl { get; set; } = null;
     }
 }

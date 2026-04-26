@@ -207,7 +207,7 @@ namespace Dactra.Services.Implementation
                 {
                     Id = post.Doctor.Id,
                     FullName = post.Doctor.FirstName + ' ' + post.Doctor.LastName,
-                    ProfileImageUrl = null,
+                    ProfileImageUrl = post.Doctor.User.ImageUrl,
                     Specialty = post.Doctor.specialization?.Name
                 },
                 Tags = post.PostTags?.Select(pt => new TagDto

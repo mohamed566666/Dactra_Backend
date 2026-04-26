@@ -10,5 +10,6 @@
         public decimal Avg_Rating { get; set; }
         public MedicalTestProviderType Type { get; set; }
         public List<WorkingHourDTO> WorkingHours { get; set; } = new();
+        public string? profileImageUrl { get; set; } = null;
     }
 }

@@ -78,6 +78,7 @@
 
             var doctorDTO = _mapper.Map<DoctorsResponseDTO>(profile);
             var qualificationResponses = await _doctorQualificationService.GetAllAsync(profile.Id);
+           doctorDTO.profileImageUrl = profile.User.ImageUrl;
             doctorDTO.Qualifications = qualificationResponses
                 .Select(q => new DoctorQualificationDTO
                 {

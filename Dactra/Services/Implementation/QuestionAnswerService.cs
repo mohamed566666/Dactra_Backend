@@ -199,7 +199,7 @@ namespace Dactra.Services.Implementation
                     FullName = isDoctor
                         ? $"{doctorProfile!.FirstName} {doctorProfile.LastName}"
                         : (Name != "" ? Name : (a.Answerer?.UserName ?? "user")),
-                    ProfileImageUrl = null,
+                    ProfileImageUrl = a.Answerer?.ImageUrl,
                     IsDoctor = isDoctor,
                     Specialty = isDoctor ? doctorProfile?.specialization?.Name : null,
                     YearsOfExperience = isDoctor ? doctorProfile?.YearsOfExperience : null

@@ -35,7 +35,9 @@
             .ForMember(dest => dest.ChronicDiseases,
                 opt => opt.MapFrom(src => src.ChronicDiseases != null
                     ? src.ChronicDiseases.Select(c => c.Name).ToList()
-                    : new List<string>()));
+                    : new List<string>()))
+            .ForMember(dest => dest.profileImageUrl ,
+                opt => opt.MapFrom(src => src.User != null && !string.IsNullOrEmpty(src.User.ImageUrl) ? src.User.ImageUrl : null));
 
         }
     }
