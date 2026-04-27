@@ -10,6 +10,7 @@
         {
             _service = service;
         }
+
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> Create([FromBody] SiteReviewRequestDto dto)
@@ -27,25 +28,38 @@
             try
             {
                 var created = await _service.CreateReviewAsync(userId!, dto);
-                return Ok("Reviw Added Successfully");
+                return Ok(new { success = true, message = "Review Added Successfully",
+                    review = new
+                    {
+                        created.Id,
+                        created.Title,
+                        created.Score,
+                        created.Comment,
+                        created.CreatedAt,
+                        created.ReviewerName,
+                        created.ReviewerImageUrl
+                    }
+                });
             }
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
-            catch (System.Exception)
+            catch (Exception)
             {
                 return StatusCode(500, new { success = false, message = "Internal server error" });
             }
         }
+
         [HttpGet("{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)
         {
-            var review = await _service.GetAllReviewsAsync();
-            var single = review.FirstOrDefault(r => r.Id == id);
-            if (single == null) return NotFound(new { success = false, message = "Review not found" });
-            return Ok(single);
+            var reviews = await _service.GetAllReviewsAsync();
+            var single = reviews.FirstOrDefault(r => r.Id == id);
+            if (single == null)
+                return NotFound(new { success = false, message = "Review not found" });
+            return Ok(new { success = true, data = single });
         }
 
         [HttpPut("{id}")]
@@ -53,23 +67,23 @@
         public async Task<IActionResult> Update(int id, [FromBody] SiteReviewRequestDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new { success = false, message = "Validation failed", errors = ModelState });
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
             {
                 await _service.UpdateReviewAsync(userId!, id, dto);
-                return Ok("Reviw Updated Successfully");
+                return Ok(new { success = true, message = "Review Updated Successfully"});
             }
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { success = false, message = ex.Message });
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException)
             {
-                return Forbid();
+                return StatusCode(403, new { success = false, message = "You are not authorized to update this review" });
             }
-            catch (System.Exception)
+            catch (Exception)
             {
                 return StatusCode(500, new { success = false, message = "Internal server error" });
             }
@@ -80,7 +94,7 @@
         public async Task<IActionResult> List()
         {
             var items = await _service.GetAllReviewsAsync();
-            return Ok(items);
+            return Ok(new { success = true, count = items.Count(), data = items });
         }
 
         [HttpGet("stats")]
@@ -88,7 +102,15 @@
         public async Task<IActionResult> Stats()
         {
             var (count, avg) = await _service.GetStatsAsync();
-            return Ok(new { count, avg });
+            return Ok(new { success = true, data = new { count, avg } });
+        }
+
+        [HttpGet("distribution")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDistribution()
+        {
+            var distribution = await _service.GetReviewDistributionAsync();
+            return Ok(new { success = true, data = distribution });
         }
 
         [HttpDelete("{id}")]
@@ -99,7 +121,7 @@
             try
             {
                 await _service.DeleteReviewAsync(userId!, id);
-                return Ok(new { success = true, message = "Review deleted." });
+                return Ok(new { success = true, message = "Review deleted successfully" });
             }
             catch (KeyNotFoundException ex)
             {
@@ -107,9 +129,9 @@
             }
             catch (UnauthorizedAccessException)
             {
-                return Forbid();
+                return StatusCode(403, new { success = false, message = "You are not authorized to delete this review" });
             }
-            catch (System.Exception)
+            catch (Exception)
             {
                 return StatusCode(500, new { success = false, message = "Internal server error" });
             }

@@ -4,24 +4,43 @@
     {
         private readonly ISiteReviewRepository _repo;
         private readonly IMapper _mapper;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
 
-        public SiteReviewService(ISiteReviewRepository repo, IMapper mapper)
+        public SiteReviewService(
+            ISiteReviewRepository repo,
+            IMapper mapper,
+            UserManager<ApplicationUser> userManager,
+            ApplicationDbContext context
+            )
         {
             _repo = repo;
             _mapper = mapper;
+            _userManager = userManager;
+            _context = context;
         }
 
         public async Task<SiteReview> CreateReviewAsync(string userId, SiteReviewRequestDto dto)
         {
             if (string.IsNullOrWhiteSpace(userId))
                 throw new ArgumentException("User id is required", nameof(userId));
+
             var existing = await _repo.GetByUserIdAsync(userId);
             if (existing != null)
                 throw new InvalidOperationException("User already submitted a review. Use update instead.");
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                throw new InvalidOperationException("User not found");
+
             var review = _mapper.Map<SiteReview>(dto);
             review.ReviewerUserId = userId;
             review.CreatedAt = DateTime.UtcNow;
+            review.ReviewerName = GetUserDisplayName(user);
+            review.ReviewerImageUrl = user.ImageUrl;
             await _repo.AddAsync(review);
+            await _repo.SaveChangesAsync();
+
             return review;
         }
 
@@ -33,8 +52,18 @@
 
             if (existing.ReviewerUserId != userId)
                 throw new UnauthorizedAccessException("You are not allowed to edit this review.");
-            _mapper.Map(dto, existing);
+
+            existing.Title = dto.Title;
+            existing.Score = dto.Score;
+            existing.Comment = dto.Comment;
             existing.UpdatedAt = DateTime.UtcNow;
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                existing.ReviewerName = GetUserDisplayName(user);
+                existing.ReviewerImageUrl = user.ImageUrl;
+            }
+
             _repo.Update(existing);
             await _repo.SaveChangesAsync();
         }
@@ -42,14 +71,34 @@
         public async Task<IEnumerable<SiteReviewResponse>> GetAllReviewsAsync()
         {
             var reviews = await _repo.GetAllAsync();
-            return _mapper.Map<IEnumerable<SiteReviewResponse>>(reviews);
+            var response = reviews.Select(r =>
+            {
+                var res = _mapper.Map<SiteReviewResponse>(r);
+                if (string.IsNullOrEmpty(res.ReviewerName))
+                    res.ReviewerName = "Anonymous";
+                return res;
+            });
+            return response;
         }
 
-        public async Task<(int Count, decimal Avg)> GetStatsAsync()
+        private string GetUserDisplayName(ApplicationUser user)
         {
-            var count = await _repo.GetCountAsync();
-            var avg = await _repo.GetAverageScoreAsync();
-            return (count, avg);
+
+            var scope = _repo.GetType().GetMethod("GetPatientName")?.Invoke(null, null);
+
+            var patient = _context.Patients
+                .FirstOrDefault(p => p.UserId == user.Id);
+
+            if (patient != null)
+                return $"{patient.FirstName} {patient.LastName}";
+
+            var doctor = _context.Doctors
+                .FirstOrDefault(d => d.UserId == user.Id);
+
+            if (doctor != null)
+                return $"{doctor.FirstName} {doctor.LastName}";
+
+            return !string.IsNullOrEmpty(user.UserName) ? user.UserName : user.Email?.Split('@')[0] ?? "User";
         }
 
         public async Task DeleteReviewAsync(string userId, int reviewId)
@@ -91,6 +140,13 @@
                 });
             }
             return result;
+        }
+
+        public async Task<(int Count, decimal Avg)> GetStatsAsync()
+        {
+            var count = await _repo.GetCountAsync();
+            var avg = await _repo.GetAverageScoreAsync();
+            return (count, avg);
         }
     }
 }

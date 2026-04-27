@@ -19,6 +19,7 @@
         public List<string> Allergies { get; set; } = new();
         public List<string> ChronicDiseases { get; set; } = new();
         public List<VitalSignResponseDTO> vitalSigns { get; set; } = new();
+        public List<MedicalReportResponseDTO> MedicalReports { get; set; } = new();
         public string RoleName { get; set; }
         public string? profileImageUrl { get; set; } = null;
     }
