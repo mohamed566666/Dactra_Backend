@@ -16,5 +16,6 @@
         public string Address { get; set; } = string.Empty;
         public List<DoctorQualificationDTO> Qualifications { get; set; } = new List<DoctorQualificationDTO>();
         public List<RatingResponseDTO> ratings { get; set; } = new List<RatingResponseDTO>();
+        public string? profileImageUrl { get; set; } = null;
     }
 }

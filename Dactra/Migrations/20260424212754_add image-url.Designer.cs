@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260424212754_add image-url")]
+    partial class addimageurl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,25 +101,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "31b359ca-3844-402f-b086-44b7f9e58aeb",
+                            Id = "7b0675bf-7db8-4a08-8f0b-a8b476be66b3",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "d2ec646b-e5cc-462a-8088-a23c28c917c5",
+                            Id = "81e007ee-68f2-4b98-8ab1-04dc995cd80f",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "103ed522-9e40-4515-a53e-b8b7b774e7a1",
+                            Id = "5d7cf9b2-005a-4884-953e-1b5e11a49c89",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "8293e2ba-dabc-4486-aba1-d42183cf0722",
+                            Id = "8b3f81d9-b7eb-4a20-b04b-abf1e4335ee2",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -582,45 +585,6 @@ namespace Dactra.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Majors");
-                });
-
-            modelBuilder.Entity("Dactra.Models.MedicalReport", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("FileType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("FileUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("PatientProfileId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PublicId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PatientProfileId");
-
-                    b.ToTable("MedicalReports");
                 });
 
             modelBuilder.Entity("Dactra.Models.Medicines", b =>
@@ -1433,26 +1397,12 @@ namespace Dactra.Migrations
                     b.Property<string>("ReviewerId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("ReviewerImageUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("ReviewerName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("ReviewerUserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Score")
                         .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -1927,17 +1877,6 @@ namespace Dactra.Migrations
                         .IsRequired();
 
                     b.Navigation("ServiceProviderProfile");
-                });
-
-            modelBuilder.Entity("Dactra.Models.MedicalReport", b =>
-                {
-                    b.HasOne("Dactra.Models.PatientProfile", "PatientProfile")
-                        .WithMany("MedicalReports")
-                        .HasForeignKey("PatientProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PatientProfile");
                 });
 
             modelBuilder.Entity("Dactra.Models.Medicines", b =>
@@ -2480,8 +2419,6 @@ namespace Dactra.Migrations
                     b.Navigation("Current_Medications");
 
                     b.Navigation("DoctorCares");
-
-                    b.Navigation("MedicalReports");
 
                     b.Navigation("Patient_Appointment");
 

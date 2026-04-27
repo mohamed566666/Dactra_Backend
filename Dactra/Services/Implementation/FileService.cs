@@ -1,6 +1,6 @@
 ﻿using Dactra.DTOs.FileUpload;
 
-namespace Dactra.Repositories.Implementation
+namespace Dactra.Services.Implementation
 {
     public class FileService : IFileService
     {

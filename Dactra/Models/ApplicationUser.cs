@@ -9,5 +9,7 @@
         public bool isDeleted { get; set; } = false;
 
         public int TokenVersion { get; set; } = 0;
+        public string? ImageUrl { get; set; }
+        public string? ImagePublicId { get; set; }
     }
 }

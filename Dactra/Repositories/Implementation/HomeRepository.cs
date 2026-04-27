@@ -17,6 +17,7 @@ namespace Dactra.Repositories.Implementation
 
             return await _context.Doctors
                 .Include(d => d.specialization)
+                .Include(d => d.User)
                 .Where(d => d.approvalStatus == ApprovalStatus.approved)
                 .OrderByDescending(d => d.Avg_Rating)
                 .ThenByDescending(d => _context.Ratings.Count(r => r.ProviderId == d.Id))
@@ -26,7 +27,7 @@ namespace Dactra.Repositories.Implementation
                     DoctorId = d.Id,
                     DoctorName = $"{d.FirstName} {d.LastName}".Trim(),
                     Specialization = d.specialization != null ? d.specialization.Name : "UnKnown",
-                    ImageUrl = null,
+                    ImageUrl = d.User.ImageUrl,
                     Rate = Math.Round(d.Avg_Rating, 2),
                     NumberOfRates = _context.Ratings.Count(r => r.ProviderId == d.Id)
                 })

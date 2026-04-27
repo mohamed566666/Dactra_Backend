@@ -1,5 +1,4 @@
-﻿
-using Dactra.Services.Background;
+﻿using Dactra.Services.Background;
 using Hangfire;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -105,6 +104,8 @@ builder.Services.AddScoped<ISponsorshipRepository, SponsorshipRepository>();
 builder.Services.AddScoped<IPatientReferralRepository, PatientReferralRepository>();
 builder.Services.AddScoped<IFileService, FileService>();
 
+builder.Services.AddScoped<IMedicalReportRepository, MedicalReportRepository>();
+
 #endregion
 
 #region Services
@@ -173,6 +174,10 @@ builder.Services.AddScoped<ISponsorshipService, SponsorshipService>();
 builder.Services.AddScoped<IPatientReferralService, PatientReferralService>();
 
 builder.Services.AddScoped<IFileStorageService, CloudinaryStorageService>();
+builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IUserImageService, UserImageService>();
+
+builder.Services.AddScoped<IMedicalReportService, MedicalReportService>();
 
 
 #endregion

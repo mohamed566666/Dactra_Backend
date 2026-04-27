@@ -6,6 +6,6 @@
         public string Name { get; set; }
         public string Specialization { get; set; }
         public decimal AverageRating { get; set; }
-
+        public string ? profileImageUrl { get; set; } = null;
     }
 }

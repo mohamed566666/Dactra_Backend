@@ -13,8 +13,9 @@ namespace Dactra.Services.Implementation
         private readonly string _rootFolder;
         private readonly bool _isConfigured;
 
-        public CloudinaryStorageService(IOptions<CloudinarySettings> settings, ILogger<CloudinarySettings> logger)
+        public CloudinaryStorageService(IOptions<CloudinarySettings> settings, ILogger<CloudinaryStorageService> logger)
         {
+            _logger = logger;
             try
             {
                 var s = settings.Value;

@@ -2,11 +2,11 @@
 {
     public interface ISiteReviewService
     {
-        public Task<SiteReview> CreateReviewAsync(string userId, SiteReviewRequestDto dto);
-        public Task UpdateReviewAsync(string userId, int reviewId, SiteReviewRequestDto dto);
-        public Task<IEnumerable<SiteReviewResponse>> GetAllReviewsAsync();
-        public Task<(int Count, decimal Avg)> GetStatsAsync();
-        public Task DeleteReviewAsync(string userId, int reviewId);
-        public Task<ReviewDistributionDto> GetReviewDistributionAsync();
+        Task<SiteReview> CreateReviewAsync(string userId, SiteReviewRequestDto dto);
+        Task UpdateReviewAsync(string userId, int reviewId, SiteReviewRequestDto dto);
+        Task<IEnumerable<SiteReviewResponse>> GetAllReviewsAsync();
+        Task<(int Count, decimal Avg)> GetStatsAsync();
+        Task DeleteReviewAsync(string userId, int reviewId);
+        Task<ReviewDistributionDto> GetReviewDistributionAsync();
     }
 }

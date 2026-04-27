@@ -41,7 +41,9 @@ namespace Dactra.Mappings
                 .ForMember(dest => dest.About, opt => opt.MapFrom(src => src.About))
                 .ForMember(dest => dest.Avg_Rating, opt => opt.MapFrom(src => src.Avg_Rating))
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type))
-                .ForMember(dest => dest.WorkingHours, opt => opt.MapFrom(src => src.WorkingHours));
+                .ForMember(dest => dest.WorkingHours, opt => opt.MapFrom(src => src.WorkingHours))
+                .ForMember(dest => dest.profileImageUrl,
+                    opt => opt.MapFrom(src => src.User != null && !string.IsNullOrEmpty(src.User.ImageUrl) ? src.User.ImageUrl : null));
 
             CreateMap<LabsWorkingHour, WorkingHourDTO>();
         }

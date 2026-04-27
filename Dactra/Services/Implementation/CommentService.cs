@@ -105,7 +105,7 @@ namespace Dactra.Services.Implementation
             {
                 //Id = c.User.Id,
                 FullName = c.User.UserName,
-                ProfileImageUrl = null
+                ProfileImageUrl = c.User.ImageUrl
             },
             Replies = c.Replies?.Select(r => MapToDto(r, currentUserId)).ToList()
         ?? new List<CommentResponseDto>()

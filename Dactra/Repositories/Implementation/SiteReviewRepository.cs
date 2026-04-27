@@ -4,9 +4,8 @@
     {
         public SiteReviewRepository(ApplicationDbContext context) : base(context)
         {
-
         }
-
+        public ApplicationDbContext GetDbContext() => _context;
 
         public async Task<SiteReview?> GetByUserIdAsync(string userId)
         {
@@ -45,6 +44,7 @@
             var avg = await _context.SiteReviews.AverageAsync(r => r.Score);
             return Math.Round((decimal)avg, 2);
         }
+
         public async Task<IEnumerable<(int Score, int Count)>> GetScoreCountsAsync()
         {
             var groups = await _context.SiteReviews

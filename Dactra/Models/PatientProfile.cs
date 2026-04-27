@@ -35,6 +35,7 @@
         public List<Question> questions { get; set; } = new List<Question>();
         public ICollection<PatientDoctorCare> DoctorCares { get; set; } = new List<PatientDoctorCare>();
         public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
+        public List<MedicalReport> MedicalReports { get; set; } = new List<MedicalReport>();
 
         private int CalculateAge(DateTime dob)
         {

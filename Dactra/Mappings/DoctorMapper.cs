@@ -32,13 +32,17 @@
                 .ForMember(dest => dest.PhoneNumber,
                     opt => opt.MapFrom(src => src.User != null ? src.User.PhoneNumber : string.Empty))
                 .ForMember(dest => dest.Email,
-                    opt => opt.MapFrom(src => src.User != null ? src.User.Email : string.Empty));
+                    opt => opt.MapFrom(src => src.User != null ? src.User.Email : string.Empty))
+                .ForMember(dest => dest.profileImageUrl,
+                    opt => opt.MapFrom(src => src.User != null && !string.IsNullOrEmpty(src.User.ImageUrl) ? src.User.ImageUrl : null));
 
             CreateMap<DoctorProfile, DoctorsFilterResponseDTO>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"))
                 .ForMember(dest => dest.Specialization, opt => opt.MapFrom(src => src.specialization != null ? src.specialization.Name : "N/A"))
-                .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Avg_Rating));
+                .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Avg_Rating))
+                .ForMember(dest => dest.profileImageUrl,
+                    opt => opt.MapFrom(src => src.User != null && !string.IsNullOrEmpty(src.User.ImageUrl) ? src.User.ImageUrl : null));
 
             CreateMap<(IEnumerable<DoctorProfile> doctors, int totalCount, DoctorFilterDTO filter), PaginatedDoctorsResponseDTO>()
                 .ForMember(dest => dest.Doctors, opt => opt.MapFrom(src => src.doctors))
@@ -92,7 +96,9 @@
             .ForMember(dest => dest.Qualifications,
                 opt => opt.Ignore())
             .ForMember(dest => dest.ratings,
-                opt => opt.Ignore());
+                opt => opt.Ignore())
+            .ForMember(dest => dest.profileImageUrl,
+                opt => opt.MapFrom(src => src.User != null && !string.IsNullOrEmpty(src.User.ImageUrl) ? src.User.ImageUrl : null));
 
         }
         private static int CalculateYears(DateTime date)

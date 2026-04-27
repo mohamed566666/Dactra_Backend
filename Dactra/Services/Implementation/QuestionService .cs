@@ -216,7 +216,7 @@ namespace Dactra.Services.Implementation
                 {
                     Id = q.Patient.Id,
                     FullName = q.Patient.FirstName + " " + q.Patient.LastName,
-                    ProfileImageUrl = null
+                    ProfileImageUrl = q.Patient.User.ImageUrl
                 },
 
                 Tags = q.QuestionTags?.Select(qt => new TagDto
