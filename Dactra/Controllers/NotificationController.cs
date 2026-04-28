@@ -20,6 +20,7 @@ namespace Dactra.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IDoctorService _doctorService;
+        private readonly IQuestionInterestService _questionInterestService;
         public NotificationController(
             INotificationService notificationService,
             IPostService postService, 
@@ -27,7 +28,8 @@ namespace Dactra.Controllers
             IDoctorSlotService doctorSlotService,
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
-            IDoctorService doctorService
+            IDoctorService doctorService,
+            IQuestionInterestService questionInterestService
             )
         {
             _notificationService = notificationService;
@@ -37,6 +39,7 @@ namespace Dactra.Controllers
             _context = context;
             _userManager = userManager;
             _doctorService = doctorService;
+            _questionInterestService = questionInterestService; 
         }
         [HttpPost("me")]
         public async Task<IActionResult> SendAsync([FromBody] NotificationMessageDto dto)
@@ -170,6 +173,17 @@ namespace Dactra.Controllers
                 .CountAsync(n => n.UserId == currentUserId && !n.IsRead);
 
             return Ok(new { count });
+        }
+        [HttpPost("interested-users/{questionId}")]
+        public async Task<IActionResult> GetInterestedUsers(int questionId)
+        {
+            var userIds = await _questionInterestService.GetInterestedUsersIdAsync(questionId);
+            foreach (var userId in userIds)
+            {
+                await _notificationService.SendAsync(userId,"Doctor answered your question","Question Interest","Question",questionId);
+            }
+
+            return Ok("notification sent to all interested users");
         }
 
         //[HttpGet("test-job")]
