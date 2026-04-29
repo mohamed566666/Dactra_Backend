@@ -6,5 +6,6 @@
         Task<PatientAppointment?> GetAppointmentByIdAsync(int appointmentId);
         Task<List<PatientAppointment>> GetPatientAppointmentsAsync(int patientId);
         Task<bool> CancelAppointmentAsync(int appointmentId, int patientId);
+        Task<List<DoctorAppointmentDto>> GetDoctorAppointmentsAsync(int doctorId);
     }
 }

@@ -56,5 +56,13 @@ namespace Dactra.Controllers
 
 
         }
+
+        [HttpGet("doctor/{doctorId:int}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDoctorAppointments(int doctorId)
+        {
+            var appointments = await _service.GetDoctorAppointmentsAsync(doctorId);
+            return Ok(appointments);
+        }
     }
 }

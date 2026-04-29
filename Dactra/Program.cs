@@ -179,6 +179,8 @@ builder.Services.AddScoped<IUserImageService, UserImageService>();
 
 builder.Services.AddScoped<IMedicalReportService, MedicalReportService>();
 
+builder.Services.AddScoped<IVideoCallService, VideoCallService>();
+
 
 #endregion
 
@@ -344,6 +346,7 @@ app.MapHub<AppointmentHub>("/appointmentHub");
 app.MapHub<DoctorScheduleHub>("/doctorScheduleHub");
 app.MapHub<PostHub>("/hubs/posts");
 app.MapHub<NotificationHub>("/hubs/notifications");
+app.MapHub<VideoCallHub>("/hubs/videocall");
 
 
 app.UseHangfireDashboard();
