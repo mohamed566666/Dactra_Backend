@@ -18,6 +18,13 @@ namespace Dactra.Services.Implementation
             _hub = hub;
         }
 
+        public async Task<List<string>> GetInterestedUsersIdAsync(int questionId)
+        {
+            if (!await _questionRepo.ExistsAsync(questionId))
+                throw new KeyNotFoundException($"Question {questionId} not found.");
+            return await _interestRepo.GetInterestedUserIdsByQuestionIdAsync(questionId);
+        }
+
         public async Task<QuestionInterestResponseDto> ToggleInterestAsync(int questionId, string userId)
         {
             if (!await _questionRepo.ExistsAsync(questionId))
