@@ -52,6 +52,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<Notifications> Notifications { get; set; }
     public DbSet<Report> Reports { get; set; }
     public DbSet<MedicalReport> MedicalReports { get; set; }
+    public DbSet<VideoCallSession> VideoCallSessions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

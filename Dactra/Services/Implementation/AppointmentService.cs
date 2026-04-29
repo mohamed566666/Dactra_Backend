@@ -2,6 +2,7 @@
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Dactra.DTOs;
 
 namespace Dactra.Services.Implementation
 {
@@ -243,6 +244,29 @@ namespace Dactra.Services.Implementation
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<DoctorAppointmentDto>> GetDoctorAppointmentsAsync(int doctorId)
+        {
+            return await _context.PatientAppointments
+                .Include(a => a.Slot)
+                .Include(a => a.Patient)
+                    .ThenInclude(p => p.User)
+                .Include(a => a.Payment)
+                .Where(a => a.Slot.DoctorId == doctorId)
+                .OrderByDescending(a => a.BookedAt)
+                .Select(a => new DoctorAppointmentDto(
+                    a.Id,
+                    $"{a.Patient.User.UserName}",
+                    a.Patient.User.Email,
+                    a.Slot.SlotDateTimeUtc,
+                    a.Slot.SlotType.ToString(),
+                    a.Status.ToString(),
+                    a.BookedAt,
+                    a.Payment.Amount,
+                    a.Payment.Status.ToString()
+                ))
+                .ToListAsync();
         }
     }
 }
