@@ -23,5 +23,7 @@
         public DateTime BookedAt { get; set; } = DateTime.UtcNow;
         public bool IsReminderSent { get; set; } = false;
         public string? ReminderJobId { get; set; }
+        [MaxLength(500)]
+        public string? CancelledReason { get; set; }
     }
 }

@@ -106,6 +106,8 @@ builder.Services.AddScoped<IFileService, FileService>();
 
 builder.Services.AddScoped<IMedicalReportRepository, MedicalReportRepository>();
 
+builder.Services.AddScoped<IAppointmentStatisticsRepository, AppointmentStatisticsRepository>();
+
 #endregion
 
 #region Services
@@ -181,6 +183,7 @@ builder.Services.AddScoped<IMedicalReportService, MedicalReportService>();
 
 builder.Services.AddScoped<IVideoCallService, VideoCallService>();
 
+builder.Services.AddScoped<IAppointmentStatisticsService, AppointmentStatisticsService>();
 
 #endregion
 
