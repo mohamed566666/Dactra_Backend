@@ -26,5 +26,16 @@ namespace Dactra.Repositories.Implementation
             .Include(s => s.Doctor)
             .FirstOrDefaultAsync(s => s.Id == scheduleTableId);
         }
+
+        public async Task<int> SaveChangesAsync()
+        {
+            return await _context.SaveChangesAsync();
+        }
+        public async Task<PatientAppointment> UpdateAsync(PatientAppointment appointment)
+        {
+            _context.PatientAppointments.Update(appointment);
+            await _context.SaveChangesAsync();
+            return appointment;
+        }
     }
 }
