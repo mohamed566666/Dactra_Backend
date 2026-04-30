@@ -39,20 +39,26 @@ namespace Dactra.Controllers
             }
         }
         [HttpPost("refund")]
-        public async Task<IActionResult> Refund(int appointmentid)
+        [AllowAnonymous]
+        public async Task<IActionResult> Refund(int appointmentid,string CancelledReason)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (string.IsNullOrEmpty(role))
                 return Unauthorized("Invalid token");
-            var patient = await _context.Patients
-                   .FirstOrDefaultAsync(p => p.UserId == userId);
 
-            bool result = await _service.CancelAppointmentAsync(appointmentid,patient.Id);
+            var patientId = await _context.PatientAppointments
+                 .Where(a => a.Id == appointmentid)
+                 .Select(a => a.PatientId)
+                 .FirstOrDefaultAsync();
+            if (patientId == null)
+                return NotFound("Patient not found");
+
+            bool result = await _service.CancelAppointmentAsync(appointmentid, patientId, CancelledReason, role);
 
             if (result)
-                return Ok(new { success = true, message = "All payments refunded successfully." });
+                return Ok(new { success = true, message = "Appointment cancelled successfully." });
             else
-                return BadRequest(new { success = false, message = "Some refunds failed. Check logs." });
+                return BadRequest(new { success = false, message = "Cancellation failed." });
 
 
         }

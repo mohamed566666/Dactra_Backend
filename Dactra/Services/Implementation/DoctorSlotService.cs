@@ -123,7 +123,7 @@ namespace Dactra.Services.Implementation
         private async Task<DoctorSlotsDto> GetAllSlotsInternalAsync(int doctorId, SlotType slotType)
         {
             var slots = await _repo.FindAsync(x =>
-                x.DoctorId == doctorId && x.SlotType == slotType && x.SlotDateTimeUtc >= DateTime.UtcNow.AddDays(-1));
+                x.DoctorId == doctorId && x.SlotType == slotType && x.SlotDateTimeUtc >= DateTime.UtcNow.AddDays(-1)&& x.IsReserved == false);
             return MapToDoctorSlotsDto(slots);
         }
 
@@ -134,7 +134,8 @@ namespace Dactra.Services.Implementation
                 x.DoctorId == doctorId &&
                 x.SlotType == slotType &&
                 x.SlotDateTimeUtc >= fromUtc &&
-                x.SlotDateTimeUtc <= toUtc);
+                x.SlotDateTimeUtc <= toUtc &&
+                x.IsReserved == false);
             return MapToDoctorSlotsDto(slots);
         }
 
@@ -143,7 +144,8 @@ namespace Dactra.Services.Implementation
             var slots = await _repo.FindAsync(x =>
                 x.DoctorId == doctorId &&
                 x.SlotType == slotType &&
-                !x.IsBooked);
+                !x.IsBooked &&
+                x.IsReserved == false);
             return MapToDoctorFreeSlotsDto(slots);
         }
 
@@ -155,7 +157,8 @@ namespace Dactra.Services.Implementation
                 x.SlotType == slotType &&
                 !x.IsBooked &&
                 x.SlotDateTimeUtc >= fromUtc &&
-                x.SlotDateTimeUtc <= toUtc);
+                x.SlotDateTimeUtc <= toUtc &&
+                x.IsReserved == false);
             return MapToDoctorFreeSlotsDto(slots);
         }
 
