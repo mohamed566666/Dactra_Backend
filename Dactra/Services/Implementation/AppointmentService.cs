@@ -172,7 +172,7 @@ namespace Dactra.Services.Implementation
                 .ToListAsync();
         }
 
-        public async Task<bool> CancelAppointmentAsync(int appointmentId, int patientId)
+        public async Task<bool> CancelAppointmentAsync(int appointmentId, int patientId,string CancelledReason,string role)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -181,7 +181,7 @@ namespace Dactra.Services.Implementation
                 var appointment = await _context.PatientAppointments 
                     .Include(a => a.Slot)
                     .FirstOrDefaultAsync(a => 
-                        a.SlotId == appointmentId &&
+                        a.Id == appointmentId &&
                         a.PatientId == patientId);
 
                 if (appointment == null)
@@ -191,12 +191,15 @@ namespace Dactra.Services.Implementation
                     return false;
 
                 appointment.Status = AppointmentStatus.Cancelled;
+                appointment.CancelledReason = CancelledReason;
 
                 var slot = appointment.Slot;
                 slot.IsBooked = false;
                 slot.AppointmentId = null;
+                if (role == "Doctor")
+                    slot.IsReserved = true;
 
-           
+
                 if (slot.SlotType == SlotType.Online) {
                     await _paymentService.RefundAppointmentAsync(slot.Id);
                 }
