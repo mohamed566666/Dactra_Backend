@@ -196,14 +196,16 @@ namespace Dactra.Services.Implementation
                 slot.IsBooked = false;
                 slot.AppointmentId = null;
 
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                await _paymentService.RefundAppointmentAsync(slot.Id);
+           
+                if (slot.SlotType == SlotType.Online) {
+                    await _paymentService.RefundAppointmentAsync(slot.Id);
+                }
                 if (!string.IsNullOrEmpty(appointment.ReminderJobId))
                 {
                     BackgroundJob.Delete(appointment.ReminderJobId);
                 }
-
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
                 await _hub.Clients.Group($"Doctor_{slot.DoctorId}")
                     .SendAsync("AppointmentCancelled", new
                     {
