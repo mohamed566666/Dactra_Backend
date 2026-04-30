@@ -96,10 +96,13 @@ namespace Dactra.Services.Implementation
                 role: role
             );
 
+            var appId = _config["Jitsi:AppId"];
+            var domain = _config["Jitsi:Domain"];
+
             return new JoinRoomResponseDto(
-                RoomName: session.RoomName,
+                RoomName: $"{appId}/{session.RoomName}",
                 JitsiToken: jitsiToken,
-                JitsiDomain: _config["Jitsi:Domain"] ?? "meet.jit.si",
+                JitsiDomain: domain,
                 DisplayName: displayName,
                 Role: role,
                 SessionId: session.Id
@@ -112,7 +115,7 @@ namespace Dactra.Services.Implementation
                 .FirstOrDefaultAsync(s => s.AppointmentId == appointmentId);
 
             if (session == null)
-                return new RoomStatusDto(0, string.Empty, VideoCallStatus.Waiting, false, false, null);
+                return new RoomStatusDto(0, "", VideoCallStatus.Waiting, false, false, null);
 
             return new RoomStatusDto(
                 SessionId: session.Id,
@@ -152,50 +155,58 @@ namespace Dactra.Services.Implementation
             return $"dactra-apt-{appointmentId}-{suffix}";
         }
 
-        private string GenerateJitsiToken(
-            string roomName,
-            string userId,
-            string displayName,
-            string role)
+        private string GenerateJitsiToken(string roomName, string userId, string displayName, string role)
         {
-            var secret = _config["Jitsi:Secret"];
             var appId = _config["Jitsi:AppId"];
-            var expiry = int.Parse(_config["Jitsi:TokenExpiryMinutes"] ?? "60");
-            var domain = _config["Jitsi:Domain"] ?? "meet.jit.si";
+            var keyId = _config["Jitsi:KeyId"];
+            var privateKeyText = File.ReadAllText(_config["Jitsi:PrivateKeyPath"]);
+            var expMinutes = int.Parse(_config["Jitsi:TokenExpiryMinutes"] ?? "60");
 
-            if (string.IsNullOrEmpty(secret) || string.IsNullOrEmpty(appId))
-                return string.Empty;
+            var rsa = RSA.Create();
+            rsa.ImportFromPem(privateKeyText);
+            var securityKey = new RsaSecurityKey(rsa) { KeyId = keyId };
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.RsaSha256);
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var isModerator = role == "moderator";
+
+            var context = JsonSerializer.Serialize(new
+            {
+                user = new
+                {
+                    id = userId,
+                    name = displayName,
+                    moderator = isModerator,
+                    avatar = ""
+                },
+                features = new
+                {
+                    recording = false,
+                    outbound_call = false,
+                    transcription = false,
+                    livestreaming = false
+                }
+            });
 
             var claims = new[]
             {
-                new Claim("room",    roomName),
-                new Claim("sub",     domain),
-                new Claim("iss",     appId),
-                new Claim("aud",     appId),
-                new Claim("context", System.Text.Json.JsonSerializer.Serialize(new
-                {
-                    user = new
-                    {
-                        id           = userId,
-                        name         = displayName,
-                        moderator    = role == "moderator"
-                    }
-                }))
-            };
+        new Claim("iss", "chat"),
+        new Claim("aud", "jitsi"),
+        new Claim("sub", appId),
+        new Claim("room", "*"),
+        new Claim("context", context),
+    };
 
+            var handler = new JwtSecurityTokenHandler();
             var token = new JwtSecurityToken(
-                issuer: appId,
-                audience: appId,
                 claims: claims,
                 notBefore: DateTime.UtcNow,
-                expires: DateTime.UtcNow.AddMinutes(expiry),
+                expires: DateTime.UtcNow.AddMinutes(expMinutes),
                 signingCredentials: credentials
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            token.Header["kid"] = keyId;
+
+            return handler.WriteToken(token);
         }
     }
 }

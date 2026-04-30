@@ -19,7 +19,7 @@ namespace Dactra.Controllers
         public async Task<IActionResult> JoinRoom(int appointmentId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? throw new UnauthorizedAccessException();
+                ?? throw new UnauthorizedAccessException("Not Valid Token");
 
             var result = await _videoCallService.JoinRoomAsync(appointmentId, userId);
             return Ok(result);
