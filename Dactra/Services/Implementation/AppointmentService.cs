@@ -52,7 +52,7 @@ namespace Dactra.Services.Implementation
 
                 slot.IsBooked = true;
                 slot.IsReserved = true;
-                slot.ReservedUntil = DateTime.UtcNow.AddMinutes(5);
+                slot.ReservedUntil = DateTime.UtcNow.AddMinutes(10);
 
                 await _context.SaveChangesAsync();
 
