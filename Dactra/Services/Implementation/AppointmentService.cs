@@ -83,6 +83,7 @@ namespace Dactra.Services.Implementation
                     Status = isInPerson ? AppointmentStatus.Confirmed : AppointmentStatus.Pending,
                     BookedAt = DateTime.UtcNow
 
+
                 };
 
                  await _appointmentRepository.BookeAsync(appointment);
