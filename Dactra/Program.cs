@@ -189,7 +189,7 @@ builder.Services.AddScoped<IAppointmentStatisticsService, AppointmentStatisticsS
 
 #region Background Services
 builder.Services.AddHostedService<CleanupExpiredTokensService>();
-builder.Services.AddHostedService<SlotReservationCleanupService>();
+//builder.Services.AddHostedService<SlotReservationCleanupService>();
 builder.Services.AddHostedService<SlotCleanupBackgroundService>();
 
 builder.Services.AddHttpClient<PaymentService>();

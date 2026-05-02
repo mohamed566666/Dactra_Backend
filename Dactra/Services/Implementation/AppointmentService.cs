@@ -59,7 +59,7 @@ namespace Dactra.Services.Implementation
 
                 slot.IsBooked = true;
                 slot.IsReserved = true;
-                slot.ReservedUntil = DateTime.UtcNow.AddMinutes(5);
+                slot.ReservedUntil = DateTime.UtcNow.AddMinutes(10);
 
                 await _context.SaveChangesAsync();
 
@@ -89,6 +89,7 @@ namespace Dactra.Services.Implementation
                     SlotId = slot.Id,
                     Status = isInPerson ? AppointmentStatus.Confirmed : AppointmentStatus.Pending,
                     BookedAt = DateTime.UtcNow
+
 
                 };
 

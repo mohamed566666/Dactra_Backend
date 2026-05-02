@@ -13,22 +13,22 @@ namespace Dactra.Services.Implementation
         }
 
 
-        public async Task SendReminder(int slotID)
+        public async Task SendReminder(int appointmentId)
         {
-            var appt = _context.PatientAppointments
-                .Include(a => a.Slot)
-                .FirstOrDefault(a => a.SlotId == slotID);
+            var appt = await _context.PatientAppointments
+             .Include(a => a.Slot)
+             .FirstOrDefaultAsync(a => a.Id == appointmentId);
 
             if (appt == null || appt.IsReminderSent)
             {
-                return ;
+                return;
             }
 
 
          
-            await _notificationService.SendAsync(appt.PatientId.ToString(), "1 hour left to your appointment", "Reminder",null,slotID);
+            await _notificationService.SendAsync(appt.PatientId.ToString(), "1 hour left to your appointment", "Reminder",null,appt.SlotId);
 
-            await _notificationService.SendAsync(appt.Slot.DoctorId.ToString(), "1 hour left to your appointment", "Reminder", null, slotID);
+            await _notificationService.SendAsync(appt.Slot.DoctorId.ToString(), "1 hour left to your appointment", "Reminder", null, appt.SlotId);
 
             appt.IsReminderSent = true;
             await _context.SaveChangesAsync();
