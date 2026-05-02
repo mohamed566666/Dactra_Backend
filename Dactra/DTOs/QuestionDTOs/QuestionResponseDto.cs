@@ -7,6 +7,7 @@ namespace Dactra.DTOs.QuestionDTOs
         public int Id { get; set; }
         public string email { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset? UpdatedAt { get; set; }
         public PatientSummaryDto Patient { get; set; } = null!;

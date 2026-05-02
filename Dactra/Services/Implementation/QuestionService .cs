@@ -13,6 +13,7 @@ namespace Dactra.Services.Implementation
         private readonly IAITaggingService _aiTagging;
         private readonly IHubContext<QuestionHub> _hub;
         private readonly ILogger<QuestionService> _logger;
+        private readonly IFileService _fileService;
 
         public QuestionService(
             IQuestionRepository questionRepo,
@@ -21,7 +22,8 @@ namespace Dactra.Services.Implementation
             ITagRepository tagRepo,
             IAITaggingService aiTagging,
             IHubContext<QuestionHub> hub,
-            ILogger<QuestionService> logger)
+            ILogger<QuestionService> logger,
+            IFileService fileService)
         {
             _questionRepo = questionRepo;
             _interestRepo = interestRepo;
@@ -30,6 +32,7 @@ namespace Dactra.Services.Implementation
             _aiTagging = aiTagging;
             _hub = hub;
             _logger = logger;
+            _fileService = fileService;
         }
 
         public async Task<QuestionFeedResponseDto> GetAllAsync(int page, int pageSize, string? currentUserId = null)
@@ -125,6 +128,16 @@ namespace Dactra.Services.Implementation
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
+            if (dto.Image != null)
+            {
+                var uploadResult = await _fileService.UploadAsync(dto.Image, "questions", 5);
+                if (uploadResult.Success)
+                {
+                    question.ImageUrl = uploadResult.FileUrl;
+                    question.ImagePublicId = uploadResult.PublicId;
+                }
+            }
+
             var created = await _questionRepo.CreateAsync(question);
 
             await AssignTagsAsync(created.Id, dto.Content);
@@ -149,7 +162,31 @@ namespace Dactra.Services.Implementation
             question.Content = dto.Content;
             question.UpdatedAt = DateTimeOffset.UtcNow;
 
-            await _questionRepo.UpdateAsync(question);
+            if (dto.Image != null)
+            {
+                if (!string.IsNullOrEmpty(question.ImagePublicId))
+                {
+                    await _fileService.DeleteAsync(question.ImagePublicId);
+                }
+
+                var uploadResult = await _fileService.UploadAsync(dto.Image, "questions", 5);
+                if (uploadResult.Success)
+                {
+                    question.ImageUrl = uploadResult.FileUrl;
+                    question.ImagePublicId = uploadResult.PublicId;
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(question.ImagePublicId))
+                {
+                    await _fileService.DeleteAsync(question.ImagePublicId);
+                    question.ImageUrl = null;
+                    question.ImagePublicId = null;
+                }
+            }
+
+                await _questionRepo.UpdateAsync(question);
 
             await AssignTagsAsync(id, dto.Content);
 
@@ -209,6 +246,7 @@ namespace Dactra.Services.Implementation
                 Id = q.Id,
                 email = q.Patient?.User?.Email ?? string.Empty,
                 Content = q.Content,
+                ImageUrl = q.ImageUrl,
                 CreatedAt = q.CreatedAt,
                 UpdatedAt = q.UpdatedAt,
 

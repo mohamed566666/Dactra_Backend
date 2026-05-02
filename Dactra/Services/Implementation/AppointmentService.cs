@@ -1,8 +1,9 @@
-﻿using Google;
+﻿using Dactra.DTOs;
+using Dactra.Hubs;
+using Google;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using System;
-using Dactra.DTOs;
 
 namespace Dactra.Services.Implementation
 {
@@ -14,13 +15,20 @@ namespace Dactra.Services.Implementation
         private readonly IPatientProfileRepository _patientProfileRepository;
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IReminderService _reminderService;
+        private readonly IHubContext<DoctorScheduleHub> _sChub;
 
         public AppointmentService(
             ApplicationDbContext context,
-            IHubContext<AppointmentHub> hub,IPaymentService paymentService, IPatientProfileRepository patientProfileRepository,IAppointmentRepository appointmentRepository, IReminderService reminderService)
+            IHubContext<AppointmentHub> hub,
+            IHubContext<DoctorScheduleHub> sChub,
+            IPaymentService paymentService,
+            IPatientProfileRepository patientProfileRepository,
+            IAppointmentRepository appointmentRepository,
+            IReminderService reminderService)
         {
             _context = context;
             _hub = hub;
+            _sChub = sChub;
             _paymentService = paymentService;
             _patientProfileRepository = patientProfileRepository;
             _appointmentRepository = appointmentRepository;
@@ -44,8 +52,7 @@ namespace Dactra.Services.Implementation
                 if (slot == null || slot.IsBooked)
                     throw new Exception("Slot already booked");
 
-                var Time = DateTime.SpecifyKind(slot.SlotDateTimeUtc, DateTimeKind.Local)
-                    .ToUniversalTime();
+                var Time = slot.SlotDateTimeUtc;
 
                 if (Time <= DateTime.UtcNow)
                     throw new Exception("Slot time is in the past");
@@ -89,8 +96,7 @@ namespace Dactra.Services.Implementation
                  await _appointmentRepository.BookeAsync(appointment);
                 await CreateOrRenewCareAsync(patientId, slot.DoctorId);
 
-                var utcTime = DateTime.SpecifyKind(slot.SlotDateTimeUtc, DateTimeKind.Local)
-                      .ToUniversalTime();
+                var utcTime = slot.SlotDateTimeUtc;
 
                 if (utcTime <= DateTime.UtcNow)
                     throw new Exception("Slot time is in the past");
@@ -120,6 +126,8 @@ namespace Dactra.Services.Implementation
                     slot.ReservedUntil = null;
                     await _context.SaveChangesAsync();
                     await tx.CommitAsync();
+                    await _sChub.Clients.Group($"DoctorSchedule_{slot.DoctorId}")
+                        .SendAsync("SlotsUpdated", new { DoctorId = slot.DoctorId });
                     return "In-person appointment booked successfully. Please proceed to payment.";
                 }
                 else
@@ -141,6 +149,8 @@ namespace Dactra.Services.Implementation
                         patientProfile.User.UserName
                     );
                     await tx.CommitAsync();
+                    await _sChub.Clients.Group($"DoctorSchedule_{slot.DoctorId}")
+                        .SendAsync("SlotsUpdated", new { DoctorId = slot.DoctorId });
                     return paymentUrl;
                 }
             }
@@ -179,9 +189,9 @@ namespace Dactra.Services.Implementation
 
             try
             {
-                var appointment = await _context.PatientAppointments 
+                var appointment = await _context.PatientAppointments
                     .Include(a => a.Slot)
-                    .FirstOrDefaultAsync(a => 
+                    .FirstOrDefaultAsync(a =>
                         a.Id == appointmentId &&
                         a.PatientId == patientId);
 
@@ -201,7 +211,8 @@ namespace Dactra.Services.Implementation
                     slot.IsReserved = true;
 
 
-                if (slot.SlotType == SlotType.Online) {
+                if (slot.SlotType == SlotType.Online)
+                {
                     await _paymentService.RefundAppointmentAsync(slot.Id);
                 }
                 if (!string.IsNullOrEmpty(appointment.ReminderJobId))
@@ -210,12 +221,25 @@ namespace Dactra.Services.Implementation
                 }
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
-                await _hub.Clients.Group($"Doctor_{slot.DoctorId}")
-                    .SendAsync("AppointmentCancelled", new
+                await _sChub.Clients.Group($"Doctor_{slot.DoctorId}")
+               .SendAsync("AppointmentCancelled", new
+               {
+                   AppointmentId = appointment.Id,
+                   SlotId = slot.Id
+               });
+
+                await _sChub.Clients.Group($"DoctorSchedule_{slot.DoctorId}")
+                    .SendAsync("SlotsUpdated", new
                     {
-                        AppointmentId = appointment.Id,
-                        SlotId = slot.Id
+                        DoctorId = slot.DoctorId,
+                        SlotId = slot.Id,
+                        SlotDateTime = slot.SlotDateTimeUtc,
+                        SlotType = slot.SlotType.ToString(),
+                        IsBooked = false,
+                        IsReserved = slot.IsReserved,
+                        Message = $"Slot {slot.SlotDateTimeUtc} is now available again."
                     });
+
 
                 return true;
             }

@@ -31,7 +31,8 @@ public class SlotReservationCleanupService : BackgroundService
                     .Where(s => slotIds.Contains(s.Id))
                     .ExecuteUpdateAsync(s => s
                         .SetProperty(x => x.IsReserved, false)
-                        .SetProperty(x => x.ReservedUntil, (DateTime?)null));
+                        .SetProperty(x => x.ReservedUntil, (DateTime?)null)
+                        .SetProperty(x => x.IsBooked, false));
 
                 await _context.PatientAppointments
                     .Where(a => expiredAppointments.Select(x => x.Id).Contains(a.Id))

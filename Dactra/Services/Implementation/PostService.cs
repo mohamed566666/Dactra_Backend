@@ -13,6 +13,7 @@ namespace Dactra.Services.Implementation
         private readonly IAITaggingService _aiTagging;
         private readonly IHubContext<PostHub> _hub;
         private readonly ILogger<PostService> _logger;
+        private readonly IFileService _fileService;
 
         public PostService(
             IPostRepository postRepo,
@@ -22,7 +23,8 @@ namespace Dactra.Services.Implementation
             ISavedPostRepository savedRepo,
             IAITaggingService aiTagging,
             IHubContext<PostHub> hub,
-            ILogger<PostService> logger)
+            ILogger<PostService> logger,
+            IFileService fileService)
         {
             _postRepo = postRepo;
             _postTagRepo = postTagRepo;
@@ -32,6 +34,7 @@ namespace Dactra.Services.Implementation
             _aiTagging = aiTagging;
             _hub = hub;
             _logger = logger;
+            _fileService = fileService;
         }
 
         public async Task<PostResponseDto> GetByIdAsync(int id, string? currentUserId = null)
@@ -105,16 +108,27 @@ namespace Dactra.Services.Implementation
                 CreatedAt = DateTime.UtcNow
             };
 
+            if (dto.Image != null)
+            {
+                var uploadResult = await _fileService.UploadAsync(dto.Image, "posts", 5);
+                if (uploadResult.Success)
+                {
+                    post.ImageUrl = uploadResult.FileUrl;
+                    post.ImagePublicId = uploadResult.PublicId;
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to upload image for post: {Error}", uploadResult.Message);
+                }
+            }
+
             var created = await _postRepo.CreateAsync(post);
 
-            // Auto-tag using AI
             await AssignTagsAsync(created.Id, dto.Content);
 
-            // Reload with all navigation props
             var fullPost = await _postRepo.GetByIdWithDetailsAsync(created.Id)!;
             var responseDto = await MapToResponseDtoAsync(fullPost!, null);
 
-            // Broadcast to the global feed group via SignalR
             await _hub.Clients.Group(PostHub.GlobalFeedGroup())
                 .SendAsync("PostCreated", responseDto);
 
@@ -132,15 +146,27 @@ namespace Dactra.Services.Implementation
             post.Content = dto.Content;
             post.UpdatedAt = DateTime.UtcNow;
 
-            await _postRepo.UpdateAsync(post);
+            if (dto.Image != null)
+            {
+                if (!string.IsNullOrEmpty(post.ImagePublicId))
+                {
+                    await _fileService.DeleteAsync(post.ImagePublicId);
+                }
 
-            // Re-tag using AI with updated content
+                var uploadResult = await _fileService.UploadAsync(dto.Image, "posts", 5);
+                if (uploadResult.Success)
+                {
+                    post.ImageUrl = uploadResult.FileUrl;
+                    post.ImagePublicId = uploadResult.PublicId;
+                }
+            }
+
+            await _postRepo.UpdateAsync(post);
             await AssignTagsAsync(id, dto.Content);
 
             var fullPost = await _postRepo.GetByIdWithDetailsAsync(id)!;
             var responseDto = await MapToResponseDtoAsync(fullPost!, null);
 
-            // Broadcast update to the post group
             await _hub.Clients.Group(PostHub.PostGroupName(id))
                 .SendAsync("PostUpdated", responseDto);
 
@@ -157,7 +183,6 @@ namespace Dactra.Services.Implementation
 
             await _postRepo.SoftDeleteAsync(id);
 
-            // Notify all clients watching this post or the feed
             await _hub.Clients.Group(PostHub.PostGroupName(id))
                 .SendAsync("PostDeleted", new { postId = id });
 
@@ -182,7 +207,6 @@ namespace Dactra.Services.Implementation
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Auto-tagging failed for post {PostId}", postId);
-                // Non-fatal: post is still created/updated without tags
             }
         }
 
@@ -197,6 +221,7 @@ namespace Dactra.Services.Implementation
                 email = post.Doctor?.User?.Email,
                 Content = post.Content,
                 CreatedAt = post.CreatedAt.AddHours(2),
+                ImageUrl = post.ImageUrl,
                 UpdatedAt = post.UpdatedAt,
                 LikesCount = post.Likes?.Count ?? 0,
                 CommentsCount = post.Comments?.Count ?? 0,

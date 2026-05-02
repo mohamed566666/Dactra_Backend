@@ -15,13 +15,16 @@ namespace Dactra.Controllers
     {
         private readonly ILogger<SlotCleanupController> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IDoctorSlotService _slotService;
 
         public SlotCleanupController(
             ILogger<SlotCleanupController> logger,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider,
+            IDoctorSlotService slotService)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
+            _slotService = slotService;
         }
 
         [HttpPost("cleanup-expired")]
@@ -355,6 +358,85 @@ namespace Dactra.Controllers
                     Details = ex.Message
                 });
             }
+        }
+
+        [HttpDelete("doctor/{doctorId}/past-unbooked")]
+        public async Task<IActionResult> DeleteUnbookedPastSlots(int doctorId)
+        {
+            var deletedCount = await _slotService.DeleteUnbookedPastSlotsByDoctorAsync(doctorId);
+            return Ok(new
+            {
+                DoctorId = doctorId,
+                DeletedUnbookedPastSlotsCount = deletedCount,
+                Message = deletedCount == 0
+                    ? "No unbooked past slots found."
+                    : $"{deletedCount} unbooked past slot(s) deleted successfully."
+            });
+        }
+
+        [HttpDelete("doctor/{doctorId}/all-past")]
+        public async Task<IActionResult> DeleteAllPastSlots(int doctorId)
+        {
+            var deletedCount = await _slotService.DeleteAllPastSlotsByDoctorAsync(doctorId);
+            return Ok(new
+            {
+                DoctorId = doctorId,
+                DeletedAllPastSlotsCount = deletedCount,
+                Message = deletedCount == 0
+                    ? "No past slots found."
+                    : $"{deletedCount} past slot(s) deleted successfully."
+            });
+        }
+
+        [HttpDelete("doctor/{doctorId}/outside-hours/{slotType}")]
+        public async Task<IActionResult> DeleteOutsideWorkingHours(int doctorId, string slotType)
+        {
+            if (!Enum.TryParse<SlotType>(slotType, true, out var type))
+                return BadRequest("Invalid slot type. Use Online or InPerson");
+
+            try
+            {
+                var deletedCount = await _slotService.DeleteSlotsOutsideWorkingHoursAsync(doctorId, type);
+                return Ok(new
+                {
+                    DoctorId = doctorId,
+                    SlotType = type.ToString(),
+                    DeletedCount = deletedCount,
+                    Message = deletedCount == 0
+                        ? "No slots found outside working hours (or they were already booked)."
+                        : $"{deletedCount} slot(s) deleted because they are outside working hours."
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
+        }
+
+        [HttpDelete("doctor/{doctorId}/all-outside-hours")]
+        public async Task<IActionResult> DeleteAllOutsideWorkingHours(int doctorId)
+        {
+            var totalDeleted = await _slotService.DeleteAllSlotsOutsideWorkingHoursAsync(doctorId);
+            return Ok(new
+            {
+                DoctorId = doctorId,
+                TotalDeleted = totalDeleted,
+                Message = $"{totalDeleted} slot(s) deleted across both types."
+            });
+        }
+
+        [HttpDelete("doctor/{doctorId}/free-slots/all")]
+        public async Task<IActionResult> DeleteAllFreeSlots(int doctorId)
+        {
+            var deletedCount = await _slotService.DeleteAllFreeSlotsByDoctorAsync(doctorId);
+            return Ok(new
+            {
+                DoctorId = doctorId,
+                DeletedFreeSlotsCount = deletedCount,
+                Message = deletedCount == 0
+                    ? "No free slots found for this doctor."
+                    : $"{deletedCount} free slot(s) deleted successfully."
+            });
         }
 
         //[HttpGet("stats")]

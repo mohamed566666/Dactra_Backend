@@ -27,11 +27,6 @@ namespace Dactra.Controllers
 
         #region Statistics Only
 
-        /// <summary>
-        /// GET: api/AppointmentStatistics/statistics
-        /// بيرجع الإحصائيات (completed, upcoming, cancelled, unpaid, total)
-        /// بناءً على رول المستخدم (Patient أو Doctor)
-        /// </summary>
         [HttpGet("statistics")]
         [Authorize(Roles = "Patient,Doctor")]
         public async Task<IActionResult> GetStatisticsOnly()
@@ -64,21 +59,16 @@ namespace Dactra.Controllers
 
         #region Appointments Only (Paged with Status)
 
-        /// <summary>
-        /// GET: api/AppointmentStatistics/appointments
-        /// بيرجع المواعيد المفهرسة بناءً على الستيتس والرول
-        /// </summary>
         [HttpGet("appointments")]
         [Authorize(Roles = "Patient,Doctor")]
         public async Task<IActionResult> GetAppointmentsPaged(
-            [FromQuery] AppointmentStatus status,
-            [FromQuery] SlotType? type = null,
-            [FromQuery] DateTime? fromDate = null,
-            [FromQuery] DateTime? toDate = null,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10)
+    [FromQuery] AppointmentStatus status,[FromQuery] SlotType? type = null,[FromQuery] DateTime? fromDate = null,
+    [FromQuery] DateTime? toDate = null,[FromQuery] int page = 1,[FromQuery] int pageSize = 10)
         {
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            bool isUpcoming = status == AppointmentStatus.Confirmed;
+
             var filter = new AppointmentFilterRequestDto
             {
                 Page = page,
@@ -86,7 +76,8 @@ namespace Dactra.Controllers
                 Status = status,
                 Type = type,
                 FromDate = fromDate,
-                ToDate = toDate
+                ToDate = toDate,
+                UpcomingOnly = isUpcoming
             };
 
             if (userRole == "Patient")
@@ -96,14 +87,6 @@ namespace Dactra.Controllers
                     return Unauthorized(new { message = "Patient profile not found" });
 
                 var result = await _statisticsService.GetPatientAppointmentsPagedAsync(patient.Id, filter);
-
-                // For upcoming (Confirmed status with future dates)
-                if (status == AppointmentStatus.Confirmed)
-                {
-                    result.Items = result.Items.Where(a => a.SlotDateTime > DateTime.UtcNow).ToList();
-                    result.TotalCount = result.Items.Count;
-                }
-
                 return Ok(result);
             }
             else if (userRole == "Doctor")
@@ -113,14 +96,6 @@ namespace Dactra.Controllers
                     return Unauthorized(new { message = "Doctor profile not found" });
 
                 var result = await _statisticsService.GetDoctorAppointmentsPagedAsync(doctor.Id, filter);
-
-                // For upcoming (Confirmed status with future dates)
-                if (status == AppointmentStatus.Confirmed)
-                {
-                    result.Items = result.Items.Where(a => a.SlotDateTime > DateTime.UtcNow).ToList();
-                    result.TotalCount = result.Items.Count;
-                }
-
                 return Ok(result);
             }
 

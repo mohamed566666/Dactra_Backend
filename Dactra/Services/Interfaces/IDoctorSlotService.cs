@@ -19,5 +19,14 @@ namespace Dactra.Services.Interfaces
         Task<WorkingHoursResponseDTO> GetWorkingHoursAsync(int doctorId);
         Task<WorkingHoursResponseDTO> UpdateWorkingHoursAsync(int doctorId, WorkingHoursDTO workingHours);
         Task<int> GetDoctorIdBySlotId(int slotId);
+
+
+
+
+        Task<int> DeleteUnbookedPastSlotsByDoctorAsync(int doctorId);
+        Task<int> DeleteAllPastSlotsByDoctorAsync(int doctorId);
+        Task<int> DeleteSlotsOutsideWorkingHoursAsync(int doctorId, SlotType slotType);
+        Task<int> DeleteAllSlotsOutsideWorkingHoursAsync(int doctorId); // للنوعين مع بعض
+        Task<int> DeleteAllFreeSlotsByDoctorAsync(int doctorId);
     }
 }

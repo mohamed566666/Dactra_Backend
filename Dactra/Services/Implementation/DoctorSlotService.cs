@@ -1,5 +1,6 @@
 ﻿using Dactra.DTOs.DoctorSlotsDTOs;
 using Microsoft.AspNetCore.Routing;
+using NetTopologySuite.Index;
 
 namespace Dactra.Services.Implementation
 {
@@ -70,7 +71,13 @@ namespace Dactra.Services.Implementation
 
                     if (isBooked.Any()) continue;
 
-                    await _repo.AddAsync(new DoctorAvailabilitySlot
+                    var existingSlot = await _repo.FindAsync(
+                        s => s.DoctorId == doctorId &&
+                             s.SlotDateTimeUtc == slotDateTimeUtc);
+
+                    if (existingSlot.Any()) continue;
+
+                        await _repo.AddAsync(new DoctorAvailabilitySlot
                     {
                         DoctorId = doctorId,
                         SlotDateTimeUtc = slotDateTimeUtc,
@@ -122,9 +129,48 @@ namespace Dactra.Services.Implementation
 
         private async Task<DoctorSlotsDto> GetAllSlotsInternalAsync(int doctorId, SlotType slotType)
         {
-            var slots = await _repo.FindAsync(x =>
-                x.DoctorId == doctorId && x.SlotType == slotType && x.SlotDateTimeUtc >= DateTime.UtcNow.AddDays(-1)&& x.IsReserved == false);
-            return MapToDoctorSlotsDto(slots);
+            var currentTypeSlots = await _repo.FindAsync(x =>
+                x.DoctorId == doctorId &&
+                x.SlotType == slotType &&
+                x.SlotDateTimeUtc >= DateTime.UtcNow &&
+                x.IsReserved == false);
+
+            var workingHours = await GetWorkingHoursAsync(doctorId);
+            var entry = slotType == SlotType.Online
+                ? workingHours.Online
+                : workingHours.InPerson;
+
+            if (!entry.WorkingStartTime.HasValue || !entry.WorkingEndTime.HasValue)
+                return MapToDoctorSlotsDto(currentTypeSlots);
+
+            var otherType = slotType == SlotType.Online ? SlotType.InPerson : SlotType.Online;
+
+            var otherTypeBookedSlots = await _repo.FindAsync(x =>
+                x.DoctorId == doctorId &&
+                x.SlotType == otherType &&
+                x.IsBooked == true &&
+                x.SlotDateTimeUtc >= DateTime.UtcNow);
+
+            var filteredOtherSlots = otherTypeBookedSlots
+                .Where(slot =>
+                {
+                    var slotTime = slot.SlotDateTimeUtc.TimeOfDay;
+                    return slotTime >= entry.WorkingStartTime.Value &&
+                           slotTime <= entry.WorkingEndTime.Value;
+                })
+                .Select(slot => new DoctorAvailabilitySlot
+                {
+                    Id = slot.Id,
+                    DoctorId = slot.DoctorId,
+                    SlotDateTimeUtc = slot.SlotDateTimeUtc,
+                    IsBooked = true,
+                    SlotType = slotType,
+                    IsReserved = slot.IsReserved
+                });
+
+            var allSlots = currentTypeSlots.Concat(filteredOtherSlots);
+
+            return MapToDoctorSlotsDto(allSlots);
         }
 
         private async Task<DoctorSlotsDto> GetSlotsRangeInternalAsync(
@@ -227,6 +273,9 @@ namespace Dactra.Services.Implementation
                 var updated = await _doctorrepository.UpdateWorkingHoursAsync(doctorId, workingHours);
                 if (!updated)
                     throw new InvalidOperationException($"Failed to update working hours for doctor {doctorId}");
+
+                 await DeleteUnbookedSlotsByTypeAsync(doctorId, workingHours.Type);
+
                 return await _doctorrepository.GetWorkingHoursAsync(doctorId);
             }
             catch (Exception ex)
@@ -280,6 +329,160 @@ namespace Dactra.Services.Implementation
             if (slot == null)
                 throw new Exception($"Slot with id {slotId} not found");
             return Task.FromResult(slot.DoctorId);
+        }
+
+        private async Task DeleteUnbookedSlotsByTypeAsync(int doctorId, SlotType slotType)
+        {
+            var unbookedSlots = await _repo.FindAsync(s =>
+                s.DoctorId == doctorId &&
+                s.SlotType == slotType &&
+                !s.IsBooked);
+
+            if (!unbookedSlots.Any())
+                return;
+
+            foreach (var slot in unbookedSlots)
+                _repo.Delete(slot);
+
+            await _repo.SaveChangesAsync();
+
+            await _hub.Clients.Group($"DoctorSchedule_{doctorId}")
+                .SendAsync("SlotsUpdated", new
+                {
+                    DoctorId = doctorId,
+                    WorkingHoursUpdated = true,
+                    SlotType = slotType.ToString(),
+                    DeletedUnbookedSlotsCount = unbookedSlots.Count(),
+                    Message = $"All unbooked {slotType} slots have been deleted due to working hours update."
+                });
+        }
+
+        public async Task<int> DeleteUnbookedPastSlotsByDoctorAsync(int doctorId)
+        {
+            var nowUtc = DateTime.UtcNow;
+
+            var pastUnbookedSlots = await _repo.FindAsync(s =>
+                s.DoctorId == doctorId &&
+                s.SlotDateTimeUtc >= nowUtc &&
+                !s.IsBooked);
+
+            if (!pastUnbookedSlots.Any())
+                return 0;
+
+            foreach (var slot in pastUnbookedSlots)
+                _repo.Delete(slot);
+
+            await _repo.SaveChangesAsync();
+
+            await _hub.Clients.Group($"DoctorSchedule_{doctorId}")
+                .SendAsync("SlotsUpdated", new { DoctorId = doctorId, DeletedPastUnbooked = true });
+
+            return pastUnbookedSlots.Count();
+        }
+
+        public async Task<int> DeleteAllPastSlotsByDoctorAsync(int doctorId)
+        {
+            var nowUtc = DateTime.UtcNow;
+
+            var pastSlots = await _repo.FindAsync(s =>
+                s.DoctorId == doctorId &&
+                s.SlotDateTimeUtc < nowUtc);
+
+            if (!pastSlots.Any())
+                return 0;
+
+            foreach (var slot in pastSlots)
+                _repo.Delete(slot);
+
+            await _repo.SaveChangesAsync();
+
+            await _hub.Clients.Group($"DoctorSchedule_{doctorId}")
+                .SendAsync("SlotsUpdated", new { DoctorId = doctorId, DeletedAllPast = true });
+
+            return pastSlots.Count();
+        }
+
+        public async Task<int> DeleteSlotsOutsideWorkingHoursAsync(int doctorId, SlotType slotType)
+        {
+            var workingHours = await GetWorkingHoursAsync(doctorId);
+
+            var entry = slotType == SlotType.Online
+                ? workingHours.Online
+                : workingHours.InPerson;
+
+            if (!entry.WorkingStartTime.HasValue || !entry.WorkingEndTime.HasValue)
+                throw new InvalidOperationException(
+                    $"{slotType} working hours are not configured for doctor {doctorId}");
+
+            var allSlots = await _repo.FindAsync(s =>
+                s.DoctorId == doctorId &&
+                s.SlotType == slotType);
+
+            var slotsToDelete = new List<DoctorAvailabilitySlot>();
+
+            foreach (var slot in allSlots)
+            {
+                var slotTime = slot.SlotDateTimeUtc.TimeOfDay;
+
+                if (slotTime < entry.WorkingStartTime.Value ||
+                    slotTime > entry.WorkingEndTime.Value)
+                {
+                    if (!slot.IsBooked)
+                        slotsToDelete.Add(slot);
+                }
+            }
+
+            if (!slotsToDelete.Any())
+                return 0;
+
+            foreach (var slot in slotsToDelete)
+                _repo.Delete(slot);
+
+            await _repo.SaveChangesAsync();
+
+            await _hub.Clients.Group($"DoctorSchedule_{doctorId}")
+                .SendAsync("SlotsUpdated", new
+                {
+                    DoctorId = doctorId,
+                    SlotType = slotType.ToString(),
+                    DeletedOutsideWorkingHours = slotsToDelete.Count
+                });
+
+            return slotsToDelete.Count;
+        }
+
+        public async Task<int> DeleteAllSlotsOutsideWorkingHoursAsync(int doctorId)
+        {
+            var onlineCount = await DeleteSlotsOutsideWorkingHoursAsync(doctorId, SlotType.Online);
+            var inPersonCount = await DeleteSlotsOutsideWorkingHoursAsync(doctorId, SlotType.InPerson);
+
+            return onlineCount + inPersonCount;
+        }
+
+        public async Task<int> DeleteAllFreeSlotsByDoctorAsync(int doctorId)
+        {
+            var freeSlots = await _repo.FindAsync(s =>
+                s.DoctorId == doctorId &&
+                !s.IsBooked);
+
+            if (!freeSlots.Any())
+                return 0;
+
+            foreach (var slot in freeSlots)
+                _repo.Delete(slot);
+
+            await _repo.SaveChangesAsync();
+
+            await _hub.Clients.Group($"DoctorSchedule_{doctorId}")
+                .SendAsync("SlotsUpdated", new
+                {
+                    DoctorId = doctorId,
+                    DeletedAllFreeSlots = true,
+                    DeletedCount = freeSlots.Count(),
+                    Message = $"All {freeSlots.Count()} free slot(s) have been deleted."
+                });
+
+            return freeSlots.Count();
         }
     }
 }

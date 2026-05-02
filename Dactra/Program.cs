@@ -185,6 +185,8 @@ builder.Services.AddScoped<IVideoCallService, VideoCallService>();
 
 builder.Services.AddScoped<IAppointmentStatisticsService, AppointmentStatisticsService>();
 
+builder.Services.Configure<AITaggingOptions>(builder.Configuration.GetSection("AITagging"));
+
 #endregion
 
 #region Background Services

@@ -164,7 +164,7 @@ namespace Dactra.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Patient")]
-        public async Task<ActionResult<QuestionResponseDto>> Create([FromBody] CreateQuestionDto dto)
+        public async Task<ActionResult<QuestionResponseDto>> Create([FromForm] CreateQuestionDto dto)
         {
             try
             {
@@ -184,7 +184,7 @@ namespace Dactra.Controllers
 
         [HttpPut("{id:int}")]
         [Authorize(Roles = "Patient")]
-        public async Task<ActionResult<QuestionResponseDto>> Update(int id, [FromBody] UpdateQuestionDto dto)
+        public async Task<ActionResult<QuestionResponseDto>> Update(int id, [FromForm] UpdateQuestionDto dto)
         {
             try
             {
