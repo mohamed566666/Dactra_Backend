@@ -128,20 +128,21 @@ namespace Dactra.Services.Implementation
                     await tx.CommitAsync();
                     await _sChub.Clients.Group($"DoctorSchedule_{slot.DoctorId}")
                         .SendAsync("SlotsUpdated", new { DoctorId = slot.DoctorId });
+                    await _hub.Clients.Groups($"Doctor_{slot.DoctorId}", $"Patient_{appointment.PatientId}")
+                      .SendAsync("AppointmentBooked", new
+                      {
+                          SlotId = slot.Id,
+                          AppointmentId = appointment.Id,
+                          SlotDateTime = slot.SlotDateTimeUtc,
+                          PatientId = patientId
+                      });
                     return "In-person appointment booked successfully. Please proceed to payment.";
                 }
                 else
                 {
 
 
-                    await _hub.Clients.Group($"Doctor_{slot.DoctorId}")
-                        .SendAsync("AppointmentBooked", new
-                        {
-                            SlotId = slot.Id,
-                            AppointmentId = appointment.Id,
-                            SlotDateTime = slot.SlotDateTimeUtc,
-                            PatientId = patientId
-                        });
+                 
                     var patientProfile = await _patientProfileRepository.GetByIdAsync(patientId);
 
                     var paymentUrl = await _paymentService.GetPaymentUrl(
@@ -149,6 +150,14 @@ namespace Dactra.Services.Implementation
                         patientProfile.User.UserName
                     );
                     await tx.CommitAsync();
+                    await _hub.Clients.Groups($"Doctor_{slot.DoctorId}", $"Patient_{appointment.PatientId}")
+                     .SendAsync("AppointmentBooked", new
+                     {
+                         SlotId = slot.Id,
+                         AppointmentId = appointment.Id,
+                         SlotDateTime = slot.SlotDateTimeUtc,
+                         PatientId = patientId
+                     });
                     await _sChub.Clients.Group($"DoctorSchedule_{slot.DoctorId}")
                         .SendAsync("SlotsUpdated", new { DoctorId = slot.DoctorId });
                     return paymentUrl;
@@ -221,6 +230,14 @@ namespace Dactra.Services.Implementation
                 }
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+                await _hub.Clients.Groups($"Doctor_{slot.DoctorId}", $"Patient_{appointment.PatientId}")
+                      .SendAsync("AppointmentCancelled", new
+                      {
+                          SlotId = slot.Id,
+                          AppointmentId = appointment.Id,
+                          SlotDateTime = slot.SlotDateTimeUtc,
+                          PatientId = patientId
+                      });
                 await _sChub.Clients.Group($"Doctor_{slot.DoctorId}")
                .SendAsync("AppointmentCancelled", new
                {
