@@ -31,13 +31,11 @@ namespace Dactra.Services.Implementation
             _context = context;
         }
 
-        // للمريض - إحصائيات فقط
         public async Task<AppointmentStatisticsSummaryDto> GetPatientStatisticsOnlyAsync(int patientId)
         {
             return await _repository.GetPatientStatisticsAsync(patientId);
         }
 
-        // للمريض - مواعيد مفهرسة فقط
         public async Task<PagedResultDto<PatientAppointmentListItemDto>> GetPatientAppointmentsPagedAsync(
             int patientId,
             AppointmentFilterRequestDto filter)
@@ -55,15 +53,12 @@ namespace Dactra.Services.Implementation
             };
         }
 
-        // للمريض - Full response (إحصائيات + مواعيد مفهرسة)
         public async Task<PatientAppointmentsStatsResponse> GetPatientFullStatsAsync(
             int patientId,
             AppointmentFilterRequestDto? filter = null)
         {
-            // جلب الإحصائيات (بدون فلتر - شاملة لكل المواعيد)
             var statistics = await _repository.GetPatientStatisticsAsync(patientId);
 
-            // جلب المواعيد المفهرسة (مع فلتر)
             filter ??= new AppointmentFilterRequestDto();
             var (appointments, totalCount) = await _repository.GetPatientAppointmentsPagedAsync(patientId, filter);
 
@@ -82,13 +77,11 @@ namespace Dactra.Services.Implementation
             };
         }
 
-        // للدكتور - إحصائيات فقط
         public async Task<AppointmentStatisticsSummaryDto> GetDoctorStatisticsOnlyAsync(int doctorId)
         {
             return await _repository.GetDoctorStatisticsAsync(doctorId);
         }
 
-        // للدكتور - مواعيد مفهرسة فقط
         public async Task<PagedResultDto<DoctorAppointmentListItemDto>> GetDoctorAppointmentsPagedAsync(
             int doctorId,
             AppointmentFilterRequestDto filter)
@@ -106,7 +99,6 @@ namespace Dactra.Services.Implementation
             };
         }
 
-        // للدكتور - Full response
         public async Task<DoctorAppointmentsStatsResponse> GetDoctorFullStatsAsync(
             int doctorId,
             AppointmentFilterRequestDto? filter = null)
@@ -153,7 +145,6 @@ namespace Dactra.Services.Implementation
                     };
                 }
 
-                // Verify authorization
                 if (userRole == "Patient" && appointment.PatientId != userId)
                 {
                     return new CancelAppointmentResponseDto
@@ -174,7 +165,6 @@ namespace Dactra.Services.Implementation
                     };
                 }
 
-                // Check if already cancelled
                 if (appointment.Status == AppointmentStatus.Cancelled)
                 {
                     return new CancelAppointmentResponseDto
@@ -186,7 +176,6 @@ namespace Dactra.Services.Implementation
                     };
                 }
 
-                // Check if already completed
                 if (appointment.Status == AppointmentStatus.Completed)
                 {
                     return new CancelAppointmentResponseDto
@@ -197,7 +186,6 @@ namespace Dactra.Services.Implementation
                     };
                 }
 
-                // Check if appointment can be cancelled (only for patients, doctors can cancel anytime)
                 if (userRole == "Patient")
                 {
                     var slotTime = appointment.Slot.SlotDateTimeUtc;
@@ -214,7 +202,6 @@ namespace Dactra.Services.Implementation
                     }
                 }
 
-                // Process refund if applicable
                 bool refundProcessed = false;
                 decimal? refundAmount = null;
 
@@ -230,11 +217,9 @@ namespace Dactra.Services.Implementation
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failed to process refund for appointment {AppointmentId}", appointmentId);
-                        // Continue with cancellation even if refund fails
                     }
                 }
 
-                // Cancel appointment with reason
                 var cancelled = await _repository.CancelAppointmentWithReasonAsync(appointmentId, reason);
 
                 if (!cancelled)
@@ -247,27 +232,22 @@ namespace Dactra.Services.Implementation
                     };
                 }
 
-                // Free up the slot
                 var slot = appointment.Slot;
                 slot.IsBooked = false;
                 slot.IsReserved = false;
                 slot.ReservedUntil = null;
                 slot.AppointmentId = null;
 
-                // Update slot in database
                 _context.DoctorAvailabilitySlots.Update(slot);
 
-                // Delete reminder job if exists
                 if (!string.IsNullOrEmpty(appointment.ReminderJobId))
                 {
                     BackgroundJob.Delete(appointment.ReminderJobId);
                 }
 
-                // Save all changes
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                // Send real-time notification to doctor
                 await _hubContext.Clients.Group($"Doctor_{appointment.Slot.DoctorId}")
                     .SendAsync("AppointmentCancelled", new
                     {
@@ -281,7 +261,6 @@ namespace Dactra.Services.Implementation
                         CancelledAt = DateTime.UtcNow
                     });
 
-                // Send real-time notification to patient
                 await _hubContext.Clients.Group($"Patient_{appointment.PatientId}")
                     .SendAsync("AppointmentCancelled", new
                     {
