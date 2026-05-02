@@ -75,46 +75,37 @@ namespace Dactra.Repositories.Implementation
         }
 
         public async Task<(IEnumerable<PatientAppointment> Appointments, int TotalCount)> GetPatientAppointmentsPagedAsync(
-            int patientId,
-            AppointmentFilterRequestDto filter)
+    int patientId,
+    AppointmentFilterRequestDto filter)
         {
             var query = _context.PatientAppointments
-                .Include(a => a.Patient)
-                    .ThenInclude(p => p.User)
-                .Include(a => a.Slot)
-                    .ThenInclude(s => s.Doctor)
-                        .ThenInclude(d => d.User)
-                .Include(a => a.Slot)
-                    .ThenInclude(s => s.Doctor)
-                        .ThenInclude(d => d.specialization)
+                .Include(a => a.Patient).ThenInclude(p => p.User)
+                .Include(a => a.Slot).ThenInclude(s => s.Doctor).ThenInclude(d => d.User)
+                .Include(a => a.Slot).ThenInclude(s => s.Doctor).ThenInclude(d => d.specialization)
                 .Include(a => a.Payment)
                 .Where(a => a.PatientId == patientId)
                 .AsQueryable();
 
-            // تطبيق الفلاتر فقط على البيانات المفهرسة
             if (filter.Status.HasValue)
-            {
                 query = query.Where(a => a.Status == filter.Status.Value);
-            }
+
+            if (filter.UpcomingOnly)
+                query = query.Where(a => a.Slot.SlotDateTimeUtc > DateTime.UtcNow);
 
             if (filter.Type.HasValue)
-            {
                 query = query.Where(a => a.Slot.SlotType == filter.Type.Value);
-            }
 
             if (filter.FromDate.HasValue)
-            {
                 query = query.Where(a => a.Slot.SlotDateTimeUtc >= filter.FromDate.Value);
-            }
 
             if (filter.ToDate.HasValue)
-            {
                 query = query.Where(a => a.Slot.SlotDateTimeUtc <= filter.ToDate.Value);
-            }
 
             var totalCount = await query.CountAsync();
 
-            query = query.OrderByDescending(a => a.Slot.SlotDateTimeUtc);
+            query = filter.UpcomingOnly
+                ? query.OrderBy(a => a.Slot.SlotDateTimeUtc)
+                : query.OrderByDescending(a => a.Slot.SlotDateTimeUtc);
 
             var appointments = await query
                 .Skip(filter.Skip)
@@ -129,36 +120,32 @@ namespace Dactra.Repositories.Implementation
             AppointmentFilterRequestDto filter)
         {
             var query = _context.PatientAppointments
-                .Include(a => a.Patient)
-                    .ThenInclude(p => p.User)
+                .Include(a => a.Patient).ThenInclude(p => p.User)
                 .Include(a => a.Slot)
                 .Include(a => a.Payment)
                 .Where(a => a.Slot.DoctorId == doctorId)
                 .AsQueryable();
 
             if (filter.Status.HasValue)
-            {
                 query = query.Where(a => a.Status == filter.Status.Value);
-            }
+
+            if (filter.UpcomingOnly)
+                query = query.Where(a => a.Slot.SlotDateTimeUtc > DateTime.UtcNow);
 
             if (filter.Type.HasValue)
-            {
                 query = query.Where(a => a.Slot.SlotType == filter.Type.Value);
-            }
 
             if (filter.FromDate.HasValue)
-            {
                 query = query.Where(a => a.Slot.SlotDateTimeUtc >= filter.FromDate.Value);
-            }
 
             if (filter.ToDate.HasValue)
-            {
                 query = query.Where(a => a.Slot.SlotDateTimeUtc <= filter.ToDate.Value);
-            }
 
             var totalCount = await query.CountAsync();
 
-            query = query.OrderByDescending(a => a.Slot.SlotDateTimeUtc);
+            query = filter.UpcomingOnly
+                ? query.OrderBy(a => a.Slot.SlotDateTimeUtc)
+                : query.OrderByDescending(a => a.Slot.SlotDateTimeUtc);
 
             var appointments = await query
                 .Skip(filter.Skip)

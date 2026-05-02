@@ -306,14 +306,14 @@ namespace Dactra.Services.Implementation
 
         private PatientAppointmentListItemDto MapToPatientListItemDto(PatientAppointment appointment)
         {
+            var slotUtc = DateTime.SpecifyKind(appointment.Slot.SlotDateTimeUtc, DateTimeKind.Utc);
+
             var isUpcoming = appointment.Status == AppointmentStatus.Confirmed &&
-                            appointment.Slot.SlotDateTimeUtc > DateTime.UtcNow;
+                            slotUtc > DateTime.UtcNow;
 
             var statusString = appointment.Status.ToString();
             if (appointment.Status == AppointmentStatus.Confirmed && isUpcoming)
-            {
                 statusString = "Upcoming";
-            }
 
             return new PatientAppointmentListItemDto
             {
@@ -322,7 +322,7 @@ namespace Dactra.Services.Implementation
                 DoctorName = $"{appointment.Slot.Doctor.FirstName} {appointment.Slot.Doctor.LastName}".Trim(),
                 DoctorSpecialty = appointment.Slot.Doctor.specialization?.Name ?? "General",
                 DoctorImageUrl = appointment.Slot.Doctor.User?.ImageUrl,
-                SlotDateTime = appointment.Slot.SlotDateTimeUtc,
+                SlotDateTime = slotUtc,
                 AppointmentType = appointment.Slot.SlotType.ToString(),
                 Status = statusString,
                 BookedAt = appointment.BookedAt,
@@ -332,14 +332,14 @@ namespace Dactra.Services.Implementation
 
         private DoctorAppointmentListItemDto MapToDoctorListItemDto(PatientAppointment appointment)
         {
+            var slotUtc = DateTime.SpecifyKind(appointment.Slot.SlotDateTimeUtc, DateTimeKind.Utc);
+
             var isUpcoming = appointment.Status == AppointmentStatus.Confirmed &&
-                            appointment.Slot.SlotDateTimeUtc > DateTime.UtcNow;
+                            slotUtc > DateTime.UtcNow;
 
             var statusString = appointment.Status.ToString();
             if (appointment.Status == AppointmentStatus.Confirmed && isUpcoming)
-            {
                 statusString = "Upcoming";
-            }
 
             return new DoctorAppointmentListItemDto
             {
@@ -347,7 +347,7 @@ namespace Dactra.Services.Implementation
                 PatientId = appointment.PatientId,
                 PatientName = $"{appointment.Patient.FirstName} {appointment.Patient.LastName}".Trim(),
                 PatientImageUrl = appointment.Patient.User?.ImageUrl,
-                SlotDateTime = appointment.Slot.SlotDateTimeUtc,
+                SlotDateTime = slotUtc,
                 AppointmentType = appointment.Slot.SlotType.ToString(),
                 Status = statusString,
                 BookedAt = appointment.BookedAt,

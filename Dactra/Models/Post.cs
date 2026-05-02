@@ -8,6 +8,9 @@
         [Required]
         public string Content { get; set; } = string.Empty;
 
+        public string? ImageUrl { get; set; }
+        public string? ImagePublicId { get; set; }
+
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

@@ -129,7 +129,7 @@ namespace Dactra.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<PostResponseDto>> Create([FromBody] CreatePostDto dto)
+        public async Task<ActionResult<PostResponseDto>> Create([FromForm] CreatePostDto dto)
         {
             try
             {
@@ -148,7 +148,7 @@ namespace Dactra.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<PostResponseDto>> Update(int id, [FromBody] UpdatePostDto dto)
+        public async Task<ActionResult<PostResponseDto>> Update(int id, [FromForm] UpdatePostDto dto)
         {
             try
             {
