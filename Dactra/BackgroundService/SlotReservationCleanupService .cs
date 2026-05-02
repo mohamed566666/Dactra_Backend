@@ -22,7 +22,7 @@ public class SlotReservationCleanupService : BackgroundService
                 var now = DateTime.UtcNow;
                 var expiredAppointments = await _context.PatientAppointments
                  .Where(a => a.Status == AppointmentStatus.Pending &&
-                             a.BookedAt <= DateTime.UtcNow.AddMinutes(-1))
+                             a.BookedAt <= DateTime.UtcNow.AddMinutes(-10))
                  .Select(a => new { a.Id, a.SlotId })
                  .ToListAsync();
                 var slotIds = expiredAppointments.Select(x => x.SlotId).ToList();
