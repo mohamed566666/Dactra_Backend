@@ -483,6 +483,26 @@ namespace Dactra.Controllers
             }
         }
 
+        [HttpGet("doctor/my")]
+        [Authorize(Roles = "Doctor")]
+        public async Task<IActionResult> GetMySponsors()
+        {
+            try
+            {
+                var doctor = await GetDoctorAsync();
+                if (doctor is null)
+                    return Unauthorized(Error("Doctor account not found"));
+
+                var result = await _service.GetMyActiveSponsorsAsync(doctor.Id);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Error("An unexpected error occurred", ex.Message));
+            }
+        }
+
         // ─── Helpers ───────────────────────────────────────────────
 
         private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;

@@ -230,14 +230,22 @@ namespace Dactra.Services.Implementation
                 }
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
-                await _hub.Clients.Groups($"Doctor_{slot.DoctorId}", $"Patient_{appointment.PatientId}")
-                      .SendAsync("AppointmentCancelled", new
-                      {
-                          SlotId = slot.Id,
-                          AppointmentId = appointment.Id,
-                          SlotDateTime = slot.SlotDateTimeUtc,
-                          PatientId = patientId
-                      });
+
+                var cancelledReason = CancelledReason;
+
+                await _hub.Clients
+                     .Groups($"Doctor_{slot.DoctorId}", $"Patient_{appointment.PatientId}")
+                     .SendAsync("AppointmentCancelled", new
+                     {
+                         appointmentId = appointment.Id,
+                         slotId = slot.Id,
+                         slotDateTime = slot.SlotDateTimeUtc,
+                         patientId,
+                         cancelledReason,
+                         cancelledBy = role,
+                         cancelledAt = DateTime.UtcNow
+                     });
+
                 await _sChub.Clients.Group($"Doctor_{slot.DoctorId}")
                .SendAsync("AppointmentCancelled", new
                {

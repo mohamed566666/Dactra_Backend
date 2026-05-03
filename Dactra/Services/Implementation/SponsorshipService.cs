@@ -10,23 +10,23 @@ namespace Dactra.Services.Implementation
         private readonly ISponsorshipRepository _sponsorshipRepo;
         private readonly IDoctorProfileRepository _doctorRepo;
         private readonly IPatientReferralRepository _referralRepo;
+        private readonly IHubContext<SponsorshipHub> _hub;
 
         public SponsorshipService(
             ISponsorshipRepository sponsorshipRepo,
             IDoctorProfileRepository doctorRepo,
-            IPatientReferralRepository referralRepo)
+            IPatientReferralRepository referralRepo,
+            IHubContext<SponsorshipHub> hub)
         {
             _sponsorshipRepo = sponsorshipRepo;
             _doctorRepo = doctorRepo;
             _referralRepo = referralRepo;
+            _hub = hub;
         }
 
         // ─── Provider sends offer ──────────────────────────────────
 
-        public async Task<SponsorshipResponseDTO> SendOfferAsync(
-            int providerId,
-            MedicalTestProviderType providerType,
-            SendOfferDTO dto)
+        public async Task<SponsorshipResponseDTO> SendOfferAsync(int providerId,MedicalTestProviderType providerType,SendOfferDTO dto)
         {
             var doctor = await _doctorRepo.GetByIdAsync(dto.DoctorId)
                 ?? throw new KeyNotFoundException("Doctor not found");
@@ -52,6 +52,7 @@ namespace Dactra.Services.Implementation
             var created = await _sponsorshipRepo.CreateAsync(entity);
             var full = await _sponsorshipRepo.GetByIdAsync(created.Id)
                 ?? throw new Exception("Failed to reload sponsorship");
+            await _hub.NotifyOfferReceived(dto.DoctorId, MapToResponse(full));
             return MapToResponse(full);
         }
 
@@ -79,6 +80,7 @@ namespace Dactra.Services.Implementation
             offer.RespondedAtUtc = DateTime.UtcNow;
 
             await _sponsorshipRepo.UpdateAsync(offer);
+            await _hub.NotifyOfferAccepted(offer.MedicalTestProviderId, MapToResponse(offer));
             return MapToResponse(offer);
         }
 
@@ -99,6 +101,7 @@ namespace Dactra.Services.Implementation
             offer.RespondedAtUtc = DateTime.UtcNow;
 
             await _sponsorshipRepo.UpdateAsync(offer);
+            await _hub.NotifyOfferRejected(offer.MedicalTestProviderId, MapToResponse(offer));
             return MapToResponse(offer);
         }
 
@@ -137,6 +140,7 @@ namespace Dactra.Services.Implementation
             var created = await _sponsorshipRepo.CreateAsync(counter);
             var full = await _sponsorshipRepo.GetByIdAsync(created.Id)
                 ?? throw new Exception("Failed to reload counter offer");
+            await _hub.NotifyCounterOfferReceived(full.MedicalTestProviderId, MapToResponse(full));
             return MapToResponse(full);
         }
 
@@ -164,6 +168,7 @@ namespace Dactra.Services.Implementation
             counter.RespondedAtUtc = DateTime.UtcNow;
 
             await _sponsorshipRepo.UpdateAsync(counter);
+            await _hub.NotifyCounterAccepted(counter.DoctorId, MapToResponse(counter));
             return MapToResponse(counter);
         }
 
@@ -184,6 +189,7 @@ namespace Dactra.Services.Implementation
             counter.RespondedAtUtc = DateTime.UtcNow;
 
             await _sponsorshipRepo.UpdateAsync(counter);
+            await _hub.NotifyCounterRejected(counter.DoctorId, MapToResponse(counter));
             return MapToResponse(counter);
         }
 
@@ -302,6 +308,7 @@ namespace Dactra.Services.Implementation
             sponsorship.RespondedAtUtc = DateTime.UtcNow;
 
             await _sponsorshipRepo.UpdateAsync(sponsorship);
+            await _hub.NotifySponsorshipCancelled(sponsorship.MedicalTestProviderId,sponsorship.DoctorId,MapToResponse(sponsorship));
             return MapToResponse(sponsorship);
         }
 
@@ -563,6 +570,19 @@ namespace Dactra.Services.Implementation
         public async Task<bool> DeletePendingOfferAsync(int sponsorshipId, int providerId)
         {
             return await _sponsorshipRepo.DeletePendingOfferAsync(sponsorshipId, providerId);
+        }
+
+        public async Task<IEnumerable<DoctorMySponsorDTO>> GetMyActiveSponsorsAsync(int doctorId)
+        {
+            var sponsors = await _sponsorshipRepo.GetActiveSponsorsForDoctorAsync(doctorId);
+
+            return sponsors.Select(s => new DoctorMySponsorDTO
+            {
+                LabId = s.MedicalTestProviderId,
+                LabName = s.MedicalTestProvider?.Name ?? string.Empty,
+                LabType = s.ProviderType.ToString(),
+                DiscountPercent = s.DiscountPercentage
+            });
         }
     }
 }

@@ -350,5 +350,14 @@
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<IEnumerable<DoctorMedicalTestSponsor>> GetActiveSponsorsForDoctorAsync(int doctorId)
+        {
+            return await _context.DoctorMedicalTestSponsors
+                .Include(x => x.MedicalTestProvider)
+                .Where(x => x.DoctorId == doctorId
+                         && x.Status == SponsorshipStatus.Active)
+                .ToListAsync();
+        }
     }
 }
