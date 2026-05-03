@@ -585,5 +585,37 @@ namespace Dactra.Services.Implementation
                 DiscountPercent = s.DiscountPercentage
             });
         }
+        public async Task<DoctorSponsorshipsResponseDTO> GetDoctorSponsorshipsWithStatsAsync(int doctorId)
+        {
+            var sponsorships = await _sponsorshipRepo.GetActiveSponsorshipsAsync(doctorId);
+            var patientBenefitsCount = await _referralRepo.GetUniquePatientReferralCountByDoctorAsync(doctorId);
+
+            return new DoctorSponsorshipsResponseDTO
+            {
+                ActiveSponsorsCount = sponsorships.Count(),
+                PatientBenefitsCount = patientBenefitsCount,
+                AverageDiscountPercentage = sponsorships.Any()
+                    ? Math.Round(sponsorships.Average(x => x.DiscountPercentage), 2)
+                    : 0,
+                Sponsorships = sponsorships.Select(MapToResponse).ToList()
+            };
+        }
+
+        public async Task<bool> DeleteDoctorPendingOfferAsync(int sponsorshipId, int doctorId)
+        {
+            return await _sponsorshipRepo.DeletePendingOfferByDoctorAsync(sponsorshipId, doctorId);
+        }
+        public async Task<DoctorOffersSummaryDTO> GetDoctorOffersSummaryAsync(int doctorId)
+        {
+            var (received, counter, rejected) =
+                await _sponsorshipRepo.GetDoctorOfferCountsAsync(doctorId);
+
+            return new DoctorOffersSummaryDTO
+            {
+                ReceivedCount = received,
+                CounterCount = counter,
+                RejectedCount = rejected
+            };
+        }
     }
 }

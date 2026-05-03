@@ -318,18 +318,17 @@ namespace Dactra.Controllers
             }
         }
 
-        [HttpGet("doctor/active/{type}")]
+        [HttpGet("doctor/active")]
         [Authorize(Roles = "Doctor")]
-        public async Task<IActionResult> GetActiveSponsorship(MedicalTestProviderType type)
+        public async Task<IActionResult> GetActiveSponsorships()
         {
             try
             {
                 var doctor = await GetDoctorAsync();
-                if (doctor is null) return Unauthorized(Error("Doctor account not found"));
+                if (doctor is null)
+                    return Unauthorized(Error("Doctor account not found"));
 
-                var result = await _service.GetActiveSponsorshipAsync(doctor.Id, type);
-                if (result is null)
-                    return NotFound(Error($"No active {type} sponsorship found"));
+                var result = await _service.GetDoctorSponsorshipsWithStatsAsync(doctor.Id);
 
                 return Ok(result);
             }
@@ -483,6 +482,29 @@ namespace Dactra.Controllers
             }
         }
 
+        [HttpDelete("doctor/offer/{sponsorshipId}")]
+        [Authorize(Roles = "Doctor")]
+        public async Task<IActionResult> DeleteOffer(int sponsorshipId)
+        {
+            try
+            {
+                var doctor = await GetDoctorAsync();
+                if (doctor is null)
+                    return Unauthorized(Error("Doctor account not found"));
+
+                var deleted = await _service.DeleteDoctorPendingOfferAsync(sponsorshipId, doctor.Id);
+
+                if (!deleted)
+                    return NotFound(Error("Offer not found or cannot be deleted. Only pending offers can be deleted."));
+
+                return Ok(new { success = true, message = "Offer deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Error("An unexpected error occurred", ex.Message));
+            }
+        }
+
         [HttpGet("doctor/my")]
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> GetMySponsors()
@@ -495,6 +517,25 @@ namespace Dactra.Controllers
 
                 var result = await _service.GetMyActiveSponsorsAsync(doctor.Id);
 
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Error("An unexpected error occurred", ex.Message));
+            }
+        }
+
+        [HttpGet("doctor/offers/summary")]
+        [Authorize(Roles = "Doctor")]
+        public async Task<IActionResult> GetOffersSummaryForDoctor()
+        {
+            try
+            {
+                var doctor = await GetDoctorAsync();
+                if (doctor is null)
+                    return Unauthorized(Error("Doctor account not found"));
+
+                var result = await _service.GetDoctorOffersSummaryAsync(doctor.Id);
                 return Ok(result);
             }
             catch (Exception ex)

@@ -126,5 +126,14 @@
                 PageSize = pagination.PageSize
             };
         }
+
+        public async Task<int> GetUniquePatientReferralCountByDoctorAsync(int doctorId)
+        {
+            return await _context.PatientReferrals
+                .Where(x => x.DoctorId == doctorId)
+                .Select(x => x.PatientId)
+                .Distinct()
+                .CountAsync();
+        }
     }
 }

@@ -367,5 +367,52 @@
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<DoctorMedicalTestSponsor>> GetActiveSponsorshipsAsync(int doctorId)
+        {
+            return await _context.DoctorMedicalTestSponsors
+                .Where(x => x.DoctorId == doctorId
+                         && x.Status == SponsorshipStatus.Active)
+                .Include(x => x.Doctor)
+                    .ThenInclude(d => d.specialization)
+                .Include(x => x.MedicalTestProvider)
+                    .ThenInclude(x => x.Offerings)
+                        .ThenInclude(x => x.TestService)
+                .AsSplitQuery()
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<bool> DeletePendingOfferByDoctorAsync(int sponsorshipId, int doctorId)
+        {
+            var offer = await _context.DoctorMedicalTestSponsors
+                .FirstOrDefaultAsync(x => x.Id == sponsorshipId
+                                       && x.DoctorId == doctorId
+                                       && x.Status == SponsorshipStatus.Active);
+
+            if (offer == null)
+                return false;
+
+            _context.DoctorMedicalTestSponsors.Remove(offer);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<(int received, int counter, int rejected)> GetDoctorOfferCountsAsync(int doctorId)
+        {
+            var received = await _context.DoctorMedicalTestSponsors
+                .CountAsync(x => x.DoctorId == doctorId
+                              && x.Status == SponsorshipStatus.Pending);
+
+            var counter = await _context.DoctorMedicalTestSponsors
+                .CountAsync(x => x.DoctorId == doctorId
+                              && x.IsCounterOffer
+                              && x.Status == SponsorshipStatus.Pending);
+
+            var rejected = await _context.DoctorMedicalTestSponsors
+                .CountAsync(x => x.DoctorId == doctorId
+                              && x.Status == SponsorshipStatus.Rejected);
+            return (received, counter, rejected);
+        }
     }
 }

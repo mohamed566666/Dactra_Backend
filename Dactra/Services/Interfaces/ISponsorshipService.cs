@@ -25,5 +25,8 @@ namespace Dactra.Services.Interfaces
         Task<PagedSponsorshipResponseDto> GetProviderOffersByFilterPagedAsync(int providerId,OfferFilterStatus filterStatus,int page = 1,int pageSize = 10);
         Task<bool> DeletePendingOfferAsync(int sponsorshipId, int providerId);
         Task<IEnumerable<DoctorMySponsorDTO>> GetMyActiveSponsorsAsync(int doctorId);
+        Task<DoctorSponsorshipsResponseDTO> GetDoctorSponsorshipsWithStatsAsync(int doctorId);
+        Task<bool> DeleteDoctorPendingOfferAsync(int sponsorshipId, int doctorId);
+        Task<DoctorOffersSummaryDTO> GetDoctorOffersSummaryAsync(int doctorId);
     }
 }
