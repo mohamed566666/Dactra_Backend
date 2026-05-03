@@ -12,13 +12,15 @@
         public async Task<Comment?> GetByIdAsync(int id)
         {
             return await _context.comments
+                .Where(c => c.Id == id)
                 .Include(c => c.User)
                 .Include(c => c.Likes)
                 .Include(c => c.Replies)
                     .ThenInclude(r => r.User)
                 .Include(c => c.Replies)
                     .ThenInclude(r => r.Likes)
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
         }
 
         public async Task<List<Comment>> GetByPostIdAsync(int postId)
@@ -32,9 +34,10 @@
                 .Include(c => c.Replies)
                     .ThenInclude(r => r.Likes)
                 .OrderBy(c => c.CreatedAt)
+                .AsSplitQuery()
+                .AsNoTracking()
                 .ToListAsync();
         }
-
 
         public async Task<Comment> CreateAsync(Comment comment)
         {

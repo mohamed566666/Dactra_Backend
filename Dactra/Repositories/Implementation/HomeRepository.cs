@@ -16,21 +16,19 @@ namespace Dactra.Repositories.Implementation
             count = Math.Clamp(count, 1, 100);
 
             return await _context.Doctors
-                .Include(d => d.specialization)
-                .Include(d => d.User)
                 .Where(d => d.approvalStatus == ApprovalStatus.approved)
                 .OrderByDescending(d => d.Avg_Rating)
-                .ThenByDescending(d => _context.Ratings.Count(r => r.ProviderId == d.Id))
                 .Take(count)
                 .Select(d => new TopRatedDoctorDTO
                 {
                     DoctorId = d.Id,
-                    DoctorName = $"{d.FirstName} {d.LastName}".Trim(),
+                    DoctorName = d.FirstName + " " + d.LastName,
                     Specialization = d.specialization != null ? d.specialization.Name : "UnKnown",
                     ImageUrl = d.User.ImageUrl,
                     Rate = Math.Round(d.Avg_Rating, 2),
                     NumberOfRates = _context.Ratings.Count(r => r.ProviderId == d.Id)
                 })
+                .AsNoTracking()
                 .ToListAsync();
         }
     }

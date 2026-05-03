@@ -1,4 +1,6 @@
-﻿namespace Dactra.Controllers
+﻿using System.Threading.Tasks;
+
+namespace Dactra.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -6,11 +8,13 @@
     {
         private readonly IPatientService _patientService;
         private readonly IRatingService _ratingService;
+        public readonly ApplicationDbContext _context;
 
-        public PatientController(IPatientService patientService , IRatingService ratingService)
+        public PatientController(IPatientService patientService , IRatingService ratingService, ApplicationDbContext context)
         {
             _patientService = patientService;
             _ratingService = ratingService;
+            _context = context;
         }
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -18,11 +22,42 @@
             var PatientProfiles = await _patientService.GetAllProfileAsync();
             return Ok(PatientProfiles);
         }
+        [Authorize]
         [HttpGet("{Id}")]
         public async Task<IActionResult> GetById(int Id)
         {
+            bool canView = await this.canView();
+            if (!canView) {
+                return StatusCode(StatusCodes.Status403Forbidden, "You don't have permission to view this profile");
+            }
             var PatientProfile = await _patientService.GetProfileByIdAsync(Id);
             return PatientProfile == null ? NotFound("Patient Profile Not Found") : Ok(PatientProfile);
+        }
+
+        private async Task<bool> canView() {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return false;
+            var role = User.FindFirstValue(ClaimTypes.Role);
+            if (role == "Admin") return true;
+            if (role == "Patient")
+            {
+                var myProfile = _patientService.GetProfileByUserID(userId);
+                if (myProfile != null && myProfile.Id == int.Parse(RouteData.Values["Id"].ToString()!)) return true;
+                return false;
+            }
+            if (role == "Doctor")
+            {
+                var doctorId = await _context.Doctors
+                    .Where(d => d.UserId == userId)
+                    .Select(d => d.Id)
+                    .FirstOrDefaultAsync();
+                var patientId = int.Parse(RouteData.Values["Id"].ToString()!);
+                var inCare = await _context.PatientDoctorCares
+                    .Where(d => d.IsActive && d.DoctorId == doctorId && d.PatientId == patientId && d.IsActive)
+                    .AnyAsync();
+                return inCare;
+            }
+            return false;
         }
 
         [Authorize(Roles = "Admin")]

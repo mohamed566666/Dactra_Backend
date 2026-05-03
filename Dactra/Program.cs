@@ -352,6 +352,7 @@ app.MapHub<DoctorScheduleHub>("/doctorScheduleHub");
 app.MapHub<PostHub>("/hubs/posts");
 app.MapHub<NotificationHub>("/hubs/notifications");
 app.MapHub<VideoCallHub>("/hubs/videocall");
+app.MapHub<SponsorshipHub>("/hubs/sponsorship");
 
 
 app.UseHangfireDashboard();

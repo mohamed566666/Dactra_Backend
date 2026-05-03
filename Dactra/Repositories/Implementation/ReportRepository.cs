@@ -1,6 +1,6 @@
 ﻿namespace Dactra.Repositories.Implementation
 {
-    public class ReportRepository: IReportRepository
+    public class ReportRepository : IReportRepository
     {
         private readonly ApplicationDbContext _context;
 
@@ -18,14 +18,17 @@
             return await _context.Reports
                 .Include(r => r.User)
                 .OrderByDescending(r => r.CreatedAt)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
         public async Task<Report?> GetByIdAsync(int id)
         {
             return await _context.Reports
+                .Where(r => r.Id == id)
                 .Include(r => r.User)
-                .FirstOrDefaultAsync(r => r.Id == id);
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
         }
 
         public async Task DeleteAsync(Report report)

@@ -27,7 +27,10 @@ namespace Dactra.Repositories.Implementation
             if (!includeDeleted)
                 query = query.Where(q => !q.isDeleted);
 
-            return await query.FirstOrDefaultAsync(q => q.Id == id);
+            return await query
+                .AsSplitQuery()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(q => q.Id == id);
         }
 
         public async Task<Question?> GetByIdWithDetailsAsync(int id)
@@ -43,6 +46,8 @@ namespace Dactra.Repositories.Implementation
                 .Include(q => q.SavedBy)
                 .Include(q => q.QuestionTags)
                     .ThenInclude(qt => qt.Tag)
+                .AsSplitQuery()
+                .AsNoTracking()
                 .FirstOrDefaultAsync();
         }
 
@@ -59,7 +64,10 @@ namespace Dactra.Repositories.Implementation
                 .OrderByDescending(q => q.CreatedAt);
 
             var total = await query.CountAsync();
-            var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            var items = await query.Skip((page - 1) * pageSize).Take(pageSize)
+                .AsSplitQuery()
+                .AsNoTracking()
+                .ToListAsync();
             return (items, total);
         }
 
@@ -76,7 +84,10 @@ namespace Dactra.Repositories.Implementation
                 .OrderByDescending(q => q.CreatedAt);
 
             var total = await query.CountAsync();
-            var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            var items = await query.Skip((page - 1) * pageSize).Take(pageSize)
+                .AsSplitQuery()
+                .AsNoTracking()
+                .ToListAsync();
             return (items, total);
         }
 
@@ -93,7 +104,10 @@ namespace Dactra.Repositories.Implementation
                 .OrderByDescending(q => q.CreatedAt);
 
             var total = await query.CountAsync();
-            var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            var items = await query.Skip((page - 1) * pageSize).Take(pageSize)
+                .AsSplitQuery()
+                .AsNoTracking()
+                .ToListAsync();
             return (items, total);
         }
 
@@ -121,7 +135,10 @@ namespace Dactra.Repositories.Implementation
             query = query.OrderByDescending(q => q.CreatedAt);
 
             var total = await query.CountAsync();
-            var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            var items = await query.Skip((page - 1) * pageSize).Take(pageSize)
+                .AsSplitQuery()
+                .AsNoTracking()
+                .ToListAsync();
             return (items, total);
         }
 
@@ -186,7 +203,7 @@ namespace Dactra.Repositories.Implementation
                 .Select(a => a.QuestionId)
                 .Distinct()
                 .CountAsync();
-            var shared = await _context.Questions.Include(s => s.Patient)
+            var shared = await _context.Questions
                 .Where(s => s.Patient.UserId == userId && !s.isDeleted)
                 .CountAsync();
 
@@ -198,6 +215,7 @@ namespace Dactra.Repositories.Implementation
                 TotalShared = shared
             };
         }
+
         public async Task<QuestionStatsDto> GetQuestionStatsAsync(int questionId)
         {
             var interested = await _context.QuestionInterests
@@ -216,6 +234,7 @@ namespace Dactra.Repositories.Implementation
                 TotalAnswered = answered
             };
         }
+
         public async Task<List<TagDto>> GetTopTagsAsync(int topCount)
         {
             return await _context.QuestionTags
@@ -229,6 +248,7 @@ namespace Dactra.Repositories.Implementation
                     Name = g.Key.Name,
                     Count = g.Count()
                 })
+                .AsNoTracking()
                 .ToListAsync();
         }
     }

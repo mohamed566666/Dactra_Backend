@@ -7,22 +7,28 @@
         public async Task<List<VitalSign>> GetByPatientIdAsync(int patientId)
         {
             return await _context.VitalSigns
-            .Include(v => v.Type)
-            .Where(v => v.PatientId == patientId)
-            .OrderByDescending(v => v.RecordedAt)
-            .ToListAsync();
+                .Where(v => v.PatientId == patientId)
+                .Include(v => v.Type)
+                .OrderByDescending(v => v.RecordedAt)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<List<VitalSignType>> GetAllTypesAsync()
         {
-            return await _context.VitalSignTypes.ToListAsync();
+            return await _context.VitalSignTypes
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<VitalSignType?> GetTypeByIdAsync(int id)
         {
-            return await _context.VitalSignTypes.FirstOrDefaultAsync(t => t.Id == id);
+            return await _context.VitalSignTypes
+                .Where(t => t.Id == id)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
         }
-        
+
         public async Task AddTypeAsync(VitalSignType type)
         {
             await _context.VitalSignTypes.AddAsync(type);
@@ -30,8 +36,11 @@
 
         public async Task<VitalSignType?> GetTypeByNameAsync(string name)
         {
+            var normalizedName = name.ToLower();
             return await _context.VitalSignTypes
-                .FirstOrDefaultAsync(t => t.Name.ToLower() == name.ToLower());
+                .Where(t => t.Name.ToLower() == normalizedName)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Dactra.Repositories.Implementation
 {
-    public class DoctorProfileRepository : GenericRepository<DoctorProfile> , IDoctorProfileRepository
+    public class DoctorProfileRepository : GenericRepository<DoctorProfile>, IDoctorProfileRepository
     {
         public DoctorProfileRepository(ApplicationDbContext context) : base(context)
         {
@@ -13,6 +13,7 @@ namespace Dactra.Repositories.Implementation
             return await _context.Doctors
                 .Include(d => d.User)
                 .Include(d => d.specialization)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -21,6 +22,7 @@ namespace Dactra.Repositories.Implementation
             return await _context.Doctors
                 .Where(m => m.approvalStatus == ApprovalStatus.approved)
                 .OrderByDescending(M => M.Avg_Rating)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -29,6 +31,7 @@ namespace Dactra.Repositories.Implementation
             return await _context.Doctors
                 .Include(d => d.User)
                 .Include(d => d.specialization)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == id);
         }
 
@@ -37,6 +40,7 @@ namespace Dactra.Repositories.Implementation
             return await _context.Doctors
                 .Include(d => d.User)
                 .Include(d => d.specialization)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.User.Email == email);
         }
 
@@ -45,6 +49,7 @@ namespace Dactra.Repositories.Implementation
             return await _context.Doctors
                 .Include(d => d.User)
                 .Include(d => d.specialization)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.UserId == userId);
         }
 
@@ -52,6 +57,7 @@ namespace Dactra.Repositories.Implementation
         {
             return await _context.Doctors
                 .Where(m => m.approvalStatus == ApprovalStatus.rejected)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -60,12 +66,11 @@ namespace Dactra.Repositories.Implementation
             double FuzzyThreshold = 0.70;
             int PrefixLength = 2;
             int MaxCandidatesHardCap = 2000;
-        filter.PageNumber = Math.Max(1, filter.PageNumber);
+            filter.PageNumber = Math.Max(1, filter.PageNumber);
             filter.PageSize = Math.Clamp(filter.PageSize, 1, 100);
             var baseQuery = _context.Doctors
                 .Where(d => d.approvalStatus == ApprovalStatus.approved)
-                .Include(d => d.User)
-                .Include(d => d.specialization)
+                .AsNoTracking()
                 .AsQueryable();
             if (filter.SpecializationId.HasValue)
                 baseQuery = baseQuery.Where(d => d.SpecializationId == filter.SpecializationId.Value);
@@ -81,9 +86,16 @@ namespace Dactra.Repositories.Implementation
                     baseQuery = baseQuery.OrderByDescending(d => d.Avg_Rating);
                 else
                     baseQuery = baseQuery.OrderBy(d => d.FirstName).ThenBy(d => d.LastName);
-                var doctors = await baseQuery
+                var doctorIds = await baseQuery
                     .Skip((filter.PageNumber - 1) * filter.PageSize)
                     .Take(filter.PageSize)
+                    .Select(d => d.Id)
+                    .ToListAsync();
+
+                var doctors = await _context.Doctors
+                    .Where(d => doctorIds.Contains(d.Id))
+                    .Include(d => d.User)
+                    .Include(d => d.specialization)
                     .AsNoTracking()
                     .ToListAsync();
 
@@ -91,35 +103,33 @@ namespace Dactra.Repositories.Implementation
             }
             var prefix = normalized.Length >= PrefixLength ? normalized.Substring(0, PrefixLength) : normalized;
             IQueryable<DoctorProfile> stageAQuery = baseQuery.Where(d =>
-                ((d.FirstName ?? string.Empty) + " " + (d.LastName ?? string.Empty)).ToLower().Contains(prefix) ||
-                (d.FirstName ?? string.Empty).ToLower().Contains(prefix) ||
-                (d.LastName ?? string.Empty).ToLower().Contains(prefix)
+                (d.FirstName != null && d.FirstName.ToLower().Contains(prefix)) ||
+                (d.LastName != null && d.LastName.ToLower().Contains(prefix))
             );
             stageAQuery = stageAQuery.OrderByDescending(d => d.Avg_Rating);
             var candidates = await stageAQuery
-                .AsNoTracking()
                 .Take(Math.Min(500, MaxCandidatesHardCap))
+                .Select(d => new { d.Id, d.FirstName, d.LastName, d.Avg_Rating })
                 .ToListAsync();
             if (candidates.Count == 0)
             {
                 IQueryable<DoctorProfile> stageBQuery = baseQuery.Where(d =>
-                    ((d.FirstName ?? string.Empty) + " " + (d.LastName ?? string.Empty)).ToLower().Contains(normalized) ||
-                    (d.FirstName ?? string.Empty).ToLower().Contains(normalized) ||
-                    (d.LastName ?? string.Empty).ToLower().Contains(normalized)
+                    (d.FirstName != null && d.FirstName.ToLower().Contains(normalized)) ||
+                    (d.LastName != null && d.LastName.ToLower().Contains(normalized))
                 ).OrderByDescending(d => d.Avg_Rating);
                 candidates = await stageBQuery
-                    .AsNoTracking()
                     .Take(Math.Min(1000, MaxCandidatesHardCap))
+                    .Select(d => new { d.Id, d.FirstName, d.LastName, d.Avg_Rating })
                     .ToListAsync();
             }
             if (candidates.Count == 0)
             {
                 candidates = await baseQuery
-                    .AsNoTracking()
                     .OrderByDescending(d => d.Avg_Rating)
                     .Take(MaxCandidatesHardCap)
+                    .Select(d => new { d.Id, d.FirstName, d.LastName, d.Avg_Rating })
                     .ToListAsync();
-            }   
+            }
             var scored = candidates.Select(d =>
             {
                 var fullName = $"{d.FirstName} {d.LastName}".Trim().ToLower();
@@ -131,13 +141,11 @@ namespace Dactra.Repositories.Implementation
                     bestScore >= 0.80 ? "HIGH" :
                     bestScore >= 0.55 ? "MEDIUM" :
                     "LOW";
-                return new { Doctor = d, Score = bestScore, Level = matchLevel };
+                return new { DoctorId = d.Id, Score = bestScore, Level = matchLevel, AvgRating = d.Avg_Rating };
             }).Where(x => x.Level != "LOW")
             .OrderByDescending(x => x.Level == "HIGH")
             .ThenByDescending(x => x.Score)
-            .ThenByDescending(x => x.Doctor.Avg_Rating)
-            .ThenBy(x => x.Doctor.FirstName)
-            .ThenBy(x => x.Doctor.LastName)
+            .ThenByDescending(x => x.AvgRating)
             .ToList();
             if (scored.Count == 0)
             {
@@ -153,23 +161,28 @@ namespace Dactra.Repositories.Implementation
                         bestScore >= 0.80 ? "HIGH" :
                         bestScore >= 0.60 ? "MEDIUM" :
                         "LOW";
-                    return new { Doctor = d, Score = bestScore, Level = matchLevel };
+                    return new { DoctorId = d.Id, Score = bestScore, Level = matchLevel, AvgRating = d.Avg_Rating };
                 })
                 .Where(x => x.Score >= relaxedThreshold)
                 .OrderByDescending(x => x.Score)
-                .ThenByDescending(x => x.Doctor.Avg_Rating)
-                .ThenBy(x => x.Doctor.FirstName)
-                .ThenBy(x => x.Doctor.LastName)
+                .ThenByDescending(x => x.AvgRating)
                 .ToList();
             }
             var totalFuzzyMatches = scored.Count;
             var pageIndex = filter.PageNumber - 1;
             var pageSize = filter.PageSize;
-            var paged = scored
+            var pagedIds = scored
                 .Skip(pageIndex * pageSize)
                 .Take(pageSize)
-                .Select(x => x.Doctor)
+                .Select(x => x.DoctorId)
                 .ToList();
+            var pagedDoctors = await _context.Doctors
+                .Where(d => pagedIds.Contains(d.Id))
+                .Include(d => d.User)
+                .Include(d => d.specialization)
+                .AsNoTracking()
+                .ToListAsync();
+            var paged = pagedIds.Select(id => pagedDoctors.First(d => d.Id == id)).ToList();
             return (paged, totalFuzzyMatches);
         }
         public async Task<bool> UpdateWorkingHoursAsync(int doctorId, WorkingHoursDTO workingHours)
@@ -234,7 +247,6 @@ namespace Dactra.Repositories.Implementation
                 doctor.ConsultationPrice = workingHours.ConsultationPrice;
             }
 
-            _context.Doctors.Update(doctor);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -255,30 +267,32 @@ namespace Dactra.Repositories.Implementation
 
         public async Task<WorkingHoursResponseDTO> GetWorkingHoursAsync(int doctorId)
         {
-            var doctor = await _context.Doctors
+            var response = await _context.Doctors
+                .Where(d => d.Id == doctorId)
+                .Select(d => new WorkingHoursResponseDTO
+                {
+                    InPerson = new WorkingHoursEntryDTO
+                    {
+                        WorkingStartTime = d.WorkingStartTime,
+                        WorkingEndTime = d.WorkingEndTime,
+                        ConsultationDurationMinutes = d.ConsultationDurationMinutes,
+                        ConsultationPrice = d.ConsultationPrice
+                    },
+                    Online = new WorkingHoursEntryDTO
+                    {
+                        WorkingStartTime = d.OnlineWorkingStartTime,
+                        WorkingEndTime = d.OnlineWorkingEndTime,
+                        ConsultationDurationMinutes = d.OnlineConsultationDurationMinutes,
+                        ConsultationPrice = d.OnlineConsultationPrice
+                    }
+                })
                 .AsNoTracking()
-                .FirstOrDefaultAsync(d => d.Id == doctorId);
+                .FirstOrDefaultAsync();
 
-            if (doctor == null)
+            if (response == null)
                 throw new KeyNotFoundException($"Doctor with ID {doctorId} not found");
 
-            return new WorkingHoursResponseDTO
-            {
-                InPerson = new WorkingHoursEntryDTO
-                {
-                    WorkingStartTime = doctor.WorkingStartTime,
-                    WorkingEndTime = doctor.WorkingEndTime,
-                    ConsultationDurationMinutes = doctor.ConsultationDurationMinutes,
-                    ConsultationPrice = doctor.ConsultationPrice
-                },
-                Online = new WorkingHoursEntryDTO
-                {
-                    WorkingStartTime = doctor.OnlineWorkingStartTime,
-                    WorkingEndTime = doctor.OnlineWorkingEndTime,
-                    ConsultationDurationMinutes = doctor.OnlineConsultationDurationMinutes,
-                    ConsultationPrice = doctor.OnlineConsultationPrice
-                }
-            };
+            return response;
         }
     }
 }

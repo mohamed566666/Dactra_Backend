@@ -12,6 +12,7 @@
         public async Task<PatientReferral?> GetByIdAsync(int id)
         {
             return await _context.PatientReferrals
+                .Where(x => x.Id == id)
                 .Include(x => x.Patient)
                     .ThenInclude(p => p.User)
                 .Include(x => x.Doctor)
@@ -21,12 +22,15 @@
                 .Include(x => x.ReferralServices)
                     .ThenInclude(x => x.ProviderOffering)
                         .ThenInclude(x => x.TestService)
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .AsSplitQuery()
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<PatientReferral>> GetReferralsByProviderAsync(int providerId)
         {
             return await _context.PatientReferrals
+                .Where(x => x.Sponsorship.MedicalTestProviderId == providerId)
                 .Include(x => x.Patient)
                     .ThenInclude(p => p.User)
                 .Include(x => x.Doctor)
@@ -35,14 +39,16 @@
                 .Include(x => x.ReferralServices)
                     .ThenInclude(x => x.ProviderOffering)
                         .ThenInclude(x => x.TestService)
-                .Where(x => x.Sponsorship.MedicalTestProviderId == providerId)
                 .OrderByDescending(x => x.ReferredAtUtc)
+                .AsSplitQuery()
+                .AsNoTracking()
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<PatientReferral>> GetReferralsByDoctorAsync(int doctorId)
         {
             return await _context.PatientReferrals
+                .Where(x => x.DoctorId == doctorId)
                 .Include(x => x.Patient)
                     .ThenInclude(p => p.User)
                 .Include(x => x.Sponsorship)
@@ -50,8 +56,9 @@
                 .Include(x => x.ReferralServices)
                     .ThenInclude(x => x.ProviderOffering)
                         .ThenInclude(x => x.TestService)
-                .Where(x => x.DoctorId == doctorId)
                 .OrderByDescending(x => x.ReferredAtUtc)
+                .AsSplitQuery()
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -71,12 +78,13 @@
         public async Task<IEnumerable<PatientDoctorCare>> GetActiveCarePatientsByDoctorAsync(int doctorId)
         {
             return await _context.PatientDoctorCares
-                .Include(x => x.Patient)
-                    .ThenInclude(p => p.User)
                 .Where(x => x.DoctorId == doctorId
                          && x.IsActive
                          && x.ExpiresAtUtc > DateTime.UtcNow)
+                .Include(x => x.Patient)
+                    .ThenInclude(p => p.User)
                 .OrderBy(x => x.Patient.FirstName)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -86,6 +94,14 @@
             ReferralStatus? status = null)
         {
             var query = _context.PatientReferrals
+                .Where(x => x.Sponsorship.MedicalTestProviderId == providerId);
+
+            if (status.HasValue)
+                query = query.Where(x => x.Status == status.Value);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
                 .Include(x => x.Patient)
                     .ThenInclude(p => p.User)
                 .Include(x => x.Doctor)
@@ -95,17 +111,11 @@
                 .Include(x => x.ReferralServices)
                     .ThenInclude(x => x.ProviderOffering)
                         .ThenInclude(x => x.TestService)
-                .Where(x => x.Sponsorship.MedicalTestProviderId == providerId);
-
-            if (status.HasValue)
-                query = query.Where(x => x.Status == status.Value);
-
-            var totalCount = await query.CountAsync();
-
-            var items = await query
                 .OrderByDescending(x => x.ReferredAtUtc)
                 .Skip(pagination.Skip)
                 .Take(pagination.PageSize)
+                .AsSplitQuery()
+                .AsNoTracking()
                 .ToListAsync();
 
             return new PagedResultDto<PatientReferral>
