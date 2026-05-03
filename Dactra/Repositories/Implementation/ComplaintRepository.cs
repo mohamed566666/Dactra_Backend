@@ -1,6 +1,6 @@
 ﻿namespace Dactra.Repositories.Implementation
 {
-    public class ComplaintRepository : GenericRepository<Complaint> , IComplaintRepository
+    public class ComplaintRepository : GenericRepository<Complaint>, IComplaintRepository
     {
         public ComplaintRepository(ApplicationDbContext context) : base(context)
         {
@@ -11,6 +11,7 @@
             return await _dbSet
                 .Where(c => c.UserId == userId)
                 .OrderByDescending(c => c.CreatedAt)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -19,14 +20,17 @@
             return await _dbSet
                 .Include(c => c.Attachments)
                 .OrderByDescending(c => c.CreatedAt)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
         public async Task<Complaint?> GetDetailsAsync(int id)
         {
             return await _dbSet
+                .Where(c => c.Id == id)
                 .Include(c => c.Attachments)
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
         }
     }
 }

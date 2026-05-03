@@ -1,6 +1,6 @@
 ﻿namespace Dactra.Repositories.Implementation
 {
-    public class ProviderOfferingRepository : GenericRepository<ProviderOffering>  , IProviderOfferingRepository
+    public class ProviderOfferingRepository : GenericRepository<ProviderOffering>, IProviderOfferingRepository
     {
         public ProviderOfferingRepository(ApplicationDbContext context) : base(context)
         {
@@ -9,33 +9,40 @@
         public override async Task<IEnumerable<ProviderOffering>> GetAllAsync()
         {
             return await _context.ProviderOfferings
-         .Include(x => x.Provider)
-         .Include(x => x.TestService)
-         .ToListAsync();
+                .Include(x => x.Provider)
+                .Include(x => x.TestService)
+                .AsSplitQuery()
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public override async Task<ProviderOffering?> GetByIdAsync(int id)
         {
             return await _context.ProviderOfferings
-            .Include(x => x.Provider)
-            .Include(x => x.TestService)
-            .FirstOrDefaultAsync(x => x.Id == id);
+                .Where(x => x.Id == id)
+                .Include(x => x.Provider)
+                .Include(x => x.TestService)
+                .AsSplitQuery()
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<ProviderOffering>> GetByProviderIdAsync(int providerId)
         {
-                return await _context.ProviderOfferings
-          .Where(x => x.ProviderId == providerId)
-          .Include(x => x.TestService)
-          .ToListAsync();
+            return await _context.ProviderOfferings
+                .Where(x => x.ProviderId == providerId)
+                .Include(x => x.TestService)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<ProviderOffering>> GetByServiceIdAsync(int serviceId)
         {
             return await _context.ProviderOfferings
-          .Where(x => x.TestServiceId == serviceId)
-          .Include(x => x.Provider)
-          .ToListAsync();
+                .Where(x => x.TestServiceId == serviceId)
+                .Include(x => x.Provider)
+                .AsNoTracking()
+                .ToListAsync();
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Dactra.Repositories.Implementation
 {
-    public class SiteReviewRepository : GenericRepository<SiteReview> , ISiteReviewRepository
+    public class SiteReviewRepository : GenericRepository<SiteReview>, ISiteReviewRepository
     {
         public SiteReviewRepository(ApplicationDbContext context) : base(context)
         {
@@ -48,6 +48,7 @@
         public async Task<IEnumerable<(int Score, int Count)>> GetScoreCountsAsync()
         {
             var groups = await _context.SiteReviews
+                .AsNoTracking()
                 .GroupBy(r => r.Score)
                 .Select(g => new { Score = g.Key, Count = g.Count() })
                 .ToListAsync();

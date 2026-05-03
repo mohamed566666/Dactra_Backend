@@ -9,26 +9,31 @@
             _context = context;
         }
 
-
         public async Task<IEnumerable<TestService>> GetAllAsync()
         {
             return await _context.TestServices
                 .Include(x => x.Offerings)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
         public async Task<TestService?> GetByIdAsync(int id)
         {
             return await _context.TestServices
+                .Where(x => x.Id == id)
                 .Include(x => x.Offerings)
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
         }
 
         public async Task<TestService?> GetByNameAsync(string name)
         {
+            var normalizedName = name.ToLower();
             return await _context.TestServices
+                .Where(x => x.Name.ToLower() == normalizedName)
                 .Include(x => x.Offerings)
-                .FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower());
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
         }
 
         public async Task<TestService> CreateAsync(TestServiceDto dto)
