@@ -333,8 +333,8 @@ app.UseRouting();
 
 app.UseCors("AllowFrontend");
 
-app.UseMiddleware<CorrelationIdMiddleware>();
-app.UseMiddleware<SecurityHeadersMiddleware>();
+app.UseMiddleware<RateLimitingMiddleware>();
+
 
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -342,7 +342,6 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
-app.UseMiddleware<RateLimitingMiddleware>();
 app.UseMiddleware<TokenVersionMiddleware>();
 app.UseAuthorization();
 
