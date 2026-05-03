@@ -1,10 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
-
-namespace Dactra.Controllers
+﻿namespace Dactra.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -13,14 +7,11 @@ namespace Dactra.Controllers
         private readonly IHomeService _homeService;
         private readonly ISiteReviewService _siteReviewService;
         private readonly ILogger<HomeController> _logger;
-        private readonly IMemoryCache _cache;
-
-        public HomeController(IHomeService homeService, ISiteReviewService siteReviewService, ILogger<HomeController> logger, IMemoryCache cache)
+        public HomeController(IHomeService homeService , ISiteReviewService siteReviewService, ILogger<HomeController> logger)
         {
             _homeService = homeService;
             _siteReviewService = siteReviewService;
             _logger = logger;
-            _cache = cache;
         }
 
         [HttpGet("top-rated-doctors")]
@@ -32,20 +23,7 @@ namespace Dactra.Controllers
         {
             try
             {
-                string cacheKey = $"TopRatedDoctors_{count}";
-
-                if (!_cache.TryGetValue(cacheKey, out IEnumerable<TopRatedDoctorDTO> doctors))
-                {
-                    doctors = await _homeService.GetTopRatedDoctorsAsync(count);
-
-                    var cacheOptions = new MemoryCacheEntryOptions
-                    {
-                        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
-                    };
-
-                    _cache.Set(cacheKey, doctors, cacheOptions);
-                }
-
+                var doctors = await _homeService.GetTopRatedDoctorsAsync(count);
                 return Ok(doctors);
             }
             catch (ArgumentException ex)
@@ -64,19 +42,8 @@ namespace Dactra.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetReviewDistribution()
         {
-            const string cacheKey = "SiteReviewStatistics";
-
-            if (!_cache.TryGetValue(cacheKey, out var stats))
-            {
-                stats = await _siteReviewService.GetReviewDistributionAsync();
-
-                _cache.Set(cacheKey, stats, new MemoryCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
-                });
-            }
-
-            return Ok(stats);
+            var dto = await _siteReviewService.GetReviewDistributionAsync();
+            return Ok(dto);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using Dactra.DTOs.TagDTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Dactra.Controllers
 {
@@ -10,14 +9,10 @@ namespace Dactra.Controllers
     public class TagsController : ControllerBase
     {
         private readonly ITagService _tagService;
-        private readonly IMemoryCache _cache;
 
-        private const string AllTagsCacheKey = "AllTags";
-
-        public TagsController(ITagService tagService, IMemoryCache cache)
+        public TagsController(ITagService tagService)
         {
             _tagService = tagService;
-            _cache = cache;
         }
 
         [HttpGet]
@@ -26,15 +21,7 @@ namespace Dactra.Controllers
         {
             try
             {
-                if (!_cache.TryGetValue(AllTagsCacheKey, out List<TagDto> tags))
-                {
-                    tags = await _tagService.GetAllTagsAsync();
-                    _cache.Set(AllTagsCacheKey, tags, new MemoryCacheEntryOptions
-                    {
-                        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
-                    });
-                }
-                return Ok(tags);
+                return Ok(await _tagService.GetAllTagsAsync());
             }
             catch (Exception ex)
             {
@@ -49,7 +36,6 @@ namespace Dactra.Controllers
             try
             {
                 var result = await _tagService.CreateTagAsync(dto);
-                _cache.Remove(AllTagsCacheKey);
                 return CreatedAtAction(nameof(GetAll), result);
             }
             catch (InvalidOperationException ex)
@@ -69,7 +55,6 @@ namespace Dactra.Controllers
             try
             {
                 await _tagService.DeleteTagAsync(id);
-                _cache.Remove(AllTagsCacheKey);
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
