@@ -578,6 +578,7 @@ namespace Dactra.Services.Implementation
 
             return sponsors.Select(s => new DoctorMySponsorDTO
             {
+                SponsorshipId = s.Id,
                 LabId = s.MedicalTestProviderId,
                 LabName = s.MedicalTestProvider?.Name ?? string.Empty,
                 LabType = s.ProviderType.ToString(),
