@@ -29,6 +29,7 @@
             return await _context.MedicalTestProviders
                 .Where(m => m.UserId == userId)
                 .Include(m => m.User)
+                .Include(m => m.WorkingHours)
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
         }

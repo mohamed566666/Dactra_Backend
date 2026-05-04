@@ -2,6 +2,7 @@
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "MedicalTestProvider")]
     public class MedicalTestsProviderController : ControllerBase
     {
         private readonly IMedicalTestsProviderService _medicalTestsProviderService;
@@ -29,7 +30,6 @@
             }
         }
         [HttpPut]
-       
         public async Task<IActionResult> Update(MedicalTestsProviderUpdateDTO medicalTestProviderDTO)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
