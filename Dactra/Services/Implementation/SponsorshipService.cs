@@ -24,9 +24,7 @@ namespace Dactra.Services.Implementation
             _hub = hub;
         }
 
-        // ─── Provider sends offer ──────────────────────────────────
-
-        public async Task<SponsorshipResponseDTO> SendOfferAsync(int providerId,MedicalTestProviderType providerType,SendOfferDTO dto)
+        public async Task<SponsorshipResponseDTO> SendOfferAsync(int providerId, MedicalTestProviderType providerType, SendOfferDTO dto)
         {
             var doctor = await _doctorRepo.GetByIdAsync(dto.DoctorId)
                 ?? throw new KeyNotFoundException("Doctor not found");
@@ -56,8 +54,6 @@ namespace Dactra.Services.Implementation
             return MapToResponse(full);
         }
 
-        // ─── Doctor: Accept ────────────────────────────────────────
-
         public async Task<SponsorshipResponseDTO> AcceptOfferAsync(int sponsorshipId, int doctorId)
         {
             var offer = await _sponsorshipRepo.GetByIdAsync(sponsorshipId)
@@ -84,8 +80,6 @@ namespace Dactra.Services.Implementation
             return MapToResponse(offer);
         }
 
-        // ─── Doctor: Reject ────────────────────────────────────────
-
         public async Task<SponsorshipResponseDTO> RejectOfferAsync(int sponsorshipId, int doctorId)
         {
             var offer = await _sponsorshipRepo.GetByIdAsync(sponsorshipId)
@@ -104,8 +98,6 @@ namespace Dactra.Services.Implementation
             await _hub.NotifyOfferRejected(offer.MedicalTestProviderId, MapToResponse(offer));
             return MapToResponse(offer);
         }
-
-        // ─── Doctor: Counter ───────────────────────────────────────
 
         public async Task<SponsorshipResponseDTO> CounterOfferAsync(
             int sponsorshipId,
@@ -144,8 +136,6 @@ namespace Dactra.Services.Implementation
             return MapToResponse(full);
         }
 
-        // ─── Provider: Accept counter ──────────────────────────────
-
         public async Task<SponsorshipResponseDTO> AcceptCounterAsync(int sponsorshipId, int providerId)
         {
             var counter = await _sponsorshipRepo.GetByIdAsync(sponsorshipId)
@@ -172,8 +162,6 @@ namespace Dactra.Services.Implementation
             return MapToResponse(counter);
         }
 
-        // ─── Provider: Reject counter ──────────────────────────────
-
         public async Task<SponsorshipResponseDTO> RejectCounterAsync(int sponsorshipId, int providerId)
         {
             var counter = await _sponsorshipRepo.GetByIdAsync(sponsorshipId)
@@ -193,36 +181,6 @@ namespace Dactra.Services.Implementation
             return MapToResponse(counter);
         }
 
-        // ─── Queries (Legacy) ────────────────────────────────────
-
-        public async Task<IEnumerable<SponsorshipResponseDTO>> GetProviderOffersAsync(int providerId)
-        {
-            var offers = await _sponsorshipRepo.GetProviderOffersAsync(providerId);
-            return offers.Select(MapToResponse);
-        }
-
-        public async Task<IEnumerable<SponsorshipResponseDTO>> GetActiveSponsorsForProviderAsync(int providerId)
-        {
-            var offers = await _sponsorshipRepo.GetActiveSponsorsForProviderAsync(providerId);
-            return offers.Select(MapToResponse);
-        }
-
-        public async Task<IEnumerable<SponsorshipResponseDTO>> GetDoctorOffersAsync(int doctorId)
-        {
-            var offers = await _sponsorshipRepo.GetDoctorOffersAsync(doctorId);
-            return offers.Select(MapToResponse);
-        }
-
-        public async Task<SponsorshipResponseDTO?> GetActiveSponsorshipAsync(
-            int doctorId,
-            MedicalTestProviderType type)
-        {
-            var offer = await _sponsorshipRepo.GetActiveSponsorshipAsync(doctorId, type);
-            return offer is null ? null : MapToResponse(offer);
-        }
-
-        // ─── Dashboard (Legacy) ─────────────────────────────────
-
         public async Task<ProviderOffersSummaryDTO> GetProviderOffersSummaryAsync(int providerId)
         {
             var (pending, counter, rejected) =
@@ -236,84 +194,6 @@ namespace Dactra.Services.Implementation
             };
         }
 
-        public async Task<IEnumerable<ProviderOfferItemDTO>> GetProviderOffersByStatusAsync(
-            int providerId,
-            OfferFilterStatus status)
-        {
-            SponsorshipStatus? dbStatus = status switch
-            {
-                OfferFilterStatus.Pending => SponsorshipStatus.Pending,
-                OfferFilterStatus.Rejected => SponsorshipStatus.Rejected,
-                OfferFilterStatus.Counter => SponsorshipStatus.Pending,
-                _ => null
-            };
-
-            var offers = await _sponsorshipRepo
-                .GetProviderOffersByStatusAsync(providerId, status);
-
-            return offers.Select(x => MapToProviderOfferItem(x, status));
-        }
-
-        public async Task<ActiveSponsorsOverviewDTO> GetActiveSponsorsOverviewAsync(int providerId)
-        {
-            var activeSponsors = await _sponsorshipRepo
-                .GetActiveSponsorsForProviderAsync(providerId);
-
-            var patientCounts = await _sponsorshipRepo
-                .GetPatientsSentCountPerDoctorAsync(providerId);
-
-            var items = activeSponsors.Select(s =>
-            {
-                patientCounts.TryGetValue(s.DoctorId, out var count);
-                return new ActiveSponsorItemDTO
-                {
-                    SponsorshipId = s.Id,
-                    DoctorId = s.DoctorId,
-                    DoctorName = s.Doctor is not null
-                        ? $"{s.Doctor.FirstName} {s.Doctor.LastName}"
-                        : string.Empty,
-                    DoctorSpeciality = s.Doctor?.specialization?.Name ?? string.Empty,
-                    DiscountPercentage = s.DiscountPercentage,
-                    Description = s.OfferContent,
-                    PatientsSentCount = count
-                };
-            }).ToList();
-
-            return new ActiveSponsorsOverviewDTO
-            {
-                TotalDoctors = items.Count,
-                TotalPatientsSent = items.Sum(x => x.PatientsSentCount),
-                AverageDiscount = items.Count > 0
-                    ? Math.Round(items.Average(x => x.DiscountPercentage), 2)
-                    : 0,
-                Doctors = items
-            };
-        }
-
-        public async Task<SponsorshipResponseDTO> CancelActiveSponsorshipAsync(int sponsorshipId, int actorId, string actorRole)
-        {
-            var sponsorship = await _sponsorshipRepo.GetByIdAsync(sponsorshipId)
-                ?? throw new KeyNotFoundException("Sponsorship not found");
-
-            if (sponsorship.Status != SponsorshipStatus.Active)
-                throw new InvalidOperationException("Only active sponsorships can be cancelled");
-
-            var isDoctor = actorRole == "Doctor" && sponsorship.DoctorId == actorId;
-            var isProvider = actorRole == "MedicalTestProvider" && sponsorship.MedicalTestProviderId == actorId;
-
-            if (!isDoctor && !isProvider)
-                throw new UnauthorizedAccessException("You are not part of this sponsorship");
-
-            sponsorship.Status = SponsorshipStatus.Cancelled;
-            sponsorship.RespondedAtUtc = DateTime.UtcNow;
-
-            await _sponsorshipRepo.UpdateAsync(sponsorship);
-            await _hub.NotifySponsorshipCancelled(sponsorship.MedicalTestProviderId,sponsorship.DoctorId,MapToResponse(sponsorship));
-            return MapToResponse(sponsorship);
-        }
-
-        // =============== PAGINATED METHODS ===============
-
         public async Task<PagedSponsorshipResponseDto> GetProviderOffersPagedAsync(
             int providerId,
             int page = 1,
@@ -321,54 +201,6 @@ namespace Dactra.Services.Implementation
         {
             var pagination = new PaginationDto { Page = page, PageSize = pageSize };
             var pagedResult = await _sponsorshipRepo.GetProviderOffersPagedAsync(providerId, pagination);
-
-            return new PagedSponsorshipResponseDto
-            {
-                Items = pagedResult.Items.Select(MapToResponse).ToList(),
-                TotalCount = pagedResult.TotalCount,
-                Page = pagedResult.Page,
-                PageSize = pagedResult.PageSize,
-                TotalPages = pagedResult.TotalPages,
-                HasNextPage = pagedResult.HasNextPage,
-                HasPreviousPage = pagedResult.HasPreviousPage
-            };
-        }
-
-        public async Task<PagedSponsorshipResponseDto> GetDoctorOffersPagedAsync(
-            int doctorId,
-            int page = 1,
-            int pageSize = 10)
-        {
-            var pagination = new PaginationDto { Page = page, PageSize = pageSize };
-            var pagedResult = await _sponsorshipRepo.GetDoctorOffersPagedAsync(doctorId, pagination);
-
-            return new PagedSponsorshipResponseDto
-            {
-                Items = pagedResult.Items.Select(MapToResponse).ToList(),
-                TotalCount = pagedResult.TotalCount,
-                Page = pagedResult.Page,
-                PageSize = pagedResult.PageSize,
-                TotalPages = pagedResult.TotalPages,
-                HasNextPage = pagedResult.HasNextPage,
-                HasPreviousPage = pagedResult.HasPreviousPage
-            };
-        }
-
-        public async Task<PagedSponsorshipResponseDto> GetProviderOffersByStatusPagedAsync(
-            int providerId,
-            SponsorshipStatus? status,
-            int page = 1,
-            int pageSize = 10)
-        {
-            var pagination = new StatusPaginationDto
-            {
-                Page = page,
-                PageSize = pageSize,
-                Status = status
-            };
-
-            var pagedResult = await _sponsorshipRepo
-                .GetProviderOffersByStatusPagedAsync(providerId, pagination);
 
             return new PagedSponsorshipResponseDto
             {
@@ -391,7 +223,6 @@ namespace Dactra.Services.Implementation
             var pagedResult = await _sponsorshipRepo
                 .GetActiveSponsorsForProviderPagedAsync(providerId, pagination);
 
-            // Get ALL patient counts for summary statistics (not just current page)
             var allActiveSponsors = await _sponsorshipRepo
                 .GetActiveSponsorsForProviderAsync(providerId);
 
@@ -442,6 +273,28 @@ namespace Dactra.Services.Implementation
             };
         }
 
+        public async Task<SponsorshipResponseDTO> CancelActiveSponsorshipAsync(int sponsorshipId, int actorId, string actorRole)
+        {
+            var sponsorship = await _sponsorshipRepo.GetByIdAsync(sponsorshipId)
+                ?? throw new KeyNotFoundException("Sponsorship not found");
+
+            if (sponsorship.Status != SponsorshipStatus.Active)
+                throw new InvalidOperationException("Only active sponsorships can be cancelled");
+
+            var isDoctor = actorRole == "Doctor" && sponsorship.DoctorId == actorId;
+            var isProvider = actorRole == "MedicalTestProvider" && sponsorship.MedicalTestProviderId == actorId;
+
+            if (!isDoctor && !isProvider)
+                throw new UnauthorizedAccessException("You are not part of this sponsorship");
+
+            sponsorship.Status = SponsorshipStatus.Cancelled;
+            sponsorship.RespondedAtUtc = DateTime.UtcNow;
+
+            await _sponsorshipRepo.UpdateAsync(sponsorship);
+            await _hub.NotifySponsorshipCancelled(sponsorship.MedicalTestProviderId, sponsorship.DoctorId, MapToResponse(sponsorship));
+            return MapToResponse(sponsorship);
+        }
+
         public async Task<PagedSponsorshipResponseDto> GetProviderOffersByFilterPagedAsync(
             int providerId,
             OfferFilterStatus filterStatus,
@@ -465,7 +318,81 @@ namespace Dactra.Services.Implementation
             };
         }
 
-        // ─── Mapping ───────────────────────────────────────────────
+        public async Task<bool> DeletePendingOfferAsync(int sponsorshipId, int providerId)
+        {
+            return await _sponsorshipRepo.DeletePendingOfferAsync(sponsorshipId, providerId);
+        }
+
+        public async Task<IEnumerable<DoctorMySponsorDTO>> GetMyActiveSponsorsAsync(int doctorId)
+        {
+            var sponsors = await _sponsorshipRepo.GetActiveSponsorsForDoctorAsync(doctorId);
+
+            return sponsors.Select(s => new DoctorMySponsorDTO
+            {
+                SponsorshipId = s.Id,
+                LabId = s.MedicalTestProviderId,
+                LabName = s.MedicalTestProvider?.Name ?? string.Empty,
+                LabType = s.ProviderType.ToString(),
+                DiscountPercent = s.DiscountPercentage
+            });
+        }
+
+        public async Task<DoctorSponsorshipsResponseDTO> GetDoctorSponsorshipsWithStatsAsync(int doctorId)
+        {
+            var sponsorships = await _sponsorshipRepo.GetActiveSponsorshipsAsync(doctorId);
+            var patientBenefitsCount = await _referralRepo.GetUniquePatientReferralCountByDoctorAsync(doctorId);
+
+            return new DoctorSponsorshipsResponseDTO
+            {
+                ActiveSponsorsCount = sponsorships.Count(),
+                PatientBenefitsCount = patientBenefitsCount,
+                AverageDiscountPercentage = sponsorships.Any()
+                    ? Math.Round(sponsorships.Average(x => x.DiscountPercentage), 2)
+                    : 0,
+                Sponsorships = sponsorships.Select(MapToResponse).ToList()
+            };
+        }
+
+        public async Task<bool> DeleteDoctorPendingOfferAsync(int sponsorshipId, int doctorId)
+        {
+            return await _sponsorshipRepo.DeletePendingOfferByDoctorAsync(sponsorshipId, doctorId);
+        }
+
+        public async Task<DoctorOffersSummaryDTO> GetDoctorOffersSummaryAsync(int doctorId)
+        {
+            var (received, counter, rejected) =
+                await _sponsorshipRepo.GetDoctorOfferCountsAsync(doctorId);
+
+            return new DoctorOffersSummaryDTO
+            {
+                ReceivedCount = received,
+                CounterCount = counter,
+                RejectedCount = rejected
+            };
+        }
+
+        public async Task<PagedSponsorshipResponseDto> GetDoctorOffersByFilterPagedAsync(
+    int doctorId,
+    OfferFilterStatus filterStatus,
+    int page = 1,
+    int pageSize = 10)
+        {
+            var pagination = new PaginationDto { Page = page, PageSize = pageSize };
+
+            var pagedResult = await _sponsorshipRepo
+                .GetDoctorOffersByFilterPagedAsync(doctorId, filterStatus, pagination);
+
+            return new PagedSponsorshipResponseDto
+            {
+                Items = pagedResult.Items.Select(x => MapToResponseWithFilterStatus(x, filterStatus)).ToList(),
+                TotalCount = pagedResult.TotalCount,
+                Page = pagedResult.Page,
+                PageSize = pagedResult.PageSize,
+                TotalPages = pagedResult.TotalPages,
+                HasNextPage = pagedResult.HasNextPage,
+                HasPreviousPage = pagedResult.HasPreviousPage
+            };
+        }
 
         private SponsorshipResponseDTO MapToResponseWithFilterStatus(DoctorMedicalTestSponsor x, OfferFilterStatus filterStatus) => new()
         {
@@ -504,7 +431,7 @@ namespace Dactra.Services.Implementation
             };
         }
 
-        private OfferFilterStatus ConvertToOfferFilterStatus(DoctorMedicalTestSponsor x )
+        private OfferFilterStatus ConvertToOfferFilterStatus(DoctorMedicalTestSponsor x)
         {
             if (x.IsCounterOffer && x.Status == SponsorshipStatus.Pending)
                 return OfferFilterStatus.Counter;
@@ -516,6 +443,7 @@ namespace Dactra.Services.Implementation
                 _ => OfferFilterStatus.Pending
             };
         }
+
         private SponsorshipResponseDTO MapToResponse(DoctorMedicalTestSponsor x) => new()
         {
             Id = x.Id,
@@ -565,56 +493,6 @@ namespace Dactra.Services.Implementation
                 OfferDate = x.RequestedAtUtc,
                 Status = requestedStatus,
                 OriginalOffer = originalSnapshot
-            };
-        }
-        public async Task<bool> DeletePendingOfferAsync(int sponsorshipId, int providerId)
-        {
-            return await _sponsorshipRepo.DeletePendingOfferAsync(sponsorshipId, providerId);
-        }
-
-        public async Task<IEnumerable<DoctorMySponsorDTO>> GetMyActiveSponsorsAsync(int doctorId)
-        {
-            var sponsors = await _sponsorshipRepo.GetActiveSponsorsForDoctorAsync(doctorId);
-
-            return sponsors.Select(s => new DoctorMySponsorDTO
-            {
-                SponsorshipId = s.Id,
-                LabId = s.MedicalTestProviderId,
-                LabName = s.MedicalTestProvider?.Name ?? string.Empty,
-                LabType = s.ProviderType.ToString(),
-                DiscountPercent = s.DiscountPercentage
-            });
-        }
-        public async Task<DoctorSponsorshipsResponseDTO> GetDoctorSponsorshipsWithStatsAsync(int doctorId)
-        {
-            var sponsorships = await _sponsorshipRepo.GetActiveSponsorshipsAsync(doctorId);
-            var patientBenefitsCount = await _referralRepo.GetUniquePatientReferralCountByDoctorAsync(doctorId);
-
-            return new DoctorSponsorshipsResponseDTO
-            {
-                ActiveSponsorsCount = sponsorships.Count(),
-                PatientBenefitsCount = patientBenefitsCount,
-                AverageDiscountPercentage = sponsorships.Any()
-                    ? Math.Round(sponsorships.Average(x => x.DiscountPercentage), 2)
-                    : 0,
-                Sponsorships = sponsorships.Select(MapToResponse).ToList()
-            };
-        }
-
-        public async Task<bool> DeleteDoctorPendingOfferAsync(int sponsorshipId, int doctorId)
-        {
-            return await _sponsorshipRepo.DeletePendingOfferByDoctorAsync(sponsorshipId, doctorId);
-        }
-        public async Task<DoctorOffersSummaryDTO> GetDoctorOffersSummaryAsync(int doctorId)
-        {
-            var (received, counter, rejected) =
-                await _sponsorshipRepo.GetDoctorOfferCountsAsync(doctorId);
-
-            return new DoctorOffersSummaryDTO
-            {
-                ReceivedCount = received,
-                CounterCount = counter,
-                RejectedCount = rejected
             };
         }
     }
