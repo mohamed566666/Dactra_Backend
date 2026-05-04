@@ -28,7 +28,7 @@ bld/
 **/Properties/
 **/*.csproj.user
 **/wwwroot/
-
+*firebase-adminsdk*.json
 # .NET Core
 project.lock.json
 project.fragment.lock.json

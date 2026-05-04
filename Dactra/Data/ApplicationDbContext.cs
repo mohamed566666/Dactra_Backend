@@ -53,7 +53,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<Report> Reports { get; set; }
     public DbSet<MedicalReport> MedicalReports { get; set; }
     public DbSet<VideoCallSession> VideoCallSessions { get; set; }
-
+    public DbSet<NotificationSubscription> NotificationSubscriptions { get; set; }
+    public DbSet<MedicineReminder> MedicineReminders { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

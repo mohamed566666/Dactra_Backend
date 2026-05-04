@@ -135,7 +135,10 @@
                 throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
             _context.LabsWorkingHour.RemoveRange(profile.WorkingHours);
-
+            if (!string.IsNullOrEmpty(dto.PhoneNumber))
+            {
+                profile.User.PhoneNumber = dto.PhoneNumber;
+            }
             _mapper.Map(dto, profile);
             _medicalTestProviderProfileRepository.Update(profile);
             await _medicalTestProviderProfileRepository.SaveChangesAsync();

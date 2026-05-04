@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260504195200_add notiFcm model & medicalReminder model")]
+    partial class addnotiFcmmodelmedicalRemindermodel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,25 +101,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "1feddd4d-234e-4585-b92e-3513a2ae9306",
+                            Id = "e12f4383-98df-4a1a-954f-8cf2ba81e83e",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "16f23a74-229b-4543-924e-3b83ab3319fd",
+                            Id = "d2e251bf-06b6-47a6-9d09-8949f2c3ae8e",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "4565ec63-a613-45ab-b017-77774ece2020",
+                            Id = "0107ab7b-75d3-4a4c-89cc-2bb911bab93b",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "0e2bfbcf-85fb-4b26-927a-9ae00dfbc859",
+                            Id = "f07c32df-9976-4760-a606-04ddddeee992",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -647,9 +650,6 @@ namespace Dactra.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastSentAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("MealRelation")
                         .IsRequired()
