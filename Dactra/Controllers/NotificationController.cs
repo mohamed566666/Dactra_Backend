@@ -88,10 +88,12 @@ namespace Dactra.Controllers
                 .FirstOrDefaultAsync();
             if (patientId == 0)
                 return NotFound("Patient not found");
+            var docId= await _context.Doctors.Where(d => d.Id == doctorId).Select(d => d.UserId).FirstOrDefaultAsync();
+            var patientUserId = await _context.Patients.Where(p => p.Id == patientId).Select(p => p.UserId).FirstOrDefaultAsync();
 
-            await _notificationService.SendAsync(doctorId.ToString(), dto.Message, dto.Title, dto.Type,Slotid);
+            await _notificationService.SendAsync(docId, dto.Message, dto.Title, dto.Type,Slotid);
 
-            await _notificationService.SendAsync(patientId.ToString(), dto.Message, dto.Title, dto.Type,Slotid);
+            await _notificationService.SendAsync(patientUserId, dto.Message, dto.Title, dto.Type,Slotid);
 
             return Ok("Notification sent to patient and doctor");
 
@@ -100,12 +102,13 @@ namespace Dactra.Controllers
         public async Task<IActionResult> bookAppointmentNotification(int id, [FromBody] NotificationDTO dto)
         {
 
-            var doctorId = await _doctorSlotService.GetDoctorIdBySlotId(id);
+            var doctorId = await _doctorSlotService.GetDoctorIdBySlotId(id);/////
+            var docId = await _context.Doctors.Where(d => d.Id == doctorId).Select(d => d.UserId).FirstOrDefaultAsync();
             var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(currentUserId))
                 return Unauthorized();
 
-            await _notificationService.SendAsync(doctorId.ToString(), dto.Message, dto.Title, dto.Type,id);
+            await _notificationService.SendAsync(docId, dto.Message, dto.Title, dto.Type,id);
             await _notificationService.SendAsync(currentUserId.ToString(), dto.Message, dto.Title, dto.Type,id);
             return Ok("Notification sent to patient and doctor");
         }
