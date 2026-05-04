@@ -11,27 +11,19 @@
         {
             return await _context.MedicalTestProviders
                 .Include(m => m.User).Include(m => m.WorkingHours)
-                .AsSplitQuery()
-                .AsNoTracking()
                 .ToListAsync();
         }
         public override async Task<MedicalTestProviderProfile?> GetByIdAsync(int id)
         {
             return await _context.MedicalTestProviders
-                .Where(m => m.Id == id)
                 .Include(m => m.User).Include(m => m.WorkingHours)
-                .AsSplitQuery()
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(m => m.Id == id);
         }
         public async Task<MedicalTestProviderProfile?> GetByUserIdAsync(string userId)
         {
             return await _context.MedicalTestProviders
-                .Where(m => m.UserId == userId)
                 .Include(m => m.User)
-                .Include(m => m.WorkingHours)
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(m => m.UserId == userId);
         }
 
         public async Task<IEnumerable<MedicalTestProviderProfile>> GetApprovedProfilesAsync(MedicalTestProviderType? type = null)
@@ -43,7 +35,7 @@
                 query = query.Where(m => m.Type == type.Value);
             }
             query = query.Include(m => m.User);
-            return await query.OrderByDescending(M => M.Avg_Rating).AsNoTracking().ToListAsync();
+            return await query.OrderByDescending(M => M.Avg_Rating).ToListAsync();
         }
 
         public async Task<IEnumerable<MedicalTestProviderProfile>> GetProfilesByTypeAsync(MedicalTestProviderType type)
@@ -51,7 +43,6 @@
             var profiles = await _context.MedicalTestProviders
                 .Where(m => m.Type == type)
                 .Include(m => m.User)
-                .AsNoTracking()
                 .ToListAsync();
             return profiles;
         }

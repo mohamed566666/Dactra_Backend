@@ -9,18 +9,15 @@
 
         public async Task<Rating?> GetByPatientAndProviderAsync(int patientId, int providerId)
         {
-            return await _context.Set<Rating>()
-                .AsNoTracking()
-                .FirstOrDefaultAsync(r =>
-                    r.PatientId == patientId &&
-                    r.ProviderId == providerId);
+            return await _context.Set<Rating>().FirstOrDefaultAsync(r =>
+                r.PatientId == patientId &&
+                r.ProviderId == providerId);
         }
 
         public async Task<List<Rating>> GetByPatientIdAsync(int patientId)
         {
             return await _context.Set<Rating>()
                 .Where(r => r.PatientId == patientId)
-                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -28,7 +25,6 @@
         {
             return await _context.Set<Rating>()
                 .Where(r => r.ProviderId == providerId)
-                .AsNoTracking()
                 .ToListAsync();
         }
     }

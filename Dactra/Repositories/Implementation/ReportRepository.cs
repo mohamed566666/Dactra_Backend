@@ -18,17 +18,14 @@
             return await _context.Reports
                 .Include(r => r.User)
                 .OrderByDescending(r => r.CreatedAt)
-                .AsNoTracking()
                 .ToListAsync();
         }
 
         public async Task<Report?> GetByIdAsync(int id)
         {
             return await _context.Reports
-                .Where(r => r.Id == id)
                 .Include(r => r.User)
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(r => r.Id == id);
         }
 
         public async Task DeleteAsync(Report report)

@@ -12,7 +12,6 @@
                 .Include(x => x.Provider)
                 .Include(x => x.TestService)
                 .AsSplitQuery()
-                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -23,7 +22,6 @@
                 .Include(x => x.Provider)
                 .Include(x => x.TestService)
                 .AsSplitQuery()
-                .AsNoTracking()
                 .FirstOrDefaultAsync();
         }
 
@@ -32,7 +30,6 @@
             return await _context.ProviderOfferings
                 .Where(x => x.ProviderId == providerId)
                 .Include(x => x.TestService)
-                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -41,7 +38,6 @@
             return await _context.ProviderOfferings
                 .Where(x => x.TestServiceId == serviceId)
                 .Include(x => x.Provider)
-                .AsNoTracking()
                 .ToListAsync();
         }
 

@@ -17,7 +17,7 @@ namespace Dactra.Repositories.Implementation
             var query = _context.Posts.AsQueryable();
             if (!includeDeleted)
                 query = query.Where(p => !p.isDeleted);
-            return await query.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+            return await query.FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<Post?> GetByIdWithDetailsAsync(int id, string? currentUserId = null)
@@ -37,8 +37,6 @@ namespace Dactra.Repositories.Implementation
             .Include(p => p.PostTags)
                 .ThenInclude(pt => pt.Tag)
             .Include(p => p.SavedBy)
-            .AsSplitQuery()
-            .AsNoTracking()
             .FirstOrDefaultAsync();
         }
 
@@ -57,10 +55,7 @@ namespace Dactra.Repositories.Implementation
                 .OrderByDescending(p => p.CreatedAt);
 
             var total = await query.CountAsync();
-            var posts = await query.Skip((page - 1) * pageSize).Take(pageSize)
-                .AsSplitQuery()
-                .AsNoTracking()
-                .ToListAsync();
+            var posts = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             return (posts, total);
         }
 
@@ -78,10 +73,7 @@ namespace Dactra.Repositories.Implementation
                 .OrderByDescending(p => p.CreatedAt);
 
             var total = await query.CountAsync();
-            var posts = await query.Skip((page - 1) * pageSize).Take(pageSize)
-                .AsSplitQuery()
-                .AsNoTracking()
-                .ToListAsync();
+            var posts = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             return (posts, total);
         }
 
@@ -99,10 +91,7 @@ namespace Dactra.Repositories.Implementation
                 .OrderByDescending(p => p.CreatedAt);
 
             var total = await query.CountAsync();
-            var posts = await query.Skip((page - 1) * pageSize).Take(pageSize)
-                .AsSplitQuery()
-                .AsNoTracking()
-                .ToListAsync();
+            var posts = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             return (posts, total);
         }
 
@@ -162,23 +151,20 @@ namespace Dactra.Repositories.Implementation
             query = query.OrderByDescending(p => p.CreatedAt);
 
             var total = await query.CountAsync();
-            var posts = await query.Skip((page - 1) * pageSize).Take(pageSize)
-                .AsSplitQuery()
-                .AsNoTracking()
-                .ToListAsync();
+            var posts = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             return (posts, total);
         }
 
         public async Task<UserPostStatsDto> GetUserStatsAsync(string userId)
         {
-            var liked = await _context.PostLikes.CountAsync(l => l.UserId == userId && !l.Post.isDeleted);
-            var saved = await _context.SavedPosts.CountAsync(s => s.UserId == userId && !s.Post.isDeleted);
+            var liked = await _context.PostLikes.Include(l => l.Post).CountAsync(l => l.UserId == userId && !l.Post.isDeleted);
+            var saved = await _context.SavedPosts.Include(l => l.Post).CountAsync(s => s.UserId == userId && !s.Post.isDeleted);
             var commented = await _context.comments
                                 .Where(c => c.UserId == userId)
                                 .Select(c => c.PostId)
                                 .Distinct()
                                 .CountAsync();
-            var totalShared = await _context.Posts.CountAsync(s => s.Doctor.UserId == userId && !s.isDeleted);
+            var totalShared = await _context.Posts.Include(s => s.Doctor).CountAsync(s => s.Doctor.UserId == userId && !s.isDeleted);
 
             return new UserPostStatsDto
             {
@@ -188,7 +174,6 @@ namespace Dactra.Repositories.Implementation
                 TotalShared = totalShared
             };
         }
-
         public async Task<List<TagDto>> GetTopTagsAsync(int topCount)
         {
             return await _context.PostTags
@@ -202,7 +187,6 @@ namespace Dactra.Repositories.Implementation
                     Name = g.Key.Name,
                     Count = g.Count()
                 })
-                .AsNoTracking()
                 .ToListAsync();
         }
     }

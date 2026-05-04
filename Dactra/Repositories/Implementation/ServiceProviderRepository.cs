@@ -11,15 +11,17 @@
 
         public async Task<ServiceProviderProfile?> GetByIdAsync(int id)
         {
-            return await _context.Providers
-                .AsNoTracking()
+            ServiceProviderProfile? profile = await _context.Doctors
                 .FirstOrDefaultAsync(sp => sp.Id == id);
+            if (profile == null)
+            {
+                profile = await _context.MedicalTestProviders.FirstOrDefaultAsync(sp => sp.Id == id);
+            }
+            return profile;
         }
-
         public async Task<ServiceProviderProfile?> GetByUserIdAsync(string userId)
         {
             return await _context.Providers
-                .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.UserId == userId);
         }
 
