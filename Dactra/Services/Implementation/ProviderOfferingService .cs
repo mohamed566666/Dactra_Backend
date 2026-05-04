@@ -10,6 +10,17 @@
         }
         public async Task<ProviderOffering> CreateAsync(ProviderOfferingDto dto)
         {
+            var existingOffering = await _repo.GetByProviderAndServiceAsync(dto.ProviderId, dto.TestServiceId);
+
+            if (existingOffering != null)
+            {
+                existingOffering.Price = dto.Price;
+                existingOffering.Duration = dto.Duration;
+                _repo.Update(existingOffering);
+                await _repo.SaveChangesAsync();
+                return existingOffering;
+            }
+
             var entity = new ProviderOffering
             {
                 ProviderId = dto.ProviderId,

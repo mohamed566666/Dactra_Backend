@@ -44,5 +44,11 @@
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+        public async Task<ProviderOffering?> GetByProviderAndServiceAsync(int providerId, int testServiceId)
+        {
+            return await _context.ProviderOfferings
+                .FirstOrDefaultAsync(x => x.ProviderId == providerId && x.TestServiceId == testServiceId);
+        }
     }
 }

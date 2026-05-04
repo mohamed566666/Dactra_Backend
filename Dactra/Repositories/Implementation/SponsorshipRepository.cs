@@ -32,6 +32,8 @@ namespace Dactra.Repositories.Implementation
                 .Where(x => x.MedicalTestProviderId == providerId
                          && x.Status == SponsorshipStatus.Active)
                 .Include(x => x.Doctor)
+                    .ThenInclude(d => d.User)
+                .Include(x => x.Doctor)
                     .ThenInclude(d => d.specialization)
                 .Include(x => x.ParentOffer)
                 .Include(x => x.CounterOffers)
@@ -131,6 +133,8 @@ namespace Dactra.Repositories.Implementation
             var totalCount = await query.CountAsync();
 
             var items = await query
+                .Include(x => x.Doctor)
+                    .ThenInclude(d => d.User)
                 .Include(x => x.Doctor)
                     .ThenInclude(d => d.specialization)
                 .Include(x => x.ParentOffer)
@@ -270,6 +274,7 @@ namespace Dactra.Repositories.Implementation
 
             var rejected = await _context.DoctorMedicalTestSponsors
                 .CountAsync(x => x.DoctorId == doctorId
+                              && x.IsCounterOffer
                               && x.Status == SponsorshipStatus.Rejected);
             return (received, counter, rejected);
         }

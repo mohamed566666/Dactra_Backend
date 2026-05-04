@@ -95,26 +95,6 @@ namespace Dactra.Controllers
             }
         }
 
-        // ─── Provider Endpoints ────────────────────────────────────
-
-        //[HttpGet("provider/dashboard")]
-        //[Authorize(Roles = "MedicalTestProvider")]
-        //public async Task<IActionResult> GetProviderDashboard()
-        //{
-        //    try
-        //    {
-        //        var provider = await GetProviderAsync();
-        //        if (provider is null) return Unauthorized(Error("Provider account not found"));
-
-        //        var result = await _service.GetProviderReferralsDashboardAsync(provider.Id);
-        //        return Ok(result);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, Error("An unexpected error occurred", ex.Message));
-        //    }
-        //}
-
         [HttpPut("provider/receive/{referralId}")]
         [Authorize(Roles = "MedicalTestProvider")]
         public async Task<IActionResult> MarkAsReceived(int referralId)

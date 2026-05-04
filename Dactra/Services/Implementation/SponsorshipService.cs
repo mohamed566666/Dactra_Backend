@@ -252,9 +252,12 @@ namespace Dactra.Services.Implementation
                         ? $"{s.Doctor.FirstName} {s.Doctor.LastName}"
                         : string.Empty,
                     DoctorSpeciality = s.Doctor?.specialization?.Name ?? string.Empty,
+                    DoctorPhoneNumber = s.Doctor?.User.PhoneNumber ?? string.Empty,
+                    imageUrl = s.Doctor?.User.ImageUrl ?? string.Empty,
                     DiscountPercentage = s.DiscountPercentage,
                     Description = s.OfferContent,
-                    PatientsSentCount = patientCount
+                    PatientsSentCount = patientCount,
+                    OfferDate = s.RequestedAtUtc
                 };
             }).ToList();
 
