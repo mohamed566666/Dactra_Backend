@@ -1,6 +1,9 @@
 ﻿using Dactra.Services.Background;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Hangfire;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +55,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
+#endregion
+
+#region  Firebase 
+FirebaseApp.Create(new AppOptions
+{
+    Credential = GoogleCredential.FromFile(
+        Path.Combine(AppContext.BaseDirectory, "firebase-adminsdk.json")
+    )
+
+});
 #endregion
 
 #region Repositories
@@ -164,6 +177,8 @@ builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 builder.Services.AddScoped<IReminderService, ReminderService>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddSingleton<IFcmService, FcmService>();
+
 
 builder.Services.AddHangfire(config =>
     config.UseSqlServerStorage(
