@@ -82,18 +82,35 @@ namespace Dactra.Services.Implementation
                 _context.Payments.Add(payment);
 
                 await _context.SaveChangesAsync();
-                var appointment = new PatientAppointment
+
+                var appointment = await _context.PatientAppointments
+                                    .FirstOrDefaultAsync(x => x.SlotId == slotId);
+
+                if (appointment == null)
                 {
-                    PatientId = patientId,
-                    PaymentId = payment.Id,
-                    SlotId = slot.Id,
-                    Status = isInPerson ? AppointmentStatus.Confirmed : AppointmentStatus.Pending,
-                    BookedAt = DateTime.UtcNow
+                    appointment = new PatientAppointment
+                    {
+                        PatientId = patientId,
+                        SlotId = slotId,
+                        PaymentId = payment.Id,
+                        Status = isInPerson ? AppointmentStatus.Confirmed : AppointmentStatus.Pending,
+                        BookedAt = DateTime.UtcNow
+                    };
 
+                    _context.PatientAppointments.Add(appointment);
+                }
+                else
+                {
+                    if (appointment.Status == AppointmentStatus.Confirmed)
+                        throw new Exception("Slot already booked");
 
-                };
+                    appointment.PatientId = patientId;
+                    appointment.PaymentId = payment.Id;
+                    appointment.Status = isInPerson ? AppointmentStatus.Confirmed : AppointmentStatus.Pending;
+                    appointment.BookedAt = DateTime.UtcNow;
+                }
 
-                 await _appointmentRepository.BookeAsync(appointment);
+                _context.SaveChanges();
                 await CreateOrRenewCareAsync(patientId, slot.DoctorId);
 
                 var utcTime = slot.SlotDateTimeUtc;
