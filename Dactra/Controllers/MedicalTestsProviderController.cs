@@ -2,7 +2,7 @@
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "MedicalTestProvider")]
+    
     public class MedicalTestsProviderController : ControllerBase
     {
         private readonly IMedicalTestsProviderService _medicalTestsProviderService;
