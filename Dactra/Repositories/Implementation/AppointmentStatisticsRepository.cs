@@ -183,5 +183,35 @@ namespace Dactra.Repositories.Implementation
 
             return true;
         }
+
+        public async Task<List<DoctorDailyAppointmentsDto>> GetDoctorWeeklyAppointmentsAsync(int doctorId)
+        {
+            var today = DateTime.UtcNow.Date;
+            var startDate = today.AddDays(-6);
+
+            var slotDates = await _context.PatientAppointments
+                .Where(a => a.Slot.DoctorId == doctorId
+                          && a.Slot.SlotDateTimeUtc >= startDate
+                          && a.Slot.SlotDateTimeUtc < today.AddDays(1))
+                .Select(a => a.Slot.SlotDateTimeUtc)
+                .ToListAsync();
+            var grouped = slotDates
+                .GroupBy(d => d.Date)
+                .ToDictionary(g => g.Key, g => g.Count());
+            var result = Enumerable.Range(0, 7)
+                .Select(offset =>
+                {
+                    var date = startDate.AddDays(offset);
+                    return new DoctorDailyAppointmentsDto
+                    {
+                        Date = date,
+                        DayName = date.DayOfWeek.ToString(),
+                        AppointmentCount = grouped.TryGetValue(date, out var count) ? count : 0
+                    };
+                })
+                .ToList();
+
+            return result;
+        }
     }
 }

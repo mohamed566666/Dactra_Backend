@@ -102,6 +102,26 @@ namespace Dactra.Controllers
             return Unauthorized(new { message = "Invalid role" });
         }
 
+        [HttpGet("doctor/{doctorId}/weekly-appointments")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDoctorWeeklyAppointments(int doctorId)
+        {
+            var result = await _statisticsService.GetDoctorWeeklyAppointmentsByIdAsync(doctorId);
+            return Ok(result);
+        }
+
+        [HttpGet("my-weekly-appointments")]
+        [Authorize(Roles = "Doctor")]
+        public async Task<IActionResult> GetMyWeeklyAppointments()
+        {
+            var doctor = await GetDoctorAsync();
+            if (doctor is null)
+                return Unauthorized(new { message = "Doctor profile not found" });
+
+            var result = await _statisticsService.GetAuthenticatedDoctorWeeklyAppointmentsAsync(doctor.Id);
+            return Ok(result);
+        }
+
         #endregion
 
         #region Helpers
