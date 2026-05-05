@@ -13,7 +13,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<MedicalTestProviderProfile> MedicalTestProviders { get; set; }
     public DbSet<TestService> TestServices { get; set; }
     public DbSet<ProviderOffering> ProviderOfferings { get; set; }
-    public DbSet<Prescription> Prescriptions { get; set; }
     public DbSet<PatientAppointment> PatientAppointments { get; set; }
     public DbSet<Payment> Payments { get; set; }
     public DbSet<Post> Posts { get; set; }
@@ -21,7 +20,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<VitalSignType> VitalSignTypes { get; set; }
     public DbSet<VitalSign> VitalSigns { get; set; }
     public DbSet<Rating> Ratings { get; set; }
-    public DbSet<Medicines> Medicines { get; set; }
     public DbSet<EmailVerification> EmailVerifications { get; set; }
     public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
     public DbSet<ComplaintAttachment> ComplaintAttachments { get; set; }
@@ -55,6 +53,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<VideoCallSession> VideoCallSessions { get; set; }
     public DbSet<NotificationSubscription> NotificationSubscriptions { get; set; }
     public DbSet<MedicineReminder> MedicineReminders { get; set; }
+    public DbSet<Prescription> Prescriptions { get; set; }
+    public DbSet<PrescriptionMedicine> PrescriptionMedicines { get; set; }
+    public DbSet<MedicineDoseTime> MedicineDoseTimes { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -72,19 +73,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         modelBuilder.Entity<ServiceProviderProfile>().ToTable("ServiceProviders");
         modelBuilder.Entity<DoctorProfile>().ToTable("DoctorProfiles");
         modelBuilder.Entity<MedicalTestProviderProfile>().ToTable("MedicalTestProviderProfiles");
-
-        modelBuilder.Entity<PrescriptionWithMedicin>()
-            .HasKey(pm => new { pm.PrescriptionId, pm.MedicinesId });
-
-        modelBuilder.Entity<PrescriptionWithMedicin>()
-            .HasOne(pm => pm.Prescription)
-            .WithMany(p => p.PrescriptionWithMedicins)
-            .HasForeignKey(pm => pm.PrescriptionId);
-
-        modelBuilder.Entity<PrescriptionWithMedicin>()
-            .HasOne(pm => pm.Medicines)
-            .WithMany(m => m.PrescriptionWithMedicins)
-            .HasForeignKey(pm => pm.MedicinesId);
 
         modelBuilder.Entity<Complaint>()
             .HasMany(c => c.Attachments)
@@ -279,5 +267,23 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             entity.HasIndex(x => new { x.PatientReferralId, x.ProviderOfferingId })
                   .IsUnique();
         });
+
+        modelBuilder.Entity<PatientAppointment>()
+        .HasOne(a => a.Prescription)
+        .WithOne(p => p.Appointment)
+        .HasForeignKey<Prescription>(p => p.AppointmentId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PrescriptionMedicine>()
+            .HasOne(m => m.Prescription)
+            .WithMany(p => p.Medicines)
+            .HasForeignKey(m => m.PrescriptionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MedicineDoseTime>()
+            .HasOne(d => d.PrescriptionMedicine)
+            .WithMany(m => m.DoseTimes)
+            .HasForeignKey(d => d.PrescriptionMedicineId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

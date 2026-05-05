@@ -25,7 +25,6 @@
         public int? AddressId { get; set; }
         public City? Address { get; set; }
         public BloodTypes BloodType { get; set; }
-        public ICollection<Medicines> Current_Medications { get; set; } = new List<Medicines>();
         public SmokingStatus SmokingStatus { get; set; }
         public ICollection<Allergy> Allergies { get; set; } = new List<Allergy>();
         public ICollection<ChronicDisease> ChronicDiseases { get; set; } = new List<ChronicDisease>();

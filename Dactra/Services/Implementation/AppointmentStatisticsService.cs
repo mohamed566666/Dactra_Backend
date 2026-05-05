@@ -302,6 +302,28 @@ namespace Dactra.Services.Implementation
             }
         }
 
+        public async Task<DoctorWeeklyAppointmentsResponseDto> GetDoctorWeeklyAppointmentsByIdAsync(int doctorId)
+        {
+            var today = DateTime.UtcNow.Date;
+            var startDate = today.AddDays(-6);
+
+            var dailyCounts = await _repository.GetDoctorWeeklyAppointmentsAsync(doctorId);
+
+            return new DoctorWeeklyAppointmentsResponseDto
+            {
+                DoctorId = doctorId,
+                DailyCounts = dailyCounts,
+                TotalAppointments = dailyCounts.Sum(d => d.AppointmentCount),
+                FromDate = startDate,
+                ToDate = today
+            };
+        }
+
+        public async Task<DoctorWeeklyAppointmentsResponseDto> GetAuthenticatedDoctorWeeklyAppointmentsAsync(int doctorId)
+        {
+            return await GetDoctorWeeklyAppointmentsByIdAsync(doctorId);
+        }
+
         #region Private Mapping Methods
 
         private PatientAppointmentListItemDto MapToPatientListItemDto(PatientAppointment appointment)
