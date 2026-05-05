@@ -4,11 +4,20 @@
     {
         [Key]
         public int Id { get; set; }
+
+        [Required]
+        [MaxLength(2000)]
         public string Diagnosis { get; set; } = string.Empty;
 
-        public List<Medicines> Medicines { get; set; } = new List<Medicines>();
+        [Required]
+        public int AppointmentId { get; set; }
 
-        public List<PatientAppointment> PatientAppointment { get; set; } = new List<PatientAppointment>();
-        public List<PrescriptionWithMedicin> PrescriptionWithMedicins { get; set; } = new List<PrescriptionWithMedicin>();
+        [ForeignKey(nameof(AppointmentId))]
+        public PatientAppointment Appointment { get; set; } = null!;
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
+
+        public ICollection<PrescriptionMedicine> Medicines { get; set; } = new List<PrescriptionMedicine>();
     }
 }

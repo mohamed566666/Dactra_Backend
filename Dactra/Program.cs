@@ -121,6 +121,8 @@ builder.Services.AddScoped<IMedicalReportRepository, MedicalReportRepository>();
 
 builder.Services.AddScoped<IAppointmentStatisticsRepository, AppointmentStatisticsRepository>();
 
+builder.Services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
+
 #endregion
 
 #region Services
@@ -201,6 +203,8 @@ builder.Services.AddScoped<IVideoCallService, VideoCallService>();
 builder.Services.AddScoped<IAppointmentStatisticsService, AppointmentStatisticsService>();
 
 builder.Services.Configure<AITaggingOptions>(builder.Configuration.GetSection("AITagging"));
+
+builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
 
 #endregion
 
