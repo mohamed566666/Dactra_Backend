@@ -125,7 +125,7 @@ namespace Dactra.Services.Implementation
                 {
                     var jobId = BackgroundJob.Schedule<ReminderService>(
                         x => x.SendReminder(appointment.Id),
-                        delay
+                        reminderTime
                     );
 
                     appointment.ReminderJobId = jobId;

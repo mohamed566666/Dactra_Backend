@@ -5,11 +5,13 @@ namespace Dactra.Services.Implementation
     {
         private readonly ApplicationDbContext _context;
         private readonly INotificationService _notificationService;
+        private readonly IAppointmentReminderService _appointmentReminderService;
 
-        public ReminderService(ApplicationDbContext context, INotificationService notificationService)
+        public ReminderService(ApplicationDbContext context, INotificationService notificationService, IAppointmentReminderService appointmentReminderService)
         {
             _context = context;
             _notificationService = notificationService;
+            _appointmentReminderService = appointmentReminderService;
         }
 
 
@@ -23,14 +25,45 @@ namespace Dactra.Services.Implementation
             {
                 return;
             }
+            var patientTokens = await _context.NotificationSubscriptions
+                   .Where(x => x.PatientId == appt.PatientId.ToString() && x.IsActive)
+                   .Select(x => x.FcmToken)
+                   .ToListAsync();
 
-            var patientUserId = await _context.Patients.Where(p => p.Id == appt.PatientId)
-                .Select(p => p.UserId)
-                .FirstOrDefaultAsync();
+
             var doctorUserId = await _context.Doctors.Where(d => d.Id == appt.Slot.DoctorId)
                 .Select(d => d.UserId)
                 .FirstOrDefaultAsync();
 
+            var doctorTokens = await _context.NotificationSubscriptions
+                .Where(x => x.PatientId == doctorUserId && x.IsActive)
+                .Select(x => x.FcmToken)
+                .ToListAsync();
+
+            var patientUserId = await _context.Patients.Where(p => p.Id == appt.PatientId)
+                .Select(p => p.UserId)
+                .FirstOrDefaultAsync();
+            var utcTime = appt.Slot.SlotDateTimeUtc;
+
+            foreach (var token in patientTokens)
+            {
+                await _appointmentReminderService.SendNotificationAsync(
+                    token,
+                    utcTime,
+                    "Doctor",
+                    "Clinic"
+                );
+            }
+
+            foreach (var token in doctorTokens)
+            {
+                await _appointmentReminderService.SendNotificationAsync(
+                    token,
+                    utcTime,
+                    "Doctor",
+                    "Clinic"
+                );
+            }
             await _notificationService.SendAsync(patientUserId, "1 hour left to your appointment", "Reminder",null,appt.SlotId);
 
             await _notificationService.SendAsync(doctorUserId, "1 hour left to your appointment", "Reminder", null, appt.SlotId);
