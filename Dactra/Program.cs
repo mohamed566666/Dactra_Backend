@@ -208,6 +208,7 @@ builder.Services.Configure<AITaggingOptions>(builder.Configuration.GetSection("A
 builder.Services.AddHostedService<CleanupExpiredTokensService>();
 //builder.Services.AddHostedService<SlotReservationCleanupService>();
 builder.Services.AddHostedService<SlotCleanupBackgroundService>();
+builder.Services.AddHostedService<MedicineReminderWorker>();
 
 builder.Services.AddHttpClient<PaymentService>();
 
