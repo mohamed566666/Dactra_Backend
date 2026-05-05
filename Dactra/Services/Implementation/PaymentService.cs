@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Dactra.Services.Interfaces;
+using Hangfire;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Text.Json;
 
@@ -14,6 +16,7 @@ namespace Dactra.Services.Implementation
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IConfiguration _configuration;
         private readonly string _hmacSecret;
+        private readonly IReminderService _reminderService;
 
         public PaymentService(
             HttpClient httpClient,
@@ -22,7 +25,8 @@ namespace Dactra.Services.Implementation
             ApplicationDbContext context,
             ILogger<PaymentService> logger,
             IAppointmentRepository appointmentRepository,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IReminderService reminderService)
         {
             _httpClient = httpClient;
             _settings = options.Value;
@@ -32,6 +36,7 @@ namespace Dactra.Services.Implementation
             _appointmentRepository = appointmentRepository;
             _configuration = configuration;
             _hmacSecret = _configuration["Paymob:HmacSecret"];
+            _reminderService = reminderService;
         }
 
         public async Task<string> GetPaymentUrl(Payment payment, string email)
@@ -251,7 +256,7 @@ namespace Dactra.Services.Implementation
                 {
                     payment.Status = paymentStatus.Confirmed;
                     payment.PaymobTransactionId = callback.obj.id.ToString();
-                    var appointment = await _context.PatientAppointments
+                    var appointment = await _context.PatientAppointments.Include(pa => pa.Slot)
                       .FirstOrDefaultAsync(a => a.PaymentId == payment.Id);
 
                     if (appointment != null)
@@ -280,6 +285,27 @@ namespace Dactra.Services.Implementation
                     {
                         _logger.LogWarning("No slot found for Appointment {AppointmentId}", appointment.Id);
                         return false;
+                    }
+                    var utcTime = appointment.Slot.SlotDateTimeUtc;
+
+                    if (utcTime <= DateTime.UtcNow)
+                        throw new Exception("Slot time is in the past");
+
+                    var reminderTime = utcTime.AddHours(-1);
+                    var delay = reminderTime - DateTime.UtcNow;
+
+                    if (delay > TimeSpan.Zero)
+                    {
+                        var jobId = BackgroundJob.Schedule<IReminderService>(
+                            x => x.SendReminder(appointment.Id),
+                            delay
+                        );
+
+                        appointment.ReminderJobId = jobId;
+                    }
+                    else
+                    {
+                        await _reminderService.SendReminder(appointment.Id);
                     }
                     await _context.SaveChangesAsync();
 

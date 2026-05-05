@@ -179,7 +179,7 @@ builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 builder.Services.AddScoped<IReminderService, ReminderService>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IReportService, ReportService>();
-builder.Services.AddSingleton<IFcmService, FcmService>();
+builder.Services.AddScoped<IFcmService, FcmService>();
 builder.Services.AddScoped<IAppointmentReminderService, AppointmentReminderService>();
 
 
