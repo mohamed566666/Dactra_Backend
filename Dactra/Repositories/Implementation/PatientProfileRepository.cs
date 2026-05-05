@@ -14,50 +14,39 @@
              .Include(p => p.Allergies)
              .Include(p => p.ChronicDiseases)
              .Include(p => p.MedicalReports)
-             .AsSplitQuery()
-             .AsNoTracking()
-             .ToListAsync();
+                .ToListAsync();
         }
         public override async Task<PatientProfile?> GetByIdAsync(int id)
         {
             return await _context.Patients
-             .Where(p => p.Id == id)
              .Include(p => p.User)
              .Include(p => p.Address)
              .Include(p => p.Allergies)
              .Include(p => p.ChronicDiseases)
              .Include(p => p.MedicalReports)
-             .AsSplitQuery()
-             .AsNoTracking()
-             .FirstOrDefaultAsync();
+             .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<PatientProfile?> GetByUserEmail(string email)
         {
             return await _context.Patients
-                 .Where(p => p.User.Email == email)
                  .Include(p => p.User)
                  .Include(p => p.Address)
                  .Include(p => p.Allergies)
                  .Include(p => p.ChronicDiseases)
                  .Include(p => p.MedicalReports)
-                 .AsSplitQuery()
-                 .AsNoTracking()
-                 .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(p => p.User.Email == email);
         }
 
         public async Task<PatientProfile?> GetByUserIdAsync(string userId)
         {
             return await _context.Patients
-                 .Where(p => p.UserId == userId)
                  .Include(p => p.User)
                  .Include(p => p.Address)
                  .Include(p => p.Allergies)
                  .Include(p => p.ChronicDiseases)
                  .Include(p => p.MedicalReports)
-                 .AsSplitQuery()
-                 .AsNoTracking()
-                 .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(p => p.UserId == userId);
         }
     }
 }

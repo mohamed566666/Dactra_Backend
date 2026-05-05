@@ -13,7 +13,6 @@ namespace Dactra.Repositories.Implementation
             return await _context.Doctors
                 .Include(d => d.User)
                 .Include(d => d.specialization)
-                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -22,7 +21,6 @@ namespace Dactra.Repositories.Implementation
             return await _context.Doctors
                 .Where(m => m.approvalStatus == ApprovalStatus.approved)
                 .OrderByDescending(M => M.Avg_Rating)
-                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -31,7 +29,6 @@ namespace Dactra.Repositories.Implementation
             return await _context.Doctors
                 .Include(d => d.User)
                 .Include(d => d.specialization)
-                .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.Id == id);
         }
 
@@ -40,7 +37,6 @@ namespace Dactra.Repositories.Implementation
             return await _context.Doctors
                 .Include(d => d.User)
                 .Include(d => d.specialization)
-                .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.User.Email == email);
         }
 
@@ -49,7 +45,6 @@ namespace Dactra.Repositories.Implementation
             return await _context.Doctors
                 .Include(d => d.User)
                 .Include(d => d.specialization)
-                .AsNoTracking()
                 .FirstOrDefaultAsync(d => d.UserId == userId);
         }
 
@@ -57,7 +52,6 @@ namespace Dactra.Repositories.Implementation
         {
             return await _context.Doctors
                 .Where(m => m.approvalStatus == ApprovalStatus.rejected)
-                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -70,7 +64,7 @@ namespace Dactra.Repositories.Implementation
             filter.PageSize = Math.Clamp(filter.PageSize, 1, 100);
             var baseQuery = _context.Doctors
                 .Where(d => d.approvalStatus == ApprovalStatus.approved)
-                .AsNoTracking()
+                
                 .AsQueryable();
             if (filter.SpecializationId.HasValue)
                 baseQuery = baseQuery.Where(d => d.SpecializationId == filter.SpecializationId.Value);
@@ -96,7 +90,7 @@ namespace Dactra.Repositories.Implementation
                     .Where(d => doctorIds.Contains(d.Id))
                     .Include(d => d.User)
                     .Include(d => d.specialization)
-                    .AsNoTracking()
+                    
                     .ToListAsync();
 
                 return (doctors, totalCount);
@@ -180,7 +174,7 @@ namespace Dactra.Repositories.Implementation
                 .Where(d => pagedIds.Contains(d.Id))
                 .Include(d => d.User)
                 .Include(d => d.specialization)
-                .AsNoTracking()
+                
                 .ToListAsync();
             var paged = pagedIds.Select(id => pagedDoctors.First(d => d.Id == id)).ToList();
             return (paged, totalFuzzyMatches);
@@ -286,7 +280,7 @@ namespace Dactra.Repositories.Implementation
                         ConsultationPrice = d.OnlineConsultationPrice
                     }
                 })
-                .AsNoTracking()
+                
                 .FirstOrDefaultAsync();
 
             if (response == null)

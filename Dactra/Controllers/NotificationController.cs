@@ -81,7 +81,6 @@ namespace Dactra.Controllers
         [HttpPost("cancel/{Slotid}")]
         public async Task<IActionResult> cancelAppointmentNotification(int Slotid, [FromBody] NotificationDTO dto)
         {
-
             var doctorId = await _doctorSlotService.GetDoctorIdBySlotId(Slotid);
             var patientId = await _context.PatientAppointments.Where(a => a.SlotId == Slotid)
                 .Select(a => a.PatientId)

@@ -23,7 +23,6 @@
                     .ThenInclude(x => x.ProviderOffering)
                         .ThenInclude(x => x.TestService)
                 .AsSplitQuery()
-                .AsNoTracking()
                 .FirstOrDefaultAsync();
         }
 
@@ -41,7 +40,6 @@
                         .ThenInclude(x => x.TestService)
                 .OrderByDescending(x => x.ReferredAtUtc)
                 .AsSplitQuery()
-                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -58,7 +56,6 @@
                         .ThenInclude(x => x.TestService)
                 .OrderByDescending(x => x.ReferredAtUtc)
                 .AsSplitQuery()
-                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -84,7 +81,6 @@
                 .Include(x => x.Patient)
                     .ThenInclude(p => p.User)
                 .OrderBy(x => x.Patient.FirstName)
-                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -115,7 +111,6 @@
                 .Skip(pagination.Skip)
                 .Take(pagination.PageSize)
                 .AsSplitQuery()
-                .AsNoTracking()
                 .ToListAsync();
 
             return new PagedResultDto<PatientReferral>
@@ -125,6 +120,15 @@
                 Page = pagination.Page,
                 PageSize = pagination.PageSize
             };
+        }
+
+        public async Task<int> GetUniquePatientReferralCountByDoctorAsync(int doctorId)
+        {
+            return await _context.PatientReferrals
+                .Where(x => x.DoctorId == doctorId)
+                .Select(x => x.PatientId)
+                .Distinct()
+                .CountAsync();
         }
     }
 }

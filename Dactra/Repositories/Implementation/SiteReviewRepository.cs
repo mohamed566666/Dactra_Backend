@@ -48,7 +48,6 @@
         public async Task<IEnumerable<(int Score, int Count)>> GetScoreCountsAsync()
         {
             var groups = await _context.SiteReviews
-                .AsNoTracking()
                 .GroupBy(r => r.Score)
                 .Select(g => new { Score = g.Key, Count = g.Count() })
                 .ToListAsync();

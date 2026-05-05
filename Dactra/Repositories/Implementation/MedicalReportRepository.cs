@@ -14,17 +14,14 @@
             return await _context.MedicalReports
                 .Where(r => r.PatientProfileId == patientProfileId)
                 .OrderByDescending(r => r.UploadedAt)
-                .AsNoTracking()
                 .ToListAsync();
         }
 
         public async Task<MedicalReport?> GetByIdAsync(int id)
         {
             return await _context.MedicalReports
-                .Where(r => r.Id == id)
                 .Include(r => r.PatientProfile)
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(r => r.Id == id);
         }
 
         public async Task AddAsync(MedicalReport report)

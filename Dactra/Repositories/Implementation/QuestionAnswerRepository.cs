@@ -21,7 +21,6 @@
             var answers = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .AsNoTracking()
                 .ToListAsync();
 
             return (answers, total);
@@ -41,7 +40,6 @@
             var replies = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .AsNoTracking()
                 .ToListAsync();
 
             return (replies, total);
@@ -57,7 +55,6 @@
                 .Where(a => !a.isDeleted)
                 .Include(a => a.Answerer)
                 .Include(a => a.Likes)
-                .AsNoTracking()
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
 
@@ -68,7 +65,6 @@
                 .Include(a => a.Answerer)
                 .Include(a => a.Likes)
                 .OrderBy(a => a.CreatedAt)
-                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -104,12 +100,11 @@
             => await _context.QuestionAnswers.AnyAsync(a => a.Id == answerId && a.AnswererUserId == userId && !a.isDeleted);
 
         public async Task<Question?> GetQuestionByAnswerIdAsync(int answerId)
-        {
-            return await _context.Questions
-                .Where(q => q.Answers.Any(a => a.Id == answerId && !a.isDeleted))
-                .Include(q => q.Patient)
-                .AsNoTracking()
+            => await _context.QuestionAnswers
+                .Where(a => a.Id == answerId && !a.isDeleted)
+                .Include(a => a.Question)
+                    .ThenInclude(q => q.Patient)
+                .Select(a => a.Question)
                 .FirstOrDefaultAsync();
-        }
     }
 }

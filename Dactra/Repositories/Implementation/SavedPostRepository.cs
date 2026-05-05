@@ -6,9 +6,7 @@
         public SavedPostRepository(ApplicationDbContext context) => _context = context;
 
         public async Task<SavedPost?> GetAsync(int postId, string userId)
-            => await _context.SavedPosts
-                .AsNoTracking()
-                .FirstOrDefaultAsync(s => s.PostId == postId && s.UserId == userId);
+            => await _context.SavedPosts.FirstOrDefaultAsync(s => s.PostId == postId && s.UserId == userId);
 
         public async Task<(List<SavedPost> Items, int TotalCount)> GetByUserIdAsync(string userId, int page, int pageSize)
         {
@@ -21,12 +19,7 @@
                 .OrderByDescending(s => s.SavedAt);
 
             var total = await query.CountAsync();
-            var items = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .AsSplitQuery()
-                .AsNoTracking()
-                .ToListAsync();
+            var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             return (items, total);
         }
 

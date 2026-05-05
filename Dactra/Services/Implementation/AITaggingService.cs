@@ -1,4 +1,6 @@
-﻿namespace Dactra.Services.Implementation
+﻿using Azure;
+
+namespace Dactra.Services.Implementation
 {
     public class AITaggingService : IAITaggingService
     {
@@ -34,7 +36,7 @@
             var tagsJson = JsonSerializer.Serialize(availableTags);
             var prompt = $"""
             You are a medical content tagging assistant.
-            Given the following medical post content, select the most relevant tags from the predefined list below.
+            Given the following medical post content, (if it's in any other language translate it to English first), and select the most relevant tags from the predefined list below.
             Return ONLY a JSON array of tag names that match. Return an empty array [] if none match.
             Do not invent new tags
 
@@ -51,26 +53,27 @@
             {
                 contents = new[]
                 {
-            new { parts = new[] { new { text = prompt } } }
-        }
+                    new { parts = new[] { new { text = prompt } } }
+                }
             };
 
             var json = JsonSerializer.Serialize(requestBody);
-            foreach (var model in _options.PriorityModels) 
+
+            foreach (var model in _options.PriorityModels)
             {
                 var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
-                var request = new HttpRequestMessage(HttpMethod.Post, url);
+
+                using var request = new HttpRequestMessage(HttpMethod.Post, url);
                 request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
                 try
                 {
                     var response = await _httpClient.SendAsync(request);
 
                     if (!response.IsSuccessStatusCode)
                     {
-                        var errorBody = await response.Content.ReadAsStringAsync();
-                        _logger.LogError("AITagging: Gemini request failed. Status={Status}, Error={Error}",
-                            response.StatusCode, errorBody);
-                        return new List<string>();
+                        _logger.LogWarning("AITagging: Model {Model} failed with status {StatusCode}", model, response.StatusCode);
+                        continue;
                     }
 
                     var responseJson = await response.Content.ReadAsStringAsync();
@@ -102,10 +105,12 @@
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "AITagging: Exception occurred.");
-                    return new List<string>();
+                    _logger.LogWarning(ex, "AITagging: Exception occurred with model {Model}, trying next...", model);
+                    continue;
                 }
             }
+
+            _logger.LogWarning("AITagging: All models failed.");
             return new List<string>();
         }
     }

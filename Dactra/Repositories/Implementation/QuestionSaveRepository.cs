@@ -7,7 +7,6 @@
 
         public async Task<QuestionSave?> GetAsync(int questionId, string userId)
             => await _context.QuestionSaves
-                .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.QuestionId == questionId && s.UserId == userId);
 
         public async Task<(List<QuestionSave> Items, int TotalCount)> GetByUserIdAsync(string userId, int page, int pageSize)
@@ -20,12 +19,7 @@
                 .OrderByDescending(s => s.SavedAt);
 
             var total = await query.CountAsync();
-            var items = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .AsSplitQuery()
-                .AsNoTracking()
-                .ToListAsync();
+            var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             return (items, total);
         }
 

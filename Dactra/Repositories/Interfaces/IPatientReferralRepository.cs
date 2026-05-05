@@ -12,5 +12,6 @@
             int providerId,
             PaginationDto pagination,
             ReferralStatus? status = null);
+        Task<int> GetUniquePatientReferralCountByDoctorAsync(int doctorId);
     }
 }

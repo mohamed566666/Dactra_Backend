@@ -11,7 +11,6 @@
             return await _dbSet
                 .Where(c => c.UserId == userId)
                 .OrderByDescending(c => c.CreatedAt)
-                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -20,17 +19,14 @@
             return await _dbSet
                 .Include(c => c.Attachments)
                 .OrderByDescending(c => c.CreatedAt)
-                .AsNoTracking()
                 .ToListAsync();
         }
 
         public async Task<Complaint?> GetDetailsAsync(int id)
         {
             return await _dbSet
-                .Where(c => c.Id == id)
                 .Include(c => c.Attachments)
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(c => c.Id == id);
         }
     }
 }
