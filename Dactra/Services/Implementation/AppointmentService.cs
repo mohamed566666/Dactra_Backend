@@ -113,27 +113,27 @@ namespace Dactra.Services.Implementation
                 _context.SaveChanges();
                 await CreateOrRenewCareAsync(patientId, slot.DoctorId);
 
-                var utcTime = slot.SlotDateTimeUtc;
+                //var utcTime = slot.SlotDateTimeUtc;
 
-                if (utcTime <= DateTime.UtcNow)
-                    throw new Exception("Slot time is in the past");
+                //if (utcTime <= DateTime.UtcNow)
+                //    throw new Exception("Slot time is in the past");
 
-                var reminderTime = utcTime.AddHours(-1);
-                var delay = reminderTime - DateTime.UtcNow;
+                //var reminderTime = utcTime.AddHours(-1);
+                //var delay = reminderTime - DateTime.UtcNow;
 
-                if (delay > TimeSpan.Zero)
-                {
-                    var jobId = BackgroundJob.Schedule<ReminderService>(
-                        x => x.SendReminder(appointment.Id),
-                        reminderTime
-                    );
+                //if (delay > TimeSpan.Zero)
+                //{
+                //    var jobId = BackgroundJob.Schedule<IReminderService>(
+                //        x => x.SendReminder(appointment.Id),
+                //        delay
+                //    );
 
-                    appointment.ReminderJobId = jobId;
-                }
-                else
-                {
-                    await _reminderService.SendReminder(appointment.Id);
-                }
+                //    appointment.ReminderJobId = jobId;
+                //}
+                //else
+                //{
+                //    await _reminderService.SendReminder(appointment.Id);
+                //}
 
                 await _context.SaveChangesAsync();
                 if (slot.SlotType == SlotType.InPerson) 
