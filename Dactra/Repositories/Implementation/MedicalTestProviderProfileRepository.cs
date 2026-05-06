@@ -46,5 +46,47 @@
                 .ToListAsync();
             return profiles;
         }
+
+        public async Task<(IEnumerable<MedicalTestProviderProfile> Items, int TotalCount)> SearchAsync(string? searchTerm, MedicalTestProviderType? type, int skip, int take)
+        {
+            var query = _context.MedicalTestProviders
+                .Where(m => m.approvalStatus == ApprovalStatus.approved);
+
+            if (type.HasValue)
+            {
+                query = query.Where(m => m.Type == type.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(m => m.Name.Contains(searchTerm));
+            }
+
+            var candidates = await query.Include(m => m.User).ToListAsync();
+
+            IEnumerable<MedicalTestProviderProfile> filteredProviders;
+
+            const double similarityThreshold = 0.5;
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                filteredProviders = candidates
+                    .Where(m => FuzzyMatcher.SimilarityScore(m.Name, searchTerm) >= similarityThreshold)
+                    .ToList();
+            }
+            else
+            {
+                filteredProviders = candidates;
+            }
+            var totalCount = filteredProviders.Count();
+
+            var pagedItems = filteredProviders
+                .OrderByDescending(m => m.Avg_Rating)
+                .Skip(skip)
+                .Take(take)
+                .ToList();
+
+            return (pagedItems, totalCount);
+        }
     }
 }

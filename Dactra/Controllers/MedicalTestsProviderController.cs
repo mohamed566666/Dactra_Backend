@@ -117,5 +117,12 @@
                 return NotFound(ex.Message);
             }
         }
+
+        [HttpGet("Search")]
+        public async Task<IActionResult> Search([FromQuery] MedicalTestProviderSearchFilterDTO filter)
+        {
+            var result = await _medicalTestsProviderService.SearchProvidersAsync(filter);
+            return Ok(result);
+        }
     }
 }

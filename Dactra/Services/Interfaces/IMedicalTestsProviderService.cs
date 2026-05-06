@@ -12,5 +12,6 @@
         public Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetProfilesByTypeAsync(MedicalTestProviderType type);
         public Task ApproveProfileAsync(int id);
         public Task RejectProfileAsync(int id);
+        Task<PagedResultDto<MedicalTestProviderSearchResultDTO>> SearchProvidersAsync(MedicalTestProviderSearchFilterDTO filter);
     }
 }
