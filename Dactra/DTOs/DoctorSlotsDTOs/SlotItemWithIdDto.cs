@@ -1,6 +1,6 @@
 ﻿namespace Dactra.DTOs.DoctorSlotsDTOs
 {
-    public class SlotResponseForAppointments
+    public class SlotItemWithIdDto
     {
         public int SlotId { get; set; }
         public DateTime SlotTime { get; set; }

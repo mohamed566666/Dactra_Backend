@@ -272,7 +272,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         .HasOne(a => a.Prescription)
         .WithOne(p => p.Appointment)
         .HasForeignKey<Prescription>(p => p.AppointmentId)
-        .OnDelete(DeleteBehavior.Restrict);
+        .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<PrescriptionMedicine>()
             .HasOne(m => m.Prescription)
@@ -285,5 +285,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             .WithMany(m => m.DoseTimes)
             .HasForeignKey(d => d.PrescriptionMedicineId)
             .OnDelete(DeleteBehavior.Cascade);
+
     }
 }

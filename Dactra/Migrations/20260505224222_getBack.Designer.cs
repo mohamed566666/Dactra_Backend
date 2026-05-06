@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260505224222_getBack")]
+    partial class getBack
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,25 +101,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "6405c15b-ce40-483c-a247-152c12cda7d0",
+                            Id = "8b213ce6-df77-4d56-8cb0-9ae7ac9ef475",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "5763ecba-a26a-4f49-bcb6-134dee6acb50",
+                            Id = "d68f99fb-95a9-4265-92dd-dda735691e8a",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "e09491ba-121e-4b89-9bcc-9548750b40cf",
+                            Id = "ad04a804-a4fc-44c8-aae2-4121c792d0e2",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "75df587a-8871-4ce5-8a1d-52ed7ff9e863",
+                            Id = "f65bba0c-cfa7-4507-bcba-25ecebd76ee6",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -2258,7 +2261,7 @@ namespace Dactra.Migrations
                     b.HasOne("Dactra.Models.PatientAppointment", "Appointment")
                         .WithOne("Prescription")
                         .HasForeignKey("Dactra.Models.Prescription", "AppointmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Appointment");

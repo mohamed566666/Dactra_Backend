@@ -1,6 +1,8 @@
 ﻿using Dactra.DTOs.DoctorSlotsDTOs;
+using Dactra.Enums;
 using Microsoft.AspNetCore.Routing;
 using NetTopologySuite.Index;
+using System.Linq;
 
 namespace Dactra.Services.Implementation
 {
@@ -38,34 +40,25 @@ namespace Dactra.Services.Implementation
             foreach (var kvp in slots)
             {
                 if (!DateTime.TryParseExact(kvp.Key, "dd-MM-yyyy",
-                    CultureInfo.InvariantCulture, DateTimeStyles.None, out var dayUtc))
+                    CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dayUtc))
                     throw new Exception($"Invalid date format: {kvp.Key}");
 
-                dayUtc = dayUtc.Date;
+                dayUtc = DateTime.SpecifyKind(dayUtc.Date, DateTimeKind.Utc);
 
                 await DeleteSlotsByDayAndTypeAsync(doctorId, dayUtc, slotType);
 
                 foreach (var slot in kvp.Value)
                 {
-                    var timeParts = slot.SlotTime.Split(':');
-                    if (!int.TryParse(timeParts[0], out var hour) ||
-                        !int.TryParse(timeParts[1], out var minute))
-                        throw new Exception($"Invalid time format: {slot.SlotTime}");
+                    var slotTimeUtc = slot.SlotTime;
 
-                    var slotTime = new TimeSpan(hour, minute, 0);
+                    if (slotTimeUtc.Kind != DateTimeKind.Utc)
+                        slotTimeUtc = DateTime.SpecifyKind(slotTimeUtc, DateTimeKind.Utc);
 
-                    if (!IsWithinWorkingHours(slotTime, entry))
-                        throw new Exception(
-                            $"Slot time {slot.SlotTime} is outside {slotType} working hours " +
-                            $"({entry.WorkingStartTime:hh\\:mm} - {entry.WorkingEndTime:hh\\:mm})");
-
-                    var slotDateTimeUtc = new DateTime(
-                        dayUtc.Year, dayUtc.Month, dayUtc.Day,
-                        hour, minute, 0, DateTimeKind.Utc);
+                    var finalSlotDateTime = DateTime.SpecifyKind(slotTimeUtc, DateTimeKind.Utc);
 
                     var isBooked = await _repo.FindAsync(
                         s => s.DoctorId == doctorId &&
-                             s.SlotDateTimeUtc == slotDateTimeUtc &&
+                             s.SlotDateTimeUtc == finalSlotDateTime &&
                              s.SlotType == slotType &&
                              s.IsBooked == true);
 
@@ -73,14 +66,14 @@ namespace Dactra.Services.Implementation
 
                     var existingSlot = await _repo.FindAsync(
                         s => s.DoctorId == doctorId &&
-                             s.SlotDateTimeUtc == slotDateTimeUtc);
+                             s.SlotDateTimeUtc == finalSlotDateTime);
 
                     if (existingSlot.Any()) continue;
 
-                        await _repo.AddAsync(new DoctorAvailabilitySlot
+                    await _repo.AddAsync(new DoctorAvailabilitySlot
                     {
                         DoctorId = doctorId,
-                        SlotDateTimeUtc = slotDateTimeUtc,
+                        SlotDateTimeUtc = finalSlotDateTime,
                         IsBooked = slot.IsBooked,
                         SlotType = slotType,
                         CreatedAtUtc = DateTime.UtcNow
@@ -113,16 +106,16 @@ namespace Dactra.Services.Implementation
         public Task<DoctorSlotsDto> GetOnlineSlotsAsync(int doctorId, DateTime fromUtc, DateTime toUtc)
             => GetSlotsRangeInternalAsync(doctorId, fromUtc, toUtc, SlotType.Online);
 
-        public Task<DoctorFreeSlotsDto> GetAllFreeInPersonSlotsAsync(int doctorId)
+        public Task<DoctorSlotsWithIdDto> GetAllFreeInPersonSlotsAsync(int doctorId)
             => GetAllFreeSlotsInternalAsync(doctorId, SlotType.InPerson);
 
-        public Task<DoctorFreeSlotsDto> GetAllFreeOnlineSlotsAsync(int doctorId)
+        public Task<DoctorSlotsWithIdDto> GetAllFreeOnlineSlotsAsync(int doctorId)
             => GetAllFreeSlotsInternalAsync(doctorId, SlotType.Online);
 
-        public Task<DoctorFreeSlotsDto> GetFreeInPersonSlotsAsync(int doctorId, DateTime fromUtc, DateTime toUtc)
+        public Task<DoctorSlotsDto> GetFreeInPersonSlotsAsync(int doctorId, DateTime fromUtc, DateTime toUtc)
             => GetFreeRangeInternalAsync(doctorId, fromUtc, toUtc, SlotType.InPerson);
 
-        public Task<DoctorFreeSlotsDto> GetFreeOnlineSlotsAsync(int doctorId, DateTime fromUtc, DateTime toUtc)
+        public Task<DoctorSlotsDto> GetFreeOnlineSlotsAsync(int doctorId, DateTime fromUtc, DateTime toUtc)
             => GetFreeRangeInternalAsync(doctorId, fromUtc, toUtc, SlotType.Online);
 
         // ─── Private core implementations ───────────────────────────────────────────
@@ -185,17 +178,9 @@ namespace Dactra.Services.Implementation
             return MapToDoctorSlotsDto(slots);
         }
 
-        private async Task<DoctorFreeSlotsDto> GetAllFreeSlotsInternalAsync(int doctorId, SlotType slotType)
-        {
-            var slots = await _repo.FindAsync(x =>
-                x.DoctorId == doctorId &&
-                x.SlotType == slotType &&
-                !x.IsBooked &&
-                x.IsReserved == false);
-            return MapToDoctorFreeSlotsDto(slots);
-        }
 
-        private async Task<DoctorFreeSlotsDto> GetFreeRangeInternalAsync(
+
+        private async Task<DoctorSlotsDto> GetFreeRangeInternalAsync(
             int doctorId, DateTime fromUtc, DateTime toUtc, SlotType slotType)
         {
             var slots = await _repo.FindAsync(x =>
@@ -205,18 +190,21 @@ namespace Dactra.Services.Implementation
                 x.SlotDateTimeUtc >= fromUtc &&
                 x.SlotDateTimeUtc <= toUtc &&
                 x.IsReserved == false);
-            return MapToDoctorFreeSlotsDto(slots);
+            return MapToDoctorSlotsDto(slots);
         }
 
         // ─── Delete ──────────────────────────────────────────────────────────────────
 
         private async Task DeleteSlotsByDayAndTypeAsync(int doctorId, DateTime dayUtc, SlotType slotType)
         {
-            dayUtc = dayUtc.Date;
+            var startOfDay = dayUtc.Date;
+            var endOfDay = startOfDay.AddDays(1);
+
             var slots = await _repo.FindAsync(x =>
                 x.DoctorId == doctorId &&
                 x.SlotType == slotType &&
-                x.SlotDateTimeUtc.Date == dayUtc);
+                x.SlotDateTimeUtc >= startOfDay &&
+                x.SlotDateTimeUtc < endOfDay);
 
             foreach (var slot in slots)
                 if (!slot.IsBooked)
@@ -274,7 +262,7 @@ namespace Dactra.Services.Implementation
                 if (!updated)
                     throw new InvalidOperationException($"Failed to update working hours for doctor {doctorId}");
 
-                 await DeleteUnbookedSlotsByTypeAsync(doctorId, workingHours.Type);
+                await DeleteUnbookedSlotsByTypeAsync(doctorId, workingHours.Type);
 
                 return await _doctorrepository.GetWorkingHoursAsync(doctorId);
             }
@@ -292,6 +280,17 @@ namespace Dactra.Services.Implementation
                slotTime >= entry.WorkingStartTime.Value &&
                slotTime <= entry.WorkingEndTime.Value;
 
+        private async Task<DoctorSlotsWithIdDto> GetAllFreeSlotsInternalAsync(int doctorId, SlotType slotType)
+        {
+            var slots = await _repo.FindAsync(x =>
+                x.DoctorId == doctorId &&
+                x.SlotType == slotType &&
+                !x.IsBooked &&
+                x.SlotDateTimeUtc >= DateTime.UtcNow &&
+                x.IsReserved == false);
+            return MapToDoctorSlotsWithIdDto(slots);
+        }
+
         private static DoctorSlotsDto MapToDoctorSlotsDto(IEnumerable<DoctorAvailabilitySlot> slots)
         {
             var grouped = slots
@@ -301,26 +300,26 @@ namespace Dactra.Services.Implementation
                     g => g.Key,
                     g => g.Select(s => new SlotItemDto
                     {
-                        SlotTime = s.SlotDateTimeUtc.ToString("HH:mm"),
+                        SlotTime = s.SlotDateTimeUtc,
                         IsBooked = s.IsBooked
                     }).ToList());
             return new DoctorSlotsDto { Slots = grouped };
         }
 
-        private static DoctorFreeSlotsDto MapToDoctorFreeSlotsDto(IEnumerable<DoctorAvailabilitySlot> slots)
+        private static DoctorSlotsWithIdDto MapToDoctorSlotsWithIdDto(IEnumerable<DoctorAvailabilitySlot> slots)
         {
             var grouped = slots
                 .OrderBy(s => s.SlotDateTimeUtc)
                 .GroupBy(s => s.SlotDateTimeUtc.ToString("dd-MM-yyyy"))
                 .ToDictionary(
                     g => g.Key,
-                    g => g.Select(s => new FreeSlotDto
+                    g => g.Select(s => new SlotItemWithIdDto
                     {
                         SlotId = s.Id,
-                        SlotTime = TimeOnly.FromDateTime(s.SlotDateTimeUtc),
+                        SlotTime = s.SlotDateTimeUtc,
                         IsBooked = s.IsBooked
                     }).ToList());
-            return new DoctorFreeSlotsDto { Slots = grouped };
+            return new DoctorSlotsWithIdDto { Slots = grouped };
         }
 
         public Task<int> GetDoctorIdBySlotId(int slotId)
