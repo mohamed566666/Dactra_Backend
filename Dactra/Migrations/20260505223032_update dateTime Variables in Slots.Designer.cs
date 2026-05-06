@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260505223032_update dateTime Variables in Slots")]
+    partial class updatedateTimeVariablesinSlots
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,25 +101,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "6405c15b-ce40-483c-a247-152c12cda7d0",
+                            Id = "48681fd6-31d8-449d-ae31-452057961f6e",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "5763ecba-a26a-4f49-bcb6-134dee6acb50",
+                            Id = "d1a10b93-5f49-4013-a258-0241689b2c51",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "e09491ba-121e-4b89-9bcc-9548750b40cf",
+                            Id = "211faaf6-1dde-4dc1-ab27-33613f9ec552",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "75df587a-8871-4ce5-8a1d-52ed7ff9e863",
+                            Id = "4af8cdba-bb5d-40c2-8ebc-ac87480c9772",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -400,8 +403,8 @@ namespace Dactra.Migrations
                     b.Property<int?>("AppointmentId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
@@ -412,11 +415,11 @@ namespace Dactra.Migrations
                     b.Property<bool>("IsReserved")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime?>("ReservedUntil")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset?>("ReservedUntil")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTime>("SlotDateTimeUtc")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("SlotDateTimeUtc")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<int>("SlotType")
                         .HasColumnType("int");
@@ -2258,7 +2261,7 @@ namespace Dactra.Migrations
                     b.HasOne("Dactra.Models.PatientAppointment", "Appointment")
                         .WithOne("Prescription")
                         .HasForeignKey("Dactra.Models.Prescription", "AppointmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Appointment");

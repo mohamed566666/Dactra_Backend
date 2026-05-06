@@ -47,25 +47,16 @@ namespace Dactra.Services.Implementation
 
                 foreach (var slot in kvp.Value)
                 {
-                    var timeParts = slot.SlotTime.Split(':');
-                    if (!int.TryParse(timeParts[0], out var hour) ||
-                        !int.TryParse(timeParts[1], out var minute))
-                        throw new Exception($"Invalid time format: {slot.SlotTime}");
+                    var slotTime = slot.SlotTime.TimeOfDay;
 
-                    var slotTime = new TimeSpan(hour, minute, 0);
-
-                    if (!IsWithinWorkingHours(slotTime, entry))
-                        throw new Exception(
-                            $"Slot time {slot.SlotTime} is outside {slotType} working hours " +
-                            $"({entry.WorkingStartTime:hh\\:mm} - {entry.WorkingEndTime:hh\\:mm})");
-
-                    var slotDateTimeUtc = new DateTime(
-                        dayUtc.Year, dayUtc.Month, dayUtc.Day,
-                        hour, minute, 0, DateTimeKind.Utc);
+                    //if (!IsWithinWorkingHours(slotTime, entry))
+                    //    throw new Exception(
+                    //        $"Slot time {slot.SlotTime} is outside {slotType} working hours " +
+                    //        $"({entry.WorkingStartTime:hh\\:mm} - {entry.WorkingEndTime:hh\\:mm})");
 
                     var isBooked = await _repo.FindAsync(
                         s => s.DoctorId == doctorId &&
-                             s.SlotDateTimeUtc == slotDateTimeUtc &&
+                             s.SlotDateTimeUtc == slot.SlotTime &&
                              s.SlotType == slotType &&
                              s.IsBooked == true);
 
@@ -73,14 +64,14 @@ namespace Dactra.Services.Implementation
 
                     var existingSlot = await _repo.FindAsync(
                         s => s.DoctorId == doctorId &&
-                             s.SlotDateTimeUtc == slotDateTimeUtc);
+                             s.SlotDateTimeUtc == slot.SlotTime);
 
                     if (existingSlot.Any()) continue;
 
                         await _repo.AddAsync(new DoctorAvailabilitySlot
                     {
                         DoctorId = doctorId,
-                        SlotDateTimeUtc = slotDateTimeUtc,
+                        SlotDateTimeUtc = slot.SlotTime,
                         IsBooked = slot.IsBooked,
                         SlotType = slotType,
                         CreatedAtUtc = DateTime.UtcNow
@@ -301,7 +292,7 @@ namespace Dactra.Services.Implementation
                     g => g.Key,
                     g => g.Select(s => new SlotItemDto
                     {
-                        SlotTime = s.SlotDateTimeUtc.ToString("HH:mm"),
+                        SlotTime = s.SlotDateTimeUtc,
                         IsBooked = s.IsBooked
                     }).ToList());
             return new DoctorSlotsDto { Slots = grouped };

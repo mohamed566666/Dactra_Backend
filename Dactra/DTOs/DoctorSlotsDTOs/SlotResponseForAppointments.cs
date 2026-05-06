@@ -3,7 +3,7 @@
     public class SlotResponseForAppointments
     {
         public int SlotId { get; set; }
-        public string SlotTime { get; set; } = "05:00";
+        public DateTime SlotTime { get; set; }
         public bool IsBooked { get; set; } = false;
     }
 }

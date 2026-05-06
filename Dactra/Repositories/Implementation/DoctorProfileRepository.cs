@@ -193,13 +193,13 @@ namespace Dactra.Repositories.Implementation
                 CultureInfo.InvariantCulture, out var endTime))
                 throw new InvalidOperationException("Invalid end time format. Use HH:mm (24-hour)");
 
-            if (startTime >= endTime)
-                throw new InvalidOperationException("Start time must be before end time");
+            //if (startTime >= endTime)
+            //    throw new InvalidOperationException("Start time must be before end time");
 
             if (workingHours.ConsultationDurationMinutes <= 0)
                 throw new InvalidOperationException("Consultation duration must be greater than 0");
 
-            var totalWorkingMinutes = (endTime - startTime).TotalMinutes;
+            var totalWorkingMinutes = GetTotalWorkingMinutes(startTime, endTime);
             if (workingHours.ConsultationDurationMinutes > totalWorkingMinutes)
             {
                 throw new InvalidOperationException(
@@ -244,6 +244,21 @@ namespace Dactra.Repositories.Implementation
             await _context.SaveChangesAsync();
             return true;
         }
+
+        private double GetTotalWorkingMinutes(TimeSpan start, TimeSpan end)
+        {
+            if (start < end)
+            {
+                return (end - start).TotalMinutes;
+            }
+            else
+            {
+                var minutesUntilMidnight = (TimeSpan.FromHours(24) - start).TotalMinutes;
+                var minutesAfterMidnight = end.TotalMinutes;
+                return minutesUntilMidnight + minutesAfterMidnight;
+            }
+        }
+
 
         private static void ValidateNoOverlap(
             TimeSpan newStart, TimeSpan newEnd,
