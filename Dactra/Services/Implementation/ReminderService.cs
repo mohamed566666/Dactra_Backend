@@ -35,11 +35,6 @@ public async Task SendReminder(int appointmentId)
 
             if (doctor == null) return;
 
-            var patientTokens = await _context.NotificationSubscriptions
-                .Where(x => x.PatientId == appt.PatientId.ToString() && x.IsActive)
-                .Select(x => x.FcmToken)
-                .ToListAsync();
-
             //var doctorTokens = await _context.NotificationSubscriptions
             //    .Where(x => x.PatientId == doctor.UserId && x.IsActive)
             //    .Select(x => x.FcmToken)
@@ -49,6 +44,12 @@ public async Task SendReminder(int appointmentId)
                 .Where(p => p.Id == appt.PatientId)
                 .Select(p => p.UserId)
                 .FirstOrDefaultAsync();
+            if (patientUserId == null) return;
+
+            var patientTokens = await _context.NotificationSubscriptions
+                   .Where(x => x.PatientId == patientUserId && x.IsActive)
+                   .Select(x => x.FcmToken)
+                   .ToListAsync();
 
             var utcTime = appt.Slot.SlotDateTimeUtc;
 
@@ -67,7 +68,7 @@ public async Task SendReminder(int appointmentId)
 
             appt.IsReminderSent = true;
             await _context.SaveChangesAsync();
-            // ✅ مفيش try/catch هنا — Hangfire هيمسك الـ exception ويعيد المحاولة
+            
         }
     }
 }
