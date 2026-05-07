@@ -12,15 +12,17 @@ namespace Dactra.Controllers
         private readonly IPrescriptionService _prescriptionService;
         private readonly IDoctorProfileRepository _doctorRepo;
         private readonly IPatientProfileRepository _patientRepo;
+        private readonly IMedicineReminderService _reminderService;
 
         public PrescriptionsController(
             IPrescriptionService prescriptionService,
             IDoctorProfileRepository doctorRepo,
-            IPatientProfileRepository patientRepo)
+            IPatientProfileRepository patientRepo, IMedicineReminderService medicineReminderService)
         {
             _prescriptionService = prescriptionService;
             _doctorRepo = doctorRepo;
             _patientRepo = patientRepo;
+            _reminderService = medicineReminderService;
         }
 
         #region Create Prescription
@@ -35,6 +37,7 @@ namespace Dactra.Controllers
                 if (doctor is null)
                     return Unauthorized(new { message = "Doctor profile not found" });
                 var exists = await _prescriptionService.GetByAppointmentIdAsync(dto.AppointmentId, doctor.Id, "Doctor");
+                var reminders =0;
                 if (exists != null)
                 {
                     var updateDto = new UpdatePrescriptionRequestDto
@@ -43,13 +46,23 @@ namespace Dactra.Controllers
                         Medicines = dto.Medicines
                     };
                     var updated = await _prescriptionService.UpdatePrescriptionAsync(exists.Id, updateDto, doctor.Id);
-                    return Ok(updated);
+
+                     reminders = await _reminderService.CreateFromPrescriptionAsync(dto.AppointmentId);
+                    return Ok(new {
+                        updated= updated,
+                        reminderscount=reminders
+                    
+                    });
                 }
                 var result = await _prescriptionService.CreatePrescriptionAsync(dto, doctor.Id);
+                 reminders = await _reminderService.CreateFromPrescriptionAsync(dto.AppointmentId);
                 return CreatedAtAction(
                     nameof(GetByAppointment),
                     new { appointmentId = dto.AppointmentId },
-                    result);
+                    new {
+                       result= result ,
+                       remindercount =reminders
+                    });
             }
             catch (UnauthorizedAccessException ex) {
                 return Forbid(ex.Message);

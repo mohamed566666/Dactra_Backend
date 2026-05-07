@@ -10,13 +10,8 @@ namespace Dactra.Mappings
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.User, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
-                .ForMember(dest => dest.approvalStatus, opt => opt.Ignore()).ForMember(dest => dest.WorkingHours, opt => opt.MapFrom(src =>
-                    src.WorkingHours.Select(w => new LabsWorkingHour
-                    {
-                        Day = w.Day,
-                        From = w.From,
-                        To = w.To
-                    }).ToList()))
+                .ForMember(dest => dest.approvalStatus, opt => opt.Ignore())
+                .ForMember(dest => dest.WorkingHours, opt => opt.Ignore())
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<MedicalTestsProviderUpdateDTO, MedicalTestProviderProfile>()
