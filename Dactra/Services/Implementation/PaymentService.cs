@@ -292,7 +292,7 @@ namespace Dactra.Services.Implementation
                         throw new Exception("Slot time is in the past");
 
                     var reminderTime = utcTime.AddHours(-1);
-                    var delay = reminderTime - DateTime.UtcNow;
+                    var delay = (reminderTime - DateTime.UtcNow)-TimeSpan.FromHours(2);
 
                     if (delay > TimeSpan.Zero)
                     {

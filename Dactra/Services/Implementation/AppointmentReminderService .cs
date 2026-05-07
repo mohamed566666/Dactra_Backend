@@ -1,15 +1,22 @@
 ﻿using Google.Apis.Auth.OAuth2;
 using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 
 namespace Dactra.Services.Implementation
 {
-    public class AppointmentReminderService: IAppointmentReminderService
+    public class AppointmentReminderService : IAppointmentReminderService
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _config;
         private readonly ILogger<AppointmentReminderService> _logger;
         private readonly string _projectId;
         private readonly string _serviceAccountPath;
+
+        // Token caching
+        private string? _cachedToken;
+        private DateTime _tokenExpiry = DateTime.MinValue;
+        private readonly SemaphoreSlim _tokenLock = new(1, 1);
 
         public AppointmentReminderService(
             IHttpClientFactory httpClientFactory,
@@ -34,30 +41,47 @@ namespace Dactra.Services.Implementation
 
         private async Task<string> GetAccessTokenAsync()
         {
-            var credential = GoogleCredential
-                .FromFile(_serviceAccountPath)
-                .CreateScoped("https://www.googleapis.com/auth/firebase.messaging");
+            if (_cachedToken != null && DateTime.UtcNow < _tokenExpiry)
+                return _cachedToken;
 
-            return await credential.UnderlyingCredential
-                .GetAccessTokenForRequestAsync();
+            await _tokenLock.WaitAsync();
+            try
+            {
+                // Double-check بعد ما اخدنا الـ lock
+                if (_cachedToken != null && DateTime.UtcNow < _tokenExpiry)
+                    return _cachedToken;
+
+                var credential = GoogleCredential
+                    .FromFile(_serviceAccountPath)
+                    .CreateScoped("https://www.googleapis.com/auth/firebase.messaging");
+
+                _cachedToken = await credential.UnderlyingCredential
+                    .GetAccessTokenForRequestAsync();
+
+                _tokenExpiry = DateTime.UtcNow.AddMinutes(50);
+                return _cachedToken;
+            }
+            finally
+            {
+                _tokenLock.Release();
+            }
         }
 
         public async Task<bool> SendNotificationAsync(
             string fcmToken,
             DateTime appointmentTime,
             string doctorName,
-            string clinicName,
+            string? clinicName,
             Dictionary<string, string>? extraData = null)
         {
             try
             {
                 var accessToken = await GetAccessTokenAsync();
                 var client = _httpClientFactory.CreateClient();
-
                 var url = $"https://fcm.googleapis.com/v1/projects/{_projectId}/messages:send";
 
                 var title = "📅 تذكير بموعد الحجز";
-                var body = $"عندك ميعاد مع د. {doctorName} في {clinicName} الساعة {appointmentTime:hh:mm tt}";
+                var body = $"عندك ميعاد مع د. {doctorName} في {clinicName ?? "العيادة"} الساعة {appointmentTime:hh:mm tt}";
 
                 var payload = new
                 {
@@ -70,7 +94,7 @@ namespace Dactra.Services.Implementation
                         {
                             { "type", "appointment_reminder" },
                             { "doctorName", doctorName },
-                            { "clinicName", clinicName },
+                            { "clinicName", clinicName ?? "" },
                             { "appointmentTime", appointmentTime.ToString("o") }
                         },
 
@@ -86,7 +110,10 @@ namespace Dactra.Services.Implementation
 
                         apns = new
                         {
-                            headers = new { apns_priority = "10" },
+                            headers = new Dictionary<string, string>
+                            {
+                                { "apns-priority", "10" }   // ✅ hyphen مش underscore
+                            },
                             payload = new
                             {
                                 aps = new { sound = "default", badge = 1 }
@@ -105,7 +132,7 @@ namespace Dactra.Services.Implementation
                                 requireInteraction = true,
                                 actions = new[]
                                 {
-                                    new { action = "open", title = "📍 عرض التفاصيل" },
+                                    new { action = "open",   title = "📍 عرض التفاصيل" },
                                     new { action = "snooze", title = "⏰ ذكرني بعد شوية" }
                                 }
                             }
@@ -114,34 +141,27 @@ namespace Dactra.Services.Implementation
                 };
 
                 var json = JsonSerializer.Serialize(payload);
-
                 var request = new HttpRequestMessage(HttpMethod.Post, url)
                 {
                     Content = new StringContent(json, Encoding.UTF8, "application/json")
                 };
-
-                request.Headers.Authorization =
-                    new AuthenticationHeaderValue("Bearer", accessToken);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
                 var response = await client.SendAsync(request);
                 var responseBody = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogError("FCM Error {StatusCode}: {Body}",
-                        response.StatusCode, responseBody);
+                    _logger.LogError("FCM Error {StatusCode}: {Body}", response.StatusCode, responseBody);
                     return false;
                 }
 
-                _logger.LogInformation("Appointment reminder sent to ...{Token}",
-                    fcmToken[^8..]);
-
+                _logger.LogInformation("Appointment reminder sent to ...{Token}", fcmToken[^8..]);
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "FCM Exception for token ...{Token}",
-                    fcmToken[^8..]);
+                _logger.LogError(ex, "FCM Exception for token ...{Token}", fcmToken[^8..]);
                 return false;
             }
         }
@@ -150,17 +170,22 @@ namespace Dactra.Services.Implementation
             IEnumerable<string> tokens,
             DateTime appointmentTime,
             string doctorName,
-            string clinicName)
+            string? clinicName)
         {
-            var tasks = tokens.Select(token =>
-                SendNotificationAsync(token, appointmentTime, doctorName, clinicName));
+            var tokenList = tokens.ToList();
+            var successCount = 0;
 
-            var results = await Task.WhenAll(tasks);
-            return results.Count(r => r);
+            // بنبعت كـ chunks علشان منضغطش على FCM
+            foreach (var chunk in tokenList.Chunk(100))
+            {
+                var tasks = chunk.Select(token =>
+                    SendNotificationAsync(token, appointmentTime, doctorName, clinicName));
+
+                var results = await Task.WhenAll(tasks);
+                successCount += results.Count(r => r);
+            }
+
+            return successCount;
         }
-
- 
     }
 }
-    
-

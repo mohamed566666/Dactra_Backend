@@ -6,12 +6,12 @@
               string fcmToken,
               DateTime appointmentTime,
               string doctorName,
-              string clinicName,
+              string? clinicName,
               Dictionary<string, string>? extraData = null);
         public Task<int> SendBulkNotificationsAsync(
           IEnumerable<string> tokens,
           DateTime appointmentTime,
           string doctorName,
-          string clinicName);
+          string? clinicName);
     }
 }
