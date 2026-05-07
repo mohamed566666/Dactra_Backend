@@ -42,6 +42,10 @@ namespace Dactra.Mappings
                     opt => opt.MapFrom(src => src.User != null && !string.IsNullOrEmpty(src.User.ImageUrl) ? src.User.ImageUrl : null));
 
             CreateMap<LabsWorkingHour, WorkingHourDTO>();
+
+            CreateMap<MedicalTestProviderProfile, MedicalTestProviderSearchResultDTO>()
+                .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Avg_Rating))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.User != null ? src.User.ImageUrl : null));
         }
     }
 }

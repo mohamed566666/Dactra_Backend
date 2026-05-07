@@ -143,5 +143,24 @@
             _medicalTestProviderProfileRepository.Update(profile);
             await _medicalTestProviderProfileRepository.SaveChangesAsync();
         }
+
+        public async Task<PagedResultDto<MedicalTestProviderSearchResultDTO>> SearchProvidersAsync(MedicalTestProviderSearchFilterDTO filter)
+        {
+            var (items, totalCount) = await _medicalTestProviderProfileRepository.SearchAsync(
+                filter.SearchTerm,
+                filter.Type,
+                filter.Skip,
+                filter.PageSize);
+
+            var resultItems = _mapper.Map<IEnumerable<MedicalTestProviderSearchResultDTO>>(items).ToList();
+
+            return new PagedResultDto<MedicalTestProviderSearchResultDTO>
+            {
+                Items = resultItems,
+                TotalCount = totalCount,
+                Page = filter.Page,
+                PageSize = filter.PageSize
+            };
+        }
     }
 }

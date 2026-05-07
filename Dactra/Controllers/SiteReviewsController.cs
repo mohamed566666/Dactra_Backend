@@ -27,6 +27,27 @@
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
             {
+                var reviews = await _service.GetAllReviewsAsync();
+                var existing = reviews.FirstOrDefault(r => r.ReviewerName == User.Identity.Name);
+                if (existing != null)
+                {
+                    existing.Title = dto.Title;
+                    existing.Score = dto.Score;
+                    existing.Comment = dto.Comment;
+                    await _service.UpdateReviewAsync(userId!, existing.Id, dto);
+                    return Ok(new { success = true, message = "Review Updated Successfully",
+                        review = new
+                        {
+                            existing.Id,
+                            existing.Title,
+                            existing.Score,
+                            existing.Comment,
+                            existing.CreatedAt,
+                            existing.ReviewerName,
+                            existing.ReviewerImageUrl
+                        }
+                    });
+                }
                 var created = await _service.CreateReviewAsync(userId!, dto);
                 return Ok(new { success = true, message = "Review Added Successfully",
                     review = new
