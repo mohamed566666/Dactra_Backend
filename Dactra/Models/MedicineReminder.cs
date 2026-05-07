@@ -6,8 +6,8 @@
         public string PatientId { get; set; } = string.Empty;
         public string MedicineName { get; set; } = string.Empty;
         public string Dose { get; set; } = string.Empty;
-        public string MealRelation { get; set; } = string.Empty; 
-        public string Frequency { get; set; } = string.Empty;    
+        public WhenToTake? MealRelation { get; set; }  
+        public TimesPerDay? Frequency { get; set; } 
         public string ScheduledTimes { get; set; } = string.Empty;
         public DateTime? LastSentAt { get; set; }
         public DateTime StartDate { get; set; } = DateTime.UtcNow;

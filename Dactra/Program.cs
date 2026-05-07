@@ -181,6 +181,7 @@ builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IFcmService, FcmService>();
 builder.Services.AddScoped<IAppointmentReminderService, AppointmentReminderService>();
+builder.Services.AddScoped<IMedicineReminderService, MedicineReminderService>();
 
 
 builder.Services.AddHangfire(config =>
