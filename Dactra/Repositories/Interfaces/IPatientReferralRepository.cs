@@ -7,7 +7,7 @@
         Task<IEnumerable<PatientReferral>> GetReferralsByDoctorAsync(int doctorId);
         Task<PatientReferral> CreateAsync(PatientReferral referral);
         Task UpdateAsync(PatientReferral referral);
-        Task<IEnumerable<PatientDoctorCare>> GetActiveCarePatientsByDoctorAsync(int doctorId);
+        Task<PagedResultDto<PatientDoctorCare>> GetActiveCarePatientsByDoctorPagedAsync(int doctorId,PaginationDto pagination,string? searchTerm = null);
         Task<PagedResultDto<PatientReferral>> GetReferralsByProviderPagedAsync(
             int providerId,
             PaginationDto pagination,
