@@ -127,6 +127,8 @@ builder.Services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
 
 #region Services
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
 builder.Services.AddHttpClient("OpenAI");
