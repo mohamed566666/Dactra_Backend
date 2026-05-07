@@ -30,7 +30,7 @@ public async Task SendReminder(int appointmentId)
       
             var doctor = await _context.Doctors
                 .Where(d => d.Id == appt.Slot.DoctorId)
-                .Select(d => new { d.UserId, d.Name })
+                .Select(d => new { d.UserId, d.FirstName,d.LastName })
                 .FirstOrDefaultAsync();
 
             if (doctor == null) return;
@@ -55,7 +55,7 @@ public async Task SendReminder(int appointmentId)
 
             if (patientTokens.Any())
                 await _appointmentReminderService.SendBulkNotificationsAsync(
-                    patientTokens, utcTime, doctor.Name, null);
+                    patientTokens, utcTime, doctor.FirstName + " " + doctor.LastName, null);
 
             //if (doctorTokens.Any())
             //    await _appointmentReminderService.SendBulkNotificationsAsync(

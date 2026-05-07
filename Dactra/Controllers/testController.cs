@@ -18,7 +18,7 @@ namespace Dactra.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(int appointmentId)
         {
-            await _reminderService.SendReminder(appointmentId);
+                await _reminderService.SendReminder(appointmentId);
 
             return Ok();
         }
