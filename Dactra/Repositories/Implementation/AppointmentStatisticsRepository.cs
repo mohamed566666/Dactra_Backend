@@ -190,7 +190,7 @@ namespace Dactra.Repositories.Implementation
             var startDate = today.AddDays(-6);
 
             var slotDates = await _context.PatientAppointments
-                .Where(a => a.Slot.DoctorId == doctorId
+                .Where(a => a.Slot.DoctorId == doctorId && a.Status == AppointmentStatus.Completed
                           && a.Slot.SlotDateTimeUtc >= startDate
                           && a.Slot.SlotDateTimeUtc < today.AddDays(1))
                 .Select(a => a.Slot.SlotDateTimeUtc)

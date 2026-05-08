@@ -56,6 +56,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<Prescription> Prescriptions { get; set; }
     public DbSet<PrescriptionMedicine> PrescriptionMedicines { get; set; }
     public DbSet<MedicineDoseTime> MedicineDoseTimes { get; set; }
+    public DbSet<PatientFavoriteServiceProvider> PatientFavoriteServiceProviders { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -285,6 +286,21 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             .WithMany(m => m.DoseTimes)
             .HasForeignKey(d => d.PrescriptionMedicineId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PatientFavoriteServiceProvider>(entity =>
+        {
+            entity.HasKey(e => new { e.PatientId, e.ServiceProviderId });
+
+            entity.HasOne(e => e.Patient)
+                .WithMany(p => p.FavoriteServiceProviders)
+                .HasForeignKey(e => e.PatientId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.ServiceProvider)
+                .WithMany(p => p.PatientFavorites)
+                .HasForeignKey(e => e.ServiceProviderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
     }
 }

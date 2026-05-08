@@ -15,7 +15,12 @@ namespace Dactra.Mappings
                 .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src =>
                     src.Patient != null
                         ? $"{src.Patient.FirstName} {src.Patient.LastName}"
-                        : string.Empty));
+                        : string.Empty))
+                .ForMember(dest => dest.imageUrl, opt => opt.MapFrom(src =>
+                    src.Patient != null && !string.IsNullOrEmpty(src.Patient.User.ImageUrl)
+                        ? src.Patient.User.ImageUrl
+                        : null));
+                
 
             CreateMap<IEnumerable<Rating>, List<RatingResponseDTO>>()
                 .ConvertUsing((src, dest, context) => src.Select(r => context.Mapper.Map<RatingResponseDTO>(r)).ToList());

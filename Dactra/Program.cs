@@ -123,9 +123,13 @@ builder.Services.AddScoped<IAppointmentStatisticsRepository, AppointmentStatisti
 
 builder.Services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
 
+builder.Services.AddScoped<IFavoriteRepository, FavoriteRepository>();
+
 #endregion
 
 #region Services
+
+builder.Services.AddMemoryCache();
 
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
@@ -182,6 +186,8 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IFcmService, FcmService>();
 builder.Services.AddScoped<IAppointmentReminderService, AppointmentReminderService>();
 builder.Services.AddScoped<IMedicineReminderService, MedicineReminderService>();
+
+builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 
 
 builder.Services.AddHangfire(config =>

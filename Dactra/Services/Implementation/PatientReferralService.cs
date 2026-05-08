@@ -19,11 +19,9 @@ namespace Dactra.Services.Implementation
             _context = context;
         }
 
-        // ─── Doctor refers a patient ───────────────────────────────
 
         public async Task<PatientReferralResponseDTO> ReferPatientAsync(int doctorId, ReferPatientDTO dto)
         {
-            // 1. Validate sponsorship exists, belongs to this doctor, and is active
             var sponsorship = await _sponsorshipRepo.GetByIdAsync(dto.SponsorshipId)
                 ?? throw new KeyNotFoundException("Sponsorship not found");
 
@@ -33,7 +31,6 @@ namespace Dactra.Services.Implementation
             if (sponsorship.Status != SponsorshipStatus.Active)
                 throw new InvalidOperationException("Sponsorship is not active");
 
-            // 2. Validate patient is under this doctor's care
             var inCare = await _context.PatientDoctorCares
                 .AnyAsync(x => x.DoctorId == doctorId
                              && x.PatientId == dto.PatientId
@@ -43,7 +40,6 @@ namespace Dactra.Services.Implementation
             if (!inCare)
                 throw new InvalidOperationException("Patient is not under your care");
 
-            // 3. Validate all chosen offerings belong to the sponsorship's provider
             var providerId = sponsorship.MedicalTestProviderId;
 
             var validOfferingIds = await _context.ProviderOfferings
@@ -56,7 +52,6 @@ namespace Dactra.Services.Implementation
                 throw new InvalidOperationException(
                     "One or more selected services do not belong to this provider");
 
-            // 4. Create referral
             var referral = new PatientReferral
             {
                 PatientId = dto.PatientId,
@@ -71,14 +66,12 @@ namespace Dactra.Services.Implementation
 
             var created = await _referralRepo.CreateAsync(referral);
 
-            // 5. Reload with full includes for mapping
             var full = await _referralRepo.GetByIdAsync(created.Id)
                 ?? throw new Exception("Failed to load referral after creation");
 
             return Map(full);
         }
 
-        // ─── Provider marks patient as received ───────────────────
 
         public async Task<PatientReferralResponseDTO> MarkAsReceivedAsync(int referralId, int providerId)
         {
@@ -97,8 +90,6 @@ namespace Dactra.Services.Implementation
             await _referralRepo.UpdateAsync(referral);
             return Map(referral);
         }
-
-        // ─── Queries ───────────────────────────────────────────────
 
         public async Task<IEnumerable<PatientReferralResponseDTO>> GetReferralsByProviderAsync(int providerId)
         {
@@ -169,26 +160,24 @@ namespace Dactra.Services.Implementation
             };
         }
 
-        public async Task<DoctorCarePatientsResponseDTO> GetDoctorCarePatientsAsync(int doctorId)
+        public async Task<PagedResultDto<DoctorCarePatientItemDTO>> GetDoctorCarePatientsAsync(int doctorId,PaginationDto pagination,string? searchTerm = null)
         {
-            var careRecords = await _referralRepo.GetActiveCarePatientsByDoctorAsync(doctorId);
-
-            var patients = careRecords.Select(x => new DoctorCarePatientItemDTO
+            var pagedRecords = await _referralRepo.GetActiveCarePatientsByDoctorPagedAsync(doctorId, pagination, searchTerm);
+            var mappedItems = pagedRecords.Items.Select(x => new DoctorCarePatientItemDTO
             {
                 PatientId = x.PatientId,
                 PatientName = $"{x.Patient?.FirstName} {x.Patient?.LastName}".Trim(),
                 PhoneNumber = x.Patient?.User?.PhoneNumber ?? string.Empty,
                 Email = x.Patient?.User?.Email ?? string.Empty
             }).ToList();
-
-            return new DoctorCarePatientsResponseDTO
+            return new PagedResultDto<DoctorCarePatientItemDTO>
             {
-                TotalPatients = patients.Count,
-                Patients = patients
+                Items = mappedItems,
+                TotalCount = pagedRecords.TotalCount,
+                Page = pagedRecords.Page,
+                PageSize = pagedRecords.PageSize
             };
         }
-
-        // =============== NEW PAGINATED METHOD ===============
 
         public async Task<PagedReferralResponseDto> GetProviderReferralsPagedAsync(
             int providerId,
@@ -262,8 +251,6 @@ namespace Dactra.Services.Implementation
                 HasPreviousPage = pagedResult.HasPreviousPage
             };
         }
-
-        // ─── Mapping ───────────────────────────────────────────────
 
         private PatientReferralResponseDTO Map(PatientReferral r)
         {

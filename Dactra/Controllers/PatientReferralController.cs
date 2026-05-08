@@ -31,14 +31,14 @@ namespace Dactra.Controllers
 
         [HttpGet("doctor/care-patients")]
         [Authorize(Roles = "Doctor")]
-        public async Task<IActionResult> GetCarePatients()
+        public async Task<IActionResult> GetCarePatients([FromQuery] PaginationDto pagination,[FromQuery] string? searchTerm = null)
         {
             try
             {
                 var doctor = await GetDoctorAsync();
                 if (doctor is null) return Unauthorized(Error("Doctor account not found"));
 
-                var result = await _service.GetDoctorCarePatientsAsync(doctor.Id);
+                var result = await _service.GetDoctorCarePatientsAsync(doctor.Id, pagination, searchTerm);
                 return Ok(result);
             }
             catch (Exception ex)

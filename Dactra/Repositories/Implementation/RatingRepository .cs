@@ -9,15 +9,20 @@
 
         public async Task<Rating?> GetByPatientAndProviderAsync(int patientId, int providerId)
         {
-            return await _context.Set<Rating>().FirstOrDefaultAsync(r =>
+            return await _context.Set<Rating>().Where(r =>
                 r.PatientId == patientId &&
-                r.ProviderId == providerId);
+                r.ProviderId == providerId)
+                .Include(r => r.Patient)
+                    .ThenInclude(p => p.User)
+                        .FirstOrDefaultAsync();
         }
 
         public async Task<List<Rating>> GetByPatientIdAsync(int patientId)
         {
             return await _context.Set<Rating>()
                 .Where(r => r.PatientId == patientId)
+                .Include(r => r.Patient)
+                    .ThenInclude(p => p.User)
                 .ToListAsync();
         }
 
@@ -25,6 +30,8 @@
         {
             return await _context.Set<Rating>()
                 .Where(r => r.ProviderId == providerId)
+                .Include(r => r.Patient)
+                    .ThenInclude(p => p.User)
                 .ToListAsync();
         }
     }

@@ -9,7 +9,7 @@ namespace Dactra.Services.Interfaces
         Task<IEnumerable<PatientReferralResponseDTO>> GetReferralsByProviderAsync(int providerId);
         Task<IEnumerable<PatientReferralResponseDTO>> GetReferralsByDoctorAsync(int doctorId);
         Task<ProviderReferralsDashboardDTO> GetProviderReferralsDashboardAsync(int providerId);
-        Task<DoctorCarePatientsResponseDTO> GetDoctorCarePatientsAsync(int doctorId);
+        Task<PagedResultDto<DoctorCarePatientItemDTO>> GetDoctorCarePatientsAsync(int doctorId,PaginationDto pagination,string? searchTerm = null);
         Task<PagedReferralResponseDto> GetProviderReferralsPagedAsync(
             int providerId,
             int page = 1,

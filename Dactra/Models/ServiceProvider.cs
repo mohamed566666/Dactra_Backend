@@ -24,5 +24,6 @@ namespace Dactra.Models
         public ApprovalStatus approvalStatus { get; set; } = ApprovalStatus.newPending;
         public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
         public ICollection<LabsWorkingHour> WorkingHours { get; set; } = new List<LabsWorkingHour>();
+        public ICollection<PatientFavoriteServiceProvider> PatientFavorites { get; set; } = new List<PatientFavoriteServiceProvider>();
     }
 }

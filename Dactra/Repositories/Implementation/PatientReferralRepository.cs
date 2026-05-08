@@ -72,16 +72,39 @@
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<PatientDoctorCare>> GetActiveCarePatientsByDoctorAsync(int doctorId)
+        public async Task<PagedResultDto<PatientDoctorCare>> GetActiveCarePatientsByDoctorPagedAsync(int doctorId,PaginationDto pagination,string? searchTerm = null)
         {
-            return await _context.PatientDoctorCares
+            var query = _context.PatientDoctorCares
                 .Where(x => x.DoctorId == doctorId
                          && x.IsActive
-                         && x.ExpiresAtUtc > DateTime.UtcNow)
+                         && x.ExpiresAtUtc > DateTime.UtcNow);
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                searchTerm = searchTerm.Trim().ToLower();
+                query = query.Where(x =>
+                    (x.Patient.FirstName != null && x.Patient.FirstName.ToLower().Contains(searchTerm)) ||
+                    (x.Patient.LastName != null && x.Patient.LastName.ToLower().Contains(searchTerm))
+                );
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
                 .Include(x => x.Patient)
                     .ThenInclude(p => p.User)
                 .OrderBy(x => x.Patient.FirstName)
+                .Skip(pagination.Skip)
+                .Take(pagination.PageSize)
                 .ToListAsync();
+
+            return new PagedResultDto<PatientDoctorCare>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
         }
 
         public async Task<PagedResultDto<PatientReferral>> GetReferralsByProviderPagedAsync(

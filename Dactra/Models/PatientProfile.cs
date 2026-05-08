@@ -21,7 +21,7 @@
         public DateTime DateOfBirth { get; set; }
 
         [NotMapped]
-        public int Age{get => CalculateAge(DateOfBirth);}
+        public int Age { get => CalculateAge(DateOfBirth); }
         public int? AddressId { get; set; }
         public City? Address { get; set; }
         public BloodTypes BloodType { get; set; }
@@ -35,6 +35,7 @@
         public ICollection<PatientDoctorCare> DoctorCares { get; set; } = new List<PatientDoctorCare>();
         public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
         public List<MedicalReport> MedicalReports { get; set; } = new List<MedicalReport>();
+        public ICollection<PatientFavoriteServiceProvider> FavoriteServiceProviders { get; set; } = new List<PatientFavoriteServiceProvider>();
 
         private int CalculateAge(DateTime dob)
         {

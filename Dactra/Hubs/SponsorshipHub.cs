@@ -7,21 +7,34 @@ namespace Dactra.Hubs
     [Authorize]
     public class SponsorshipHub : Hub
     {
+        private readonly IMedicalTestProviderProfileRepository _providerRepo;
+        private readonly IDoctorProfileRepository _doctorRepo;
+
+        public SponsorshipHub(
+            IMedicalTestProviderProfileRepository providerRepo,
+            IDoctorProfileRepository doctorRepo)
+        {
+            _providerRepo = providerRepo;
+            _doctorRepo = doctorRepo;
+        }
 
         public override async Task OnConnectedAsync()
         {
             var userId = Context.User!.FindFirstValue(ClaimTypes.NameIdentifier)!;
             var userRole = Context.User!.FindFirstValue(ClaimTypes.Role)!;
 
-            var groupName = userRole switch
+            if (userRole == "MedicalTestProvider")
             {
-                "MedicalTestProvider" => $"provider_{userId}",
-                "Doctor" => $"doctor_{userId}",
-                _ => null
-            };
-
-            if (groupName is not null)
-                await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+                var provider = await _providerRepo.GetByUserIdAsync(userId);
+                if (provider is not null)
+                    await Groups.AddToGroupAsync(Context.ConnectionId, $"provider_{provider.Id}");
+            }
+            else if (userRole == "Doctor")
+            {
+                var doctor = await _doctorRepo.GetByUserIdAsync(userId);
+                if (doctor is not null)
+                    await Groups.AddToGroupAsync(Context.ConnectionId, $"doctor_{doctor.Id}");
+            }
 
             await base.OnConnectedAsync();
         }
