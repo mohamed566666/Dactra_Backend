@@ -30,15 +30,10 @@ public async Task SendReminder(int appointmentId)
       
             var doctor = await _context.Doctors
                 .Where(d => d.Id == appt.Slot.DoctorId)
-                .Select(d => new { d.UserId, d.Name })
+                .Select(d => new { d.UserId, d.FirstName,d.LastName })
                 .FirstOrDefaultAsync();
 
             if (doctor == null) return;
-
-            var patientTokens = await _context.NotificationSubscriptions
-                .Where(x => x.PatientId == appt.PatientId.ToString() && x.IsActive)
-                .Select(x => x.FcmToken)
-                .ToListAsync();
 
             //var doctorTokens = await _context.NotificationSubscriptions
             //    .Where(x => x.PatientId == doctor.UserId && x.IsActive)
@@ -49,12 +44,18 @@ public async Task SendReminder(int appointmentId)
                 .Where(p => p.Id == appt.PatientId)
                 .Select(p => p.UserId)
                 .FirstOrDefaultAsync();
+            if (patientUserId == null) return;
+
+            var patientTokens = await _context.NotificationSubscriptions
+                   .Where(x => x.PatientId == patientUserId && x.IsActive)
+                   .Select(x => x.FcmToken)
+                   .ToListAsync();
 
             var utcTime = appt.Slot.SlotDateTimeUtc;
 
             if (patientTokens.Any())
                 await _appointmentReminderService.SendBulkNotificationsAsync(
-                    patientTokens, utcTime, doctor.Name, null);
+                    patientTokens, utcTime, doctor.FirstName + " " + doctor.LastName, null);
 
             //if (doctorTokens.Any())
             //    await _appointmentReminderService.SendBulkNotificationsAsync(
@@ -67,7 +68,7 @@ public async Task SendReminder(int appointmentId)
 
             appt.IsReminderSent = true;
             await _context.SaveChangesAsync();
-            // ✅ مفيش try/catch هنا — Hangfire هيمسك الـ exception ويعيد المحاولة
+            
         }
     }
 }
