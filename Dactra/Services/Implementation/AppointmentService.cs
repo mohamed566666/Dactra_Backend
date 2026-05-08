@@ -153,6 +153,25 @@ namespace Dactra.Services.Implementation
                           SlotDateTime = slot.SlotDateTimeUtc,
                           PatientId = patientId
                       });
+                    var utcTime = appointment.Slot.SlotDateTimeUtc;
+                    var reminderTime = utcTime.AddHours(-1);
+                    var delay = (reminderTime - DateTime.UtcNow) - TimeSpan.FromHours(2);
+
+                    if (delay > TimeSpan.Zero)
+                    {
+                        var jobId = BackgroundJob.Schedule<IReminderService>(
+                            x => x.SendReminder(appointment.Id),
+                            delay
+                        );
+
+                        appointment.ReminderJobId = jobId;
+                    }
+                    else
+                    {
+                        await _reminderService.SendReminder(appointment.Id);
+                    }
+                    await _context.SaveChangesAsync();
+
                     return "In-person appointment booked successfully. Please proceed to payment.";
                 }
                 else
