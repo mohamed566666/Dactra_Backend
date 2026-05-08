@@ -48,10 +48,10 @@
 ## Architecture
 
 The project follows a **layered architecture** (N-tier) to separate concerns:
-┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-│ Controllers │ ←→ │ Services │ ←→ │ Repositories │
-│
-└─────────────────┘ └─────────────────┘ └─────────────────┘
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ \
+│ Controllers │ ←→ │ Services │ ←→ │ Repositories │          \
+│                                                             \
+└─────────────────┘ └─────────────────┘ └─────────────────┘   \
 ↓ ↓ ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │ DTOs & Models │
@@ -72,22 +72,22 @@ text
 
 ## Project Structure
 
-Dactra_Backend/
-├── Dactra/ # Main project
-│ ├── Controllers/ # API endpoints
-│ ├── Services/ # Business logic
-│ ├── Repositories/ # Data access layer
-│ ├── Hubs/ # SignalR hubs (chat, notifications)
-│ ├── Models/ # Domain entities
-│ ├── DTOs/ # Data transfer objects
-│ ├── Data/ # DbContext & migrations
-│ ├── Helpers/ # Utility classes
-│ ├── Middlewares/ # Custom middleware (e.g., error handling)
-│ ├── Extensions/ # Service extensions (DI configuration)
-│ └── appsettings.json # Configuration (connection strings, API keys)
-├── .gitignore
-├── README.md
-└── Dactra.sln
+Dactra_Backend/   \
+├── Dactra/ # Main project  \
+│ ├── Controllers/ # API endpoints  \
+│ ├── Services/ # Business logic  \
+│ ├── Repositories/ # Data access layer  \
+│ ├── Hubs/ # SignalR hubs (chat, notifications)  \
+│ ├── Models/ # Domain entities  \
+│ ├── DTOs/ # Data transfer objects  \
+│ ├── Data/ # DbContext & migrations  \
+│ ├── Helpers/ # Utility classes  \
+│ ├── Middlewares/ # Custom middleware (e.g., error handling)  \
+│ ├── Extensions/ # Service extensions (DI configuration)  \
+│ └── appsettings.json # Configuration (connection strings, API keys)  \
+├── .gitignore  \
+├── README.md  \
+└── Dactra.sln  \
 
 text
 
