@@ -24,13 +24,13 @@
 
 ## Features
 
-- **JWT Authentication** – Secure user login/register for patients & doctors.
-- **Real-time Chat** – Using **SignalR** for Real-Time.
+- **JWT Authentication** – Secure user login/register for patients & doctors & Medical Test Providers.
+- **Real-time Events** – Using **SignalR** for Real-Time.
 - **Video Consultations** – Integrated **Jitsi Meet** API for secure, in-app video calls.
 - **Push Notifications** – **Firebase Cloud Messaging (FCM)** for real-time alerts on new messages or appointments.
 - **Cloud Media Storage** – **Cloudinary** for uploading and serving profile images, prescriptions, and reports.
 - **Appointment Management** – Schedule, reschedule, and cancel appointments with status tracking.
-- **Prescription & Lab Results** – Digital prescriptions and lab report sharing.
+- **Prescription** – Digital prescriptions.
 
 ## Tech Stack
 
@@ -47,22 +47,7 @@
 
 ## Architecture
 
-The project follows a **layered architecture** (N-tier) to separate concerns:
-┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ \
-│ Controllers │ ←→ │ Services │ ←→ │ Repositories │          \
-│                                                             \
-└─────────────────┘ └─────────────────┘ └─────────────────┘   \
-↓ ↓ ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ DTOs & Models │
-└─────────────────────────────────────────────────────────────────┘
-↓ ↓ ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ External Services │
-│ (SignalR, Firebase, Jitsi, Cloudinary, SQL Server) │
-└─────────────────────────────────────────────────────────────────┘
-
-text
+The project follows a **layered architecture** (N-tier) to separate concerns \
 
 - **Controllers** – Handle HTTP requests/responses.
 - **Services** – Implement business logic and orchestrate repositories.
@@ -160,8 +145,8 @@ Client loads Jitsi iframe/widget – no extra installation.
 
 # Contributors
 
-Mohamed Gamal (@mohamed566666)
-Rashad Mostafa (@rashadmo8)
+Mohamed Gamal [@mohamed566666](https://github.com/mohamed566666)
+Rashad Mostafa [@rashadmo8](https://github.com/rashadmo8)
 
 # License
 
