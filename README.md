@@ -145,7 +145,7 @@ Client loads Jitsi iframe/widget – no extra installation.
 
 # Contributors
 
-Mohamed Gamal [@mohamed566666](https://github.com/mohamed566666)
+Mohamed Gamal [@mohamed566666](https://github.com/mohamed566666) \
 Rashad Mostafa [@rashadmo8](https://github.com/rashadmo8)
 
 # License
