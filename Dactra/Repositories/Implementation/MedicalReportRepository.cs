@@ -12,6 +12,7 @@
         public async Task<List<MedicalReport>> GetByPatientIdAsync(int patientProfileId)
         {
             return await _context.MedicalReports
+                .Include(r => r.Files) 
                 .Where(r => r.PatientProfileId == patientProfileId)
                 .OrderByDescending(r => r.UploadedAt)
                 .ToListAsync();
@@ -20,6 +21,7 @@
         public async Task<MedicalReport?> GetByIdAsync(int id)
         {
             return await _context.MedicalReports
+                .Include(r => r.Files)
                 .Include(r => r.PatientProfile)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }

@@ -35,7 +35,8 @@
                 .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Avg_Rating))
                 .ForMember(dest => dest.profileImageUrl,opt => opt.MapFrom(src => src.User != null && !string.IsNullOrEmpty(src.User.ImageUrl) ? src.User.ImageUrl : null))
                 .ForMember(dest => dest.OfflinePrice, opt => opt.MapFrom(src => src.ConsultationPrice))
-                .ForMember(dest => dest.OnlinePrice, opt => opt.MapFrom(src => src.OnlineConsultationPrice));
+                .ForMember(dest => dest.OnlinePrice, opt => opt.MapFrom(src => src.OnlineConsultationPrice))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address));
 
             CreateMap<(IEnumerable<DoctorProfile> doctors, int totalCount, DoctorFilterDTO filter), PaginatedDoctorsResponseDTO>()
                 .ForMember(dest => dest.Doctors, opt => opt.MapFrom(src => src.doctors))

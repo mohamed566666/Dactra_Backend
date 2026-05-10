@@ -17,5 +17,6 @@
         public string? profileImageUrl { get; set; } = null;
         public decimal? OfflinePrice { get; set; }
         public decimal? OnlinePrice { get; set; }
+        public bool IsFavorite { get; set; } = false;
     }
 }

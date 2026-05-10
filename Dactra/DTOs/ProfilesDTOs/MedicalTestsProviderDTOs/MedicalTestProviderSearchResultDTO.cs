@@ -8,5 +8,6 @@
         public string Address { get; set; } = string.Empty;
         public string? ImageUrl { get; set; }
         public decimal Rating { get; set; }
+        public bool IsFavorite { get; set; } = false;
     }
 }

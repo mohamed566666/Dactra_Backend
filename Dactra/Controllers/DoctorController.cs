@@ -1,4 +1,10 @@
-﻿namespace Dactra.Controllers
+﻿using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
+using Dactra.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
+namespace Dactra.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -6,43 +12,53 @@
     {
         private readonly IDoctorService _doctorService;
         private readonly IDoctorQualificationService _qualificationService;
-        public DoctorController(IDoctorService doctorService , IDoctorQualificationService qualificationService)
+        private readonly IPatientService _patientService;
+
+        public DoctorController(IDoctorService doctorService, IDoctorQualificationService qualificationService, IPatientService patientService)
         {
             _doctorService = doctorService;
             _qualificationService = qualificationService;
+            _patientService = patientService;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var DoctorProfiles = await _doctorService.GetAllProfileAsync();
+            var patientId = await GetPatientIdAsync();
+            var DoctorProfiles = await _doctorService.GetAllProfileAsync(patientId);
             return Ok(DoctorProfiles);
         }
 
         [HttpGet("{Id}")]
         public async Task<IActionResult> GetById(int Id)
         {
-            var DoctorProfile = await _doctorService.GetProfileByIdAsync(Id);
+            var patientId = await GetPatientIdAsync();
+            var DoctorProfile = await _doctorService.GetProfileByIdAsync(Id, patientId);
             return DoctorProfile == null ? NotFound("Doctor Profile Not Found") : Ok(DoctorProfile);
         }
+
         [HttpGet("qualifications/{doctorId}")]
         public async Task<IActionResult> GetQualifications(int doctorId)
         {
             var result = await _qualificationService.GetAllAsync(doctorId);
             return Ok(result);
         }
+
         [Authorize(Roles = "Admin")]
         [HttpGet("getApproved")]
         public async Task<IActionResult> GetApprovedDoctors()
         {
-            var approvedDoctors = await _doctorService.GetApprovedDoctorsAsync();
+            var patientId = await GetPatientIdAsync();
+            var approvedDoctors = await _doctorService.GetApprovedDoctorsAsync(patientId);
             return Ok(approvedDoctors);
         }
+
         [Authorize(Roles = "Admin")]
         [HttpGet("getPending")]
         public async Task<IActionResult> GetPendingDoctors()
         {
-            var pendingDoctors = await _doctorService.GetdisApprovedDoctorsAsync();
+            var patientId = await GetPatientIdAsync();
+            var pendingDoctors = await _doctorService.GetdisApprovedDoctorsAsync(patientId);
             return Ok(pendingDoctors);
         }
 
@@ -55,10 +71,12 @@
                 await _doctorService.DeleteDoctorProfileAsync(Id);
                 return Ok("Profile Deleted Succesfully");
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 return NotFound(ex.Message);
             }
         }
+
         [HttpDelete("qualifications/{qualificationId}")]
         [Authorize]
         public async Task<IActionResult> DeleteQualification(int qualificationId)
@@ -73,6 +91,7 @@
                 return NotFound("Qualification not found");
             return Ok("Qualification deleted successfully");
         }
+
         [HttpPost("CompleteRegister")]
         public async Task<IActionResult> CompleteRegister(DoctorCompleteDTO doctorComplateDTO)
         {
@@ -81,10 +100,12 @@
                 await _doctorService.CompleteRegistrationAsync(doctorComplateDTO);
                 return Ok();
             }
-            catch(Exception ex) {
+            catch (Exception ex)
+            {
                 return NotFound(ex.Message);
             }
         }
+
         [HttpPost("qualifications")]
         [Authorize]
         public async Task<IActionResult> AddQualification([FromBody] DoctorQualificationDTO dto)
@@ -96,15 +117,18 @@
             await _qualificationService.CreateByUserIdAsync(userId, dto);
             return Ok("Qualification added successfully");
         }
+
         [HttpGet("GetByEmail/{email}")]
         public async Task<IActionResult> GetByEmail(string email)
         {
             try
             {
-                var DoctorProfile = await _doctorService.GetProfileByUserEmail(email);
+                var patientId = await GetPatientIdAsync();
+                var DoctorProfile = await _doctorService.GetProfileByUserEmail(email, patientId);
                 return DoctorProfile == null ? NotFound("Doctor Profile Not Found") : Ok(DoctorProfile);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 return NotFound(ex.Message);
             }
         }
@@ -156,7 +180,7 @@
             }
             try
             {
-                await _doctorService.UpdateProfileAsync(userId , doctorUpdateDTO);
+                await _doctorService.UpdateProfileAsync(userId, doctorUpdateDTO);
                 return Ok("Profile Updated Successfully");
             }
             catch (Exception ex)
@@ -167,7 +191,7 @@
 
         [HttpPut("qualifications/{qualificationId}")]
         [Authorize]
-        public async Task<IActionResult> UpdateQualification(int qualificationId,[FromBody] DoctorQualificationDTO dto)
+        public async Task<IActionResult> UpdateQualification(int qualificationId, [FromBody] DoctorQualificationDTO dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
                       ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
@@ -185,7 +209,9 @@
         {
             try
             {
-                var result = await _doctorService.GetFilteredDoctorsAsync(filter);
+                var patientId = await GetPatientIdAsync();
+                var result = await _doctorService.GetFilteredDoctorsAsync(filter, patientId);
+
                 if (result.TotalCount == 0)
                 {
                     return Ok(new PaginatedDoctorsResponseDTO
@@ -204,6 +230,20 @@
             {
                 return StatusCode(500, new { message = "An error occurred while retrieving doctors", error = ex.Message });
             }
+        }
+
+        private async Task<int> GetPatientIdAsync()
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var profile = await _patientService.GetProfileByUserID(userId);
+                    if (profile != null) return profile.Id;
+                }
+            }
+            return 0;
         }
     }
 }

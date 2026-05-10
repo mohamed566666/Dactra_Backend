@@ -5,8 +5,9 @@
         [Required]
         [MaxLength(200)]
         public string Name { get; set; } = string.Empty;
+        public string? Summary { get; set; }
 
         [Required]
-        public IFormFile File { get; set; } = null!;
+        public List<IFormFile> Files { get; set; } = new();
     }
 }

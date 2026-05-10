@@ -1,16 +1,30 @@
-﻿namespace Dactra.Services.Implementation
+﻿using Dactra.DTOs;
+using Dactra.DTOs.ProfilesDTOs.MedicalTestsProviderDTOs;
+using Dactra.Enums;
+using Dactra.Repositories.Interfaces;
+using Dactra.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
+
+namespace Dactra.Services.Implementation
 {
     public class MedicalTestsProviderService : IMedicalTestsProviderService
     {
         private readonly IMedicalTestProviderProfileRepository _medicalTestProviderProfileRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IFavoriteService _favoriteService;
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-        public MedicalTestsProviderService(IMedicalTestProviderProfileRepository medicalTestProviderProfileRepository, IUserRepository userRepository,
-            ApplicationDbContext context , IMapper mapper)
+
+        public MedicalTestsProviderService(
+            IMedicalTestProviderProfileRepository medicalTestProviderProfileRepository,
+            IUserRepository userRepository,
+            IFavoriteService favoriteService,
+            ApplicationDbContext context,
+            IMapper mapper)
         {
             _medicalTestProviderProfileRepository = medicalTestProviderProfileRepository;
             _userRepository = userRepository;
+            _favoriteService = favoriteService;
             _context = context;
             _mapper = mapper;
         }
@@ -70,21 +84,45 @@
             await _medicalTestProviderProfileRepository.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetAllProfilesAsync()
+        public async Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetAllProfilesAsync(int patientId = 0)
         {
             var profiles = await _medicalTestProviderProfileRepository.GetAllAsync();
-            var profileDTOs = _mapper.Map<IEnumerable<MedicalTestsProviderResponseDTO>>(profiles);
+            var profileDTOs = _mapper.Map<IEnumerable<MedicalTestsProviderResponseDTO>>(profiles).ToList();
+
+            if (patientId > 0 && profileDTOs.Any())
+            {
+                var providerIds = profileDTOs.Select(p => p.Id).ToList();
+                var favoriteIds = await _favoriteService.GetFavoriteServiceProviderIdsAsync(patientId, providerIds);
+
+                foreach (var dto in profileDTOs)
+                {
+                    dto.IsFavorite = favoriteIds.Contains(dto.Id);
+                }
+            }
+
             return profileDTOs;
         }
 
-        public async Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetApprovedProfilesAsync(MedicalTestProviderType? type = null)
+        public async Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetApprovedProfilesAsync(MedicalTestProviderType? type = null, int patientId = 0)
         {
             var profiles = await _medicalTestProviderProfileRepository.GetApprovedProfilesAsync(type);
-            var profileDTOs = _mapper.Map<IEnumerable<MedicalTestsProviderResponseDTO>>(profiles);
+            var profileDTOs = _mapper.Map<IEnumerable<MedicalTestsProviderResponseDTO>>(profiles).ToList();
+
+            if (patientId > 0 && profileDTOs.Any())
+            {
+                var providerIds = profileDTOs.Select(p => p.Id).ToList();
+                var favoriteIds = await _favoriteService.GetFavoriteServiceProviderIdsAsync(patientId, providerIds);
+
+                foreach (var dto in profileDTOs)
+                {
+                    dto.IsFavorite = favoriteIds.Contains(dto.Id);
+                }
+            }
+
             return profileDTOs;
         }
 
-        public async Task<MedicalTestsProviderResponseDTO> GetProfileByIdAsync(int id)
+        public async Task<MedicalTestsProviderResponseDTO> GetProfileByIdAsync(int id, int patientId = 0)
         {
             var profile = await _medicalTestProviderProfileRepository.GetByIdAsync(id);
             if (profile == null)
@@ -92,6 +130,12 @@
                 throw new KeyNotFoundException("Medical Test Provider Profile Not Found");
             }
             var profileDTO = _mapper.Map<MedicalTestsProviderResponseDTO>(profile);
+
+            if (patientId > 0)
+            {
+                profileDTO.IsFavorite = await _favoriteService.IsFavoriteAsync(patientId, profile.Id);
+            }
+
             return profileDTO;
         }
 
@@ -106,10 +150,22 @@
             return profileDTO;
         }
 
-        public async Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetProfilesByTypeAsync(MedicalTestProviderType type)
+        public async Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetProfilesByTypeAsync(MedicalTestProviderType type, int patientId = 0)
         {
             var profiles = await _medicalTestProviderProfileRepository.GetProfilesByTypeAsync(type);
-            var profileDTOs = _mapper.Map<IEnumerable<MedicalTestsProviderResponseDTO>>(profiles);
+            var profileDTOs = _mapper.Map<IEnumerable<MedicalTestsProviderResponseDTO>>(profiles).ToList();
+
+            if (patientId > 0 && profileDTOs.Any())
+            {
+                var providerIds = profileDTOs.Select(p => p.Id).ToList();
+                var favoriteIds = await _favoriteService.GetFavoriteServiceProviderIdsAsync(patientId, providerIds);
+
+                foreach (var dto in profileDTOs)
+                {
+                    dto.IsFavorite = favoriteIds.Contains(dto.Id);
+                }
+            }
+
             return profileDTOs;
         }
 
@@ -128,7 +184,7 @@
         public async Task UpdateProfileAsync(string id, MedicalTestsProviderUpdateDTO dto)
         {
             var profile = await _context.MedicalTestProviders
-                  .Include(x => x.WorkingHours) 
+                  .Include(x => x.WorkingHours)
                   .FirstOrDefaultAsync(x => x.UserId == id);
             if (profile == null)
             {
@@ -144,7 +200,7 @@
             await _medicalTestProviderProfileRepository.SaveChangesAsync();
         }
 
-        public async Task<PagedResultDto<MedicalTestProviderSearchResultDTO>> SearchProvidersAsync(MedicalTestProviderSearchFilterDTO filter)
+        public async Task<PagedResultDto<MedicalTestProviderSearchResultDTO>> SearchProvidersAsync(MedicalTestProviderSearchFilterDTO filter, int patientId = 0)
         {
             var (items, totalCount) = await _medicalTestProviderProfileRepository.SearchAsync(
                 filter.SearchTerm,
@@ -153,6 +209,17 @@
                 filter.PageSize);
 
             var resultItems = _mapper.Map<IEnumerable<MedicalTestProviderSearchResultDTO>>(items).ToList();
+
+            if (patientId > 0 && resultItems.Any())
+            {
+                var providerIds = resultItems.Select(p => p.Id).ToList();
+                var favoriteIds = await _favoriteService.GetFavoriteServiceProviderIdsAsync(patientId, providerIds);
+
+                foreach (var item in resultItems)
+                {
+                    item.IsFavorite = favoriteIds.Contains(item.Id);
+                }
+            }
 
             return new PagedResultDto<MedicalTestProviderSearchResultDTO>
             {

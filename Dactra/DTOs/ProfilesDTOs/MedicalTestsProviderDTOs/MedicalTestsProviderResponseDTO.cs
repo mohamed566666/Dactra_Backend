@@ -12,5 +12,6 @@
         public List<WorkingHourDTO> WorkingHours { get; set; } = new();
         public string? PhoneNumber { get; set; }    
         public string? profileImageUrl { get; set; } = null;
+        public bool IsFavorite { get; set; } = false;
     }
 }

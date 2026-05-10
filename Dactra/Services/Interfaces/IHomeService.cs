@@ -4,6 +4,6 @@ namespace Dactra.Services.Interfaces
 {
     public interface IHomeService
     {
-        Task<IEnumerable<TopRatedDoctorDTO>> GetTopRatedDoctorsAsync(int count);
+        Task<IEnumerable<TopRatedDoctorDTO>> GetTopRatedDoctorsAsync(int count, int patientId = 0);
     }
 }
