@@ -260,7 +260,7 @@ namespace Dactra.Repositories.Implementation
         {
             var received = await _context.DoctorMedicalTestSponsors
                 .CountAsync(x => x.DoctorId == doctorId
-                              && x.Status == SponsorshipStatus.Pending);
+                              && x.Status == SponsorshipStatus.Pending && !x.IsCounterOffer);
 
             var counter = await _context.DoctorMedicalTestSponsors
                 .CountAsync(x => x.DoctorId == doctorId
