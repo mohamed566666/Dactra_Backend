@@ -47,6 +47,7 @@
                     throw new InvalidOperationException("This User Already has an Profile");
                 }
                 var medicalTestProviderProfile = _mapper.Map<MedicalTestProviderProfile>(medicalTestProviderDTO);
+                medicalTestProviderProfile.UserId = user.Id;
                 await _medicalTestProviderProfileRepository.AddAsync(medicalTestProviderProfile);
                 user.IsRegistrationComplete = true;
                 await _userRepository.UpdateUserAsync(user);

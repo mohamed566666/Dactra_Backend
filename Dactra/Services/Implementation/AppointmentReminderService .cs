@@ -81,7 +81,7 @@ namespace Dactra.Services.Implementation
                 var url = $"https://fcm.googleapis.com/v1/projects/{_projectId}/messages:send";
 
                 var title = "📅 تذكير بموعد الحجز";
-                var body = $"عندك ميعاد مع د. {doctorName} في {clinicName ?? "العيادة"} الساعة {appointmentTime:hh:mm tt}";
+                var body = $"عندك ميعاد مع د. {doctorName} في {clinicName ?? "العيادة"} الساعة {appointmentTime.AddHours(1):hh:mm tt}";
 
                 var payload = new
                 {
@@ -112,7 +112,7 @@ namespace Dactra.Services.Implementation
                         {
                             headers = new Dictionary<string, string>
                             {
-                                { "apns-priority", "10" }   // ✅ hyphen مش underscore
+                                { "apns-priority", "10" }   
                             },
                             payload = new
                             {
