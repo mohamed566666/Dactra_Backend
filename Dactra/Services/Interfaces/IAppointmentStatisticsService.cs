@@ -13,5 +13,6 @@ namespace Dactra.Services.Interfaces
         Task<CancelAppointmentResponseDto> CancelAppointmentAsync(int appointmentId,int userId,string userRole,string reason);
         Task<DoctorWeeklyAppointmentsResponseDto> GetDoctorWeeklyAppointmentsByIdAsync(int doctorId);
         Task<DoctorWeeklyAppointmentsResponseDto> GetAuthenticatedDoctorWeeklyAppointmentsAsync(int doctorId);
+        Task MarkExpiredOnlineAppointmentsAsFailedAsync();
     }
 }

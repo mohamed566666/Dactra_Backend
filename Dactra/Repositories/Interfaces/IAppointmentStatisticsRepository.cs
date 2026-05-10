@@ -12,5 +12,6 @@ namespace Dactra.Repositories.Interfaces
         Task<PatientAppointment?> GetAppointmentWithDetailsAsync(int appointmentId);
         Task<bool> CancelAppointmentWithReasonAsync(int appointmentId, string reason);
         Task<List<DoctorDailyAppointmentsDto>> GetDoctorWeeklyAppointmentsAsync(int doctorId);
+        Task<List<PatientAppointment>> GetExpiredOnlineAppointmentsAsync();
     }
 }
