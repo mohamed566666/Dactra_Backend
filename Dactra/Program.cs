@@ -1,4 +1,5 @@
-﻿using Dactra.Services.Background;
+﻿using Dactra;
+using Dactra.Services.Background;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Hangfire;
@@ -383,8 +384,10 @@ app.MapHub<VideoCallHub>("/hubs/videocall");
 app.MapHub<SponsorshipHub>("/hubs/sponsorship");
 
 
-app.UseHangfireDashboard();
-
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireDashboardAuthFilter() }
+});
 #endregion
 
 try
