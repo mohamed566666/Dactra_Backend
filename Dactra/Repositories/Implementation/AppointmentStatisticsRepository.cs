@@ -34,8 +34,6 @@ namespace Dactra.Repositories.Implementation
             return a.Slot.SlotDateTimeUtc.AddMinutes(duration) < now;
         }
 
-        // ─── Statistics ───────────────────────────────────────────────────────
-
         public async Task<AppointmentStatisticsSummaryDto> GetPatientStatisticsAsync(int patientId)
         {
             var now = DateTime.UtcNow;
@@ -72,13 +70,12 @@ namespace Dactra.Repositories.Implementation
             var failed = appointments.Count(a => a.Status == AppointmentStatus.Failed);
 
             var upcoming = appointments.Count(a =>
-                a.Status == AppointmentStatus.Confirmed && !IsSessionOver(a, now) &&
-                a.Slot.SlotDateTimeUtc > now);
+                a.Status == AppointmentStatus.Confirmed && IsStillUpcoming(a, now));
 
             var unpaid = appointments.Count(a =>
                 a.Status == AppointmentStatus.Pending &&
                 a.Payment.Status == paymentStatus.Pending &&
-                !IsSessionOver(a, now));
+                IsStillUpcoming(a, now));
 
             return new AppointmentStatisticsSummaryDto
             {
@@ -90,6 +87,16 @@ namespace Dactra.Repositories.Implementation
                 Total = completed + upcoming + cancelled + failed + unpaid
             };
         }
+
+        private static bool IsStillUpcoming(PatientAppointment a, DateTime now)
+        {
+            if (a.Slot.SlotType == SlotType.InPerson)
+                return a.Slot.SlotDateTimeUtc > now;
+
+            var duration = GetDuration(a);
+            return a.Slot.SlotDateTimeUtc.AddMinutes(duration) > now;
+        }
+
 
         public async Task<(IEnumerable<PatientAppointment> Appointments, int TotalCount)>
             GetPatientAppointmentsPagedAsync(int patientId, AppointmentFilterRequestDto filter)
@@ -118,11 +125,12 @@ namespace Dactra.Repositories.Implementation
                 .ToListAsync();
 
             if (filter.UpcomingOnly)
-                appointments = appointments.Where(a => !IsSessionOver(a, now)).ToList();
+                appointments = appointments
+                    .Where(a => a.Slot.SlotType == SlotType.InPerson || !IsSessionOver(a, now))
+                    .ToList();
 
             return (appointments, totalCount);
         }
-
 
         public async Task<(IEnumerable<PatientAppointment> Appointments, int TotalCount)>
             GetDoctorAppointmentsPagedAsync(int doctorId, AppointmentFilterRequestDto filter)
@@ -150,7 +158,9 @@ namespace Dactra.Repositories.Implementation
                 .ToListAsync();
 
             if (filter.UpcomingOnly)
-                appointments = appointments.Where(a => !IsSessionOver(a, now)).ToList();
+                appointments = appointments
+                    .Where(a => a.Slot.SlotType == SlotType.InPerson || !IsSessionOver(a, now))
+                    .ToList();
 
             return (appointments, totalCount);
         }
@@ -164,9 +174,11 @@ namespace Dactra.Repositories.Implementation
                 query = query.Where(a => a.Status == filter.Status.Value);
 
             if (filter.UpcomingOnly)
+            {
                 query = query.Where(a =>
                     a.Status == AppointmentStatus.Confirmed &&
                     a.Slot.SlotDateTimeUtc > now);
+            }
 
             if (filter.Type.HasValue)
                 query = query.Where(a => a.Slot.SlotType == filter.Type.Value);
@@ -204,7 +216,6 @@ namespace Dactra.Repositories.Implementation
             return true;
         }
 
-
         public async Task<List<DoctorDailyAppointmentsDto>> GetDoctorWeeklyAppointmentsAsync(int doctorId)
         {
             var today = DateTime.UtcNow.Date;
@@ -237,11 +248,9 @@ namespace Dactra.Repositories.Implementation
                 .ToList();
         }
 
-
         public async Task<List<PatientAppointment>> GetExpiredOnlineAppointmentsAsync()
         {
             var now = DateTime.UtcNow;
-
             var candidates = await _context.PatientAppointments
                 .Include(a => a.Slot)
                     .ThenInclude(s => s.Doctor)
