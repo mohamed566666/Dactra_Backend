@@ -8,5 +8,6 @@
         Task<Prescription> CreateAsync(Prescription prescription);
         Task UpdateAsync(Prescription prescription);
         Task<PatientAppointment?> GetAppointmentWithDetailsAsync(int appointmentId);
+        public  Task<List<Prescription>> GetByUserIdAsync(string userId);
     }
 }

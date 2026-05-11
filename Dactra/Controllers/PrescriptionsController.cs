@@ -124,6 +124,23 @@ namespace Dactra.Controllers
 
         #endregion
 
+        #region get Prescription 
+        [HttpGet("my-prescriptions")]
+        public async Task<IActionResult> GetMyPrescriptions()
+        {
+            var patientIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(patientIdClaim))
+                return Unauthorized("Invalid token");
+
+            var patientId = Guid.Parse(patientIdClaim);
+
+            var prescriptions = await _prescriptionService
+                .GetByUserIdAsync(patientId.ToString());
+
+            return Ok(prescriptions);
+        }
+        #endregion
         #region Update Prescription
 
         [HttpPut("{prescriptionId}")]

@@ -96,6 +96,14 @@ namespace Dactra.Services.Implementation
         }
 
         #endregion
+        #region get by UserId
+            public async Task<List<PrescriptionResponseDto>> GetByUserIdAsync(string patientId)
+            {
+                return await _prescriptionRepo.GetByUserIdAsync(patientId)
+                    .ContinueWith(task => task.Result.Select(MapToResponseDto).ToList());
+            }
+        #endregion
+
 
         #region Update
 
@@ -223,7 +231,15 @@ namespace Dactra.Services.Implementation
                 Medicines = prescription.Medicines
                     .OrderBy(m => m.Id)
                     .Select(MapToMedicineResponseDto)
-                    .ToList()
+                    .ToList(),
+                Doctor = prescription.Appointment?.Slot?.Doctor == null
+                    ? null
+                    : new DoctorDTO
+                    {
+                        DoctorId = prescription.Appointment.Slot.DoctorId,
+                        FullName = prescription.Appointment.Slot.Doctor.FirstName + " " + prescription.Appointment.Slot.Doctor.LastName,
+                        Email = prescription.Appointment.Slot.Doctor.User?.Email
+                    }
             };
         }
 
@@ -275,6 +291,8 @@ namespace Dactra.Services.Implementation
         {
             return time.ToString(@"hh\:mm");
         }
+
+    
 
         #endregion
     }

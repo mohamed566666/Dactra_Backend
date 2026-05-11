@@ -7,6 +7,7 @@
         public string Diagnosis { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public DoctorDTO Doctor { get; set; }
         public List<MedicineResponseDto> Medicines { get; set; } = new();
     }
 }

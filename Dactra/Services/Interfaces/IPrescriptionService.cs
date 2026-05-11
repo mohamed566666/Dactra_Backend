@@ -12,5 +12,6 @@ namespace Dactra.Services.Interfaces
 
         Task<PrescriptionResponseDto?> UpdatePrescriptionAsync(
             int prescriptionId, UpdatePrescriptionRequestDto dto, int doctorId);
+        public Task<List<PrescriptionResponseDto>> GetByUserIdAsync(string patientId);
     }
 }
