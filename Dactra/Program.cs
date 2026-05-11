@@ -1,5 +1,7 @@
 ﻿using Dactra;
 using Dactra.Services.Background;
+using Dactra.Services.Implementation;
+using Dactra.Services.Interfaces;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Hangfire;
@@ -190,6 +192,8 @@ builder.Services.AddScoped<IMedicineReminderService, MedicineReminderService>();
 
 builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 
+builder.Services.AddHttpClient<IpharmacyIntegration, pharmacyIntegration>();
+
 
 builder.Services.AddHangfire(config =>
     config.UseSqlServerStorage(
@@ -213,6 +217,10 @@ builder.Services.AddScoped<IAppointmentStatisticsService, AppointmentStatisticsS
 
 builder.Services.Configure<AITaggingOptions>(builder.Configuration.GetSection("AITagging"));
 
+builder.Services.AddHttpClient<IpharmacyIntegration, pharmacyIntegration>(client =>
+{
+    client.BaseAddress = new Uri("https://rujta.runasp.net/");
+});
 builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
 
 #endregion
