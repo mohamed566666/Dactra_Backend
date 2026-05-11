@@ -57,12 +57,12 @@
 
                     var token = await context.NotificationSubscriptions
                         .Where(s => s.PatientId == reminder.PatientId && s.IsActive)
-                        .Select(s => s.FcmToken)
-                        .FirstOrDefaultAsync();
+                        .Select(s => s.FcmToken).ToListAsync();
 
-                    if (token == null) continue;
 
-                    await fcmService.SendNotificationAsync(
+                    if (!token.Any()) continue; 
+
+                    await fcmService.SendBulkNotificationsAsync(
                         token,
                         "MedicineReminder",
                         $"Time to take {reminder.MedicineName} - {reminder.Dose}",
