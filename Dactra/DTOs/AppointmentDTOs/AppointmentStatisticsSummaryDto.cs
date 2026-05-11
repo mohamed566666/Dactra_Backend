@@ -5,6 +5,7 @@
         public int Completed { get; set; }
         public int Upcoming { get; set; }
         public int Cancelled { get; set; }
+        public int Failed { get; set; }
         public int Unpaid { get; set; }
         public int Total { get; set; }
     }

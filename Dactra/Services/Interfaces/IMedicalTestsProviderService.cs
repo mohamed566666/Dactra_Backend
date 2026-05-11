@@ -2,16 +2,16 @@
 {
     public interface IMedicalTestsProviderService
     {
-        public Task CompleteRegistrationAsync(MedicalTestProviderDTO medicalTestProviderDTO);
-        public Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetAllProfilesAsync();
-        public Task DeleteMedicalTestProviderProfileAsync(int medicalTestProviderProfileId);
-        public Task<MedicalTestsProviderResponseDTO> GetProfileByUserIdAsync(string userId);
-        public Task<MedicalTestsProviderResponseDTO> GetProfileByIdAsync(int id);
-        public Task UpdateProfileAsync(string id, MedicalTestsProviderUpdateDTO dto);
-        public Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetApprovedProfilesAsync(MedicalTestProviderType? type = null);
-        public Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetProfilesByTypeAsync(MedicalTestProviderType type);
-        public Task ApproveProfileAsync(int id);
-        public Task RejectProfileAsync(int id);
-        Task<PagedResultDto<MedicalTestProviderSearchResultDTO>> SearchProvidersAsync(MedicalTestProviderSearchFilterDTO filter);
+        Task ApproveProfileAsync(int id);
+        Task CompleteRegistrationAsync(MedicalTestProviderDTO medicalTestProviderDTO);
+        Task DeleteMedicalTestProviderProfileAsync(int medicalTestProviderProfileId);
+        Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetAllProfilesAsync(int patientId = 0);
+        Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetApprovedProfilesAsync(MedicalTestProviderType? type = null, int patientId = 0);
+        Task<MedicalTestsProviderResponseDTO> GetProfileByIdAsync(int id, int patientId = 0);
+        Task<MedicalTestsProviderResponseDTO> GetProfileByUserIdAsync(string userId);
+        Task<IEnumerable<MedicalTestsProviderResponseDTO>> GetProfilesByTypeAsync(MedicalTestProviderType type, int patientId = 0);
+        Task RejectProfileAsync(int id);
+        Task UpdateProfileAsync(string id, MedicalTestsProviderUpdateDTO dto);
+        Task<PagedResultDto<MedicalTestProviderSearchResultDTO>> SearchProvidersAsync(MedicalTestProviderSearchFilterDTO filter, int patientId = 0);
     }
 }

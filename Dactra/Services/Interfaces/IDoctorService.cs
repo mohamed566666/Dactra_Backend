@@ -2,15 +2,15 @@
 {
     public interface IDoctorService
     {
-        public Task CompleteRegistrationAsync(DoctorCompleteDTO doctorComplateDTO);
-        public Task<IEnumerable<DoctorProfileResponseDTO>> GetAllProfileAsync();
-        public Task<DoctorsResponseDTO> GetProfileByIdAsync(int doctorProfileId);
-        public Task<DoctorProfileResponseDTO> GetProfileByUserEmail(string email);
-        public Task<DoctorProfileResponseDTO> GetProfileByUserIdAsync(string userId);
-        public Task DeleteDoctorProfileAsync(int doctorProfileId);
-        public Task UpdateProfileAsync(string userId, DoctorUpdateDTO updatedProfile);
-        public Task<PaginatedDoctorsResponseDTO> GetFilteredDoctorsAsync(DoctorFilterDTO filter);
-        public Task<IEnumerable<DoctorProfileResponseDTO>> GetApprovedDoctorsAsync();
-        public Task<IEnumerable<DoctorProfileResponseDTO>> GetdisApprovedDoctorsAsync();
+        Task CompleteRegistrationAsync(DoctorCompleteDTO doctorComplateDTO);
+        Task DeleteDoctorProfileAsync(int doctorProfileId);
+        Task<IEnumerable<DoctorProfileResponseDTO>> GetAllProfileAsync(int patientId = 0);
+        Task<DoctorsResponseDTO> GetProfileByIdAsync(int doctorProfileId, int patientId = 0);
+        Task<DoctorProfileResponseDTO> GetProfileByUserEmail(string email, int patientId = 0);
+        Task<DoctorProfileResponseDTO> GetProfileByUserIdAsync(string userId);
+        Task UpdateProfileAsync(string userId, DoctorUpdateDTO updatedProfile);
+        Task<PaginatedDoctorsResponseDTO> GetFilteredDoctorsAsync(DoctorFilterDTO filter, int patientId = 0);
+        Task<IEnumerable<DoctorProfileResponseDTO>> GetApprovedDoctorsAsync(int patientId = 0);
+        Task<IEnumerable<DoctorProfileResponseDTO>> GetdisApprovedDoctorsAsync(int patientId = 0);
     }
 }

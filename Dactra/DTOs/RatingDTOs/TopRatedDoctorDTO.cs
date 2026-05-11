@@ -8,5 +8,6 @@
         public string? ImageUrl { get; set; } = null;
         public decimal Rate { get; set; }
         public int NumberOfRates { get; set; }
+        public bool IsFavorite { get; set; } = false;
     }
 }

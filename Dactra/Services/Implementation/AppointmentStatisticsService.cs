@@ -1,8 +1,11 @@
 ﻿using Dactra.DTOs.AppointmentDTOs;
+using Dactra.Enums;
+using Dactra.Hubs;
+using Dactra.Repositories.Interfaces;
+using Dactra.Services.Interfaces;
 using Hangfire;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using System.Transactions;
 
 namespace Dactra.Services.Implementation
 {
@@ -30,6 +33,7 @@ namespace Dactra.Services.Implementation
             _logger = logger;
             _context = context;
         }
+
 
         public async Task<AppointmentStatisticsSummaryDto> GetPatientStatisticsOnlyAsync(int patientId)
         {
@@ -186,6 +190,16 @@ namespace Dactra.Services.Implementation
                     };
                 }
 
+                if (appointment.Status == AppointmentStatus.Failed)
+                {
+                    return new CancelAppointmentResponseDto
+                    {
+                        Success = false,
+                        Message = "Cannot cancel a failed appointment",
+                        AppointmentId = appointmentId
+                    };
+                }
+
                 if (userRole == "Patient")
                 {
                     var slotTime = appointment.Slot.SlotDateTimeUtc;
@@ -241,9 +255,7 @@ namespace Dactra.Services.Implementation
                 _context.DoctorAvailabilitySlots.Update(slot);
 
                 if (!string.IsNullOrEmpty(appointment.ReminderJobId))
-                {
                     BackgroundJob.Delete(appointment.ReminderJobId);
-                }
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -302,11 +314,11 @@ namespace Dactra.Services.Implementation
             }
         }
 
+
         public async Task<DoctorWeeklyAppointmentsResponseDto> GetDoctorWeeklyAppointmentsByIdAsync(int doctorId)
         {
             var today = DateTime.UtcNow.Date;
             var startDate = today.AddDays(-6);
-
             var dailyCounts = await _repository.GetDoctorWeeklyAppointmentsAsync(doctorId);
 
             return new DoctorWeeklyAppointmentsResponseDto
@@ -324,17 +336,91 @@ namespace Dactra.Services.Implementation
             return await GetDoctorWeeklyAppointmentsByIdAsync(doctorId);
         }
 
-        #region Private Mapping Methods
 
-        private PatientAppointmentListItemDto MapToPatientListItemDto(PatientAppointment appointment)
+        public async Task MarkExpiredOnlineAppointmentsAsFailedAsync()
         {
+            var expiredList = await _repository.GetExpiredOnlineAppointmentsAsync();
+
+            if (!expiredList.Any())
+                return;
+
+            foreach (var appointment in expiredList)
+            {
+                try
+                {
+                    appointment.Status = AppointmentStatus.Failed;
+
+                    if (appointment.Payment?.Status == paymentStatus.Pending)
+                    {
+                        try
+                        {
+                            await _paymentService.RefundAppointmentAsync(appointment.SlotId);
+                            _logger.LogInformation(
+                                "Refund processed for failed online appointment {Id}", appointment.Id);
+                        }
+                        catch (Exception refEx)
+                        {
+                            _logger.LogError(refEx,
+                                "Refund failed for appointment {Id}", appointment.Id);
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(appointment.ReminderJobId))
+                        BackgroundJob.Delete(appointment.ReminderJobId);
+
+                    await _hubContext.Clients
+                        .Group($"Doctor_{appointment.Slot.DoctorId}")
+                        .SendAsync("AppointmentFailed", new
+                        {
+                            AppointmentId = appointment.Id,
+                            SlotId = appointment.SlotId,
+                            PatientId = appointment.PatientId,
+                            SlotDateTime = appointment.Slot.SlotDateTimeUtc,
+                            Reason = "Online session expired without completion",
+                            FailedAt = DateTime.UtcNow
+                        });
+
+                    await _hubContext.Clients
+                        .Group($"Patient_{appointment.PatientId}")
+                        .SendAsync("AppointmentFailed", new
+                        {
+                            AppointmentId = appointment.Id,
+                            SlotId = appointment.SlotId,
+                            DoctorId = appointment.Slot.DoctorId,
+                            SlotDateTime = appointment.Slot.SlotDateTimeUtc,
+                            Reason = "Online session expired without completion",
+                            FailedAt = DateTime.UtcNow
+                        });
+
+                    _logger.LogInformation(
+                        "Appointment {Id} marked as Failed (online session expired)", appointment.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error marking appointment {Id} as Failed", appointment.Id);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private static string ResolveStatus(PatientAppointment appointment)
+        {
+            if (appointment.Status == AppointmentStatus.Failed)
+                return "Failed";
+
             var isUpcoming = appointment.Status == AppointmentStatus.Confirmed &&
-                            appointment.Slot.SlotDateTimeUtc > DateTime.UtcNow;
+                             appointment.Slot.SlotDateTimeUtc > DateTime.UtcNow;
 
             var statusString = appointment.Status.ToString();
             if (appointment.Status == AppointmentStatus.Confirmed && isUpcoming)
                 statusString = "Upcoming";
 
+            return statusString;
+        }
+
+        private PatientAppointmentListItemDto MapToPatientListItemDto(PatientAppointment appointment)
+        {
             return new PatientAppointmentListItemDto
             {
                 AppointmentId = appointment.Id,
@@ -344,7 +430,7 @@ namespace Dactra.Services.Implementation
                 DoctorImageUrl = appointment.Slot.Doctor.User?.ImageUrl,
                 SlotDateTime = appointment.Slot.SlotDateTimeUtc,
                 AppointmentType = appointment.Slot.SlotType.ToString(),
-                Status = statusString,
+                Status = ResolveStatus(appointment),
                 BookedAt = appointment.BookedAt,
                 CancelledReason = appointment.CancelledReason
             };
@@ -352,13 +438,6 @@ namespace Dactra.Services.Implementation
 
         private DoctorAppointmentListItemDto MapToDoctorListItemDto(PatientAppointment appointment)
         {
-            var isUpcoming = appointment.Status == AppointmentStatus.Confirmed &&
-                            appointment.Slot.SlotDateTimeUtc > DateTime.UtcNow;
-
-            var statusString = appointment.Status.ToString();
-            if (appointment.Status == AppointmentStatus.Confirmed && isUpcoming)
-                statusString = "Upcoming";
-
             return new DoctorAppointmentListItemDto
             {
                 AppointmentId = appointment.Id,
@@ -367,12 +446,10 @@ namespace Dactra.Services.Implementation
                 PatientImageUrl = appointment.Patient.User?.ImageUrl,
                 SlotDateTime = appointment.Slot.SlotDateTimeUtc,
                 AppointmentType = appointment.Slot.SlotType.ToString(),
-                Status = statusString,
+                Status = ResolveStatus(appointment),
                 BookedAt = appointment.BookedAt,
                 CancelledReason = appointment.CancelledReason
             };
         }
-
-        #endregion
     }
 }

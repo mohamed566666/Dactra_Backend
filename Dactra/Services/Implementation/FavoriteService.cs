@@ -11,6 +11,16 @@ namespace Dactra.Services.Implementation
             _favoriteRepository = favoriteRepository;
         }
 
+        public async Task<List<int>> GetFavoriteServiceProviderIdsAsync(int patientId, List<int> serviceProviderIds)
+        {
+            return await _favoriteRepository.GetFavoriteServiceProviderIdsAsync(patientId, serviceProviderIds);
+        }
+
+        public async Task<bool> IsFavoriteAsync(int patientId, int serviceProviderId)
+        {
+            return await _favoriteRepository.IsFavoriteAsync(patientId, serviceProviderId);
+        }
+
         public async Task ToggleFavoriteAsync(int patientId, int serviceProviderId)
         {
             await _favoriteRepository.ToggleFavoriteAsync(patientId, serviceProviderId);
@@ -29,12 +39,14 @@ namespace Dactra.Services.Implementation
                     Items = items.Select(d => new DoctorsFilterResponseDTO
                     {
                         Id = d.Id,
-                        Name = d.Name,
+                        Name = d.FirstName + ' ' + d.LastName,
                         Specialization = d.specialization?.Name ?? string.Empty,
                         AverageRating = d.Avg_Rating,
                         profileImageUrl = d.User?.ImageUrl,
                         OfflinePrice = d.ConsultationPrice,
-                        OnlinePrice = d.OnlineConsultationPrice
+                        OnlinePrice = d.OnlineConsultationPrice,
+                        IsFavorite = true,
+                        Address = d.Address
                     }).ToList(),
                     TotalCount = totalCount,
                     Page = query.Page,

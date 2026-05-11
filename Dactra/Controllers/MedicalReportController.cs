@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-
-namespace Dactra.Controllers
+﻿namespace Dactra.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -23,19 +20,16 @@ namespace Dactra.Controllers
             if (userId == null)
                 return Unauthorized("User Not Logged In");
 
+            if (dto.Files == null || dto.Files.Count == 0)
+                return BadRequest("At least one file is required");
+
             try
             {
                 var result = await _medicalReportService.UploadReportAsync(userId, dto);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
         }
 
         [Authorize]
@@ -51,14 +45,8 @@ namespace Dactra.Controllers
                 await _medicalReportService.DeleteReportAsync(userId, reportId);
                 return Ok("Medical Report Deleted Successfully");
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Forbid(ex.Message);
-            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (UnauthorizedAccessException ex) { return Forbid(ex.Message); }
         }
 
         [Authorize]
@@ -74,10 +62,7 @@ namespace Dactra.Controllers
                 var reports = await _medicalReportService.GetMyReportsAsync(userId);
                 return Ok(reports);
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
         }
 
         [Authorize(Roles = "Doctor,Admin")]

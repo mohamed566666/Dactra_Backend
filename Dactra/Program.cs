@@ -233,6 +233,8 @@ builder.Services.AddHostedService<MedicineReminderWorker>();
 
 builder.Services.AddHttpClient<PaymentService>();
 
+builder.Services.AddHostedService<ExpiredOnlineAppointmentWorker>();
+
 #endregion
 
 #region Identity & Authentication

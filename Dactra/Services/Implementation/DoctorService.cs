@@ -1,4 +1,9 @@
-﻿namespace Dactra.Services.Implementation
+﻿using Dactra.DTOs.ProfilesDTOs.DoctorDTOs;
+using Dactra.DTOs.RatingDTOs;
+using Dactra.Repositories.Interfaces;
+using Dactra.Services.Interfaces;
+
+namespace Dactra.Services.Implementation
 {
     public class DoctorService : IDoctorService
     {
@@ -6,18 +11,26 @@
         private readonly IDoctorQualificationService _doctorQualificationService;
         private readonly IUserRepository _userRepository;
         private readonly IRatingService _ratingService;
+        private readonly IFavoriteService _favoriteService;
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public DoctorService(IDoctorProfileRepository doctorProfileRepository , IRatingService ratingService ,  IUserRepository userRepository, ApplicationDbContext context, IDoctorQualificationService doctorQualificationService , IMapper mapper)
+        public DoctorService(
+            IDoctorProfileRepository doctorProfileRepository,
+            IRatingService ratingService,
+            IUserRepository userRepository,
+            ApplicationDbContext context,
+            IDoctorQualificationService doctorQualificationService,
+            IMapper mapper,
+            IFavoriteService favoriteService)
         {
             _doctorProfileRepository = doctorProfileRepository;
             _userRepository = userRepository;
             _context = context;
             _mapper = mapper;
-            _doctorProfileRepository = doctorProfileRepository;
             _doctorQualificationService = doctorQualificationService;
             _ratingService = ratingService;
+            _favoriteService = favoriteService;
         }
 
         public async Task CompleteRegistrationAsync(DoctorCompleteDTO doctorComplateDTO)
@@ -64,13 +77,25 @@
             await _doctorProfileRepository.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<DoctorProfileResponseDTO>> GetAllProfileAsync()
+        public async Task<IEnumerable<DoctorProfileResponseDTO>> GetAllProfileAsync(int patientId = 0)
         {
             var profiles = await _doctorProfileRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<DoctorProfileResponseDTO>>(profiles);
+            var dtos = _mapper.Map<IEnumerable<DoctorProfileResponseDTO>>(profiles).ToList();
+
+            if (patientId > 0 && dtos.Any())
+            {
+                var doctorIds = dtos.Select(d => d.Id).ToList();
+                var favoriteIds = await _favoriteService.GetFavoriteServiceProviderIdsAsync(patientId, doctorIds);
+                foreach (var dto in dtos)
+                {
+                    dto.IsFavorite = favoriteIds.Contains(dto.Id);
+                }
+            }
+
+            return dtos;
         }
 
-        public async Task<DoctorsResponseDTO> GetProfileByIdAsync(int doctorProfileId)
+        public async Task<DoctorsResponseDTO> GetProfileByIdAsync(int doctorProfileId, int patientId = 0)
         {
             var profile = await _doctorProfileRepository.GetByIdAsync(doctorProfileId);
             if (profile == null)
@@ -78,7 +103,7 @@
 
             var doctorDTO = _mapper.Map<DoctorsResponseDTO>(profile);
             var qualificationResponses = await _doctorQualificationService.GetAllAsync(profile.Id);
-           doctorDTO.profileImageUrl = profile.User.ImageUrl;
+            doctorDTO.profileImageUrl = profile.User.ImageUrl;
             doctorDTO.Qualifications = qualificationResponses
                 .Select(q => new DoctorQualificationDTO
                 {
@@ -86,13 +111,17 @@
                     Description = q.Description
                 }).ToList();
 
-            doctorDTO.ratings =
-                await _ratingService.GetRatingsforProviderAsync(profile.Id);
+            doctorDTO.ratings = await _ratingService.GetRatingsforProviderAsync(profile.Id);
+
+            if (patientId > 0)
+            {
+                doctorDTO.IsFavorite = await _favoriteService.IsFavoriteAsync(patientId, profile.Id);
+            }
 
             return doctorDTO;
         }
 
-        public async Task<DoctorProfileResponseDTO> GetProfileByUserEmail(string email)
+        public async Task<DoctorProfileResponseDTO> GetProfileByUserEmail(string email, int patientId = 0)
         {
             var user = await _userRepository.GetUserByEmailAsync(email);
             if (user == null)
@@ -104,7 +133,15 @@
             {
                 throw new KeyNotFoundException("Doctor Profile Not Found");
             }
-            return _mapper.Map<DoctorProfileResponseDTO>(profile);
+
+            var dto = _mapper.Map<DoctorProfileResponseDTO>(profile);
+
+            if (patientId > 0)
+            {
+                dto.IsFavorite = await _favoriteService.IsFavoriteAsync(patientId, profile.Id);
+            }
+
+            return dto;
         }
 
         public async Task<DoctorProfileResponseDTO> GetProfileByUserIdAsync(string userId)
@@ -114,7 +151,10 @@
             {
                 throw new KeyNotFoundException("Profile Not Found");
             }
-            return _mapper.Map<DoctorProfileResponseDTO>(profile);
+
+            var dto = _mapper.Map<DoctorProfileResponseDTO>(profile);
+
+            return dto;
         }
 
         public async Task UpdateProfileAsync(string userId, DoctorUpdateDTO updatedProfile)
@@ -133,26 +173,66 @@
             await _doctorProfileRepository.SaveChangesAsync();
         }
 
-        public async Task<PaginatedDoctorsResponseDTO> GetFilteredDoctorsAsync(DoctorFilterDTO filter)
+        public async Task<PaginatedDoctorsResponseDTO> GetFilteredDoctorsAsync(DoctorFilterDTO filter, int patientId = 0)
         {
             if (filter.PageNumber < 1)
                 filter.PageNumber = 1;
             if (filter.PageSize < 1 || filter.PageSize > 100)
                 filter.PageSize = 9;
+
             var (doctors, totalCount) = await _doctorProfileRepository.GetFilteredDoctorsAsync(filter);
-            return _mapper.Map<PaginatedDoctorsResponseDTO>((doctors, totalCount, filter));
+            var result = _mapper.Map<PaginatedDoctorsResponseDTO>((doctors, totalCount, filter));
+
+            if (patientId > 0 && result.Doctors.Any())
+            {
+                var doctorIds = result.Doctors.Select(d => d.Id).ToList();
+                var favoriteIds = await _favoriteService.GetFavoriteServiceProviderIdsAsync(patientId, doctorIds);
+
+                foreach (var doc in result.Doctors)
+                {
+                    doc.IsFavorite = favoriteIds.Contains(doc.Id);
+                }
+            }
+
+            return result;
         }
 
-        public async Task<IEnumerable<DoctorProfileResponseDTO>> GetApprovedDoctorsAsync()
+        public async Task<IEnumerable<DoctorProfileResponseDTO>> GetApprovedDoctorsAsync(int patientId = 0)
         {
             var doctors = await _doctorProfileRepository.GetApprovedDoctorsAsync();
-            return _mapper.Map<IEnumerable<DoctorProfileResponseDTO>>(doctors);
+            var dtos = _mapper.Map<IEnumerable<DoctorProfileResponseDTO>>(doctors).ToList();
+
+            if (patientId > 0 && dtos.Any())
+            {
+                var doctorIds = dtos.Select(d => d.Id).ToList();
+                var favoriteIds = await _favoriteService.GetFavoriteServiceProviderIdsAsync(patientId, doctorIds);
+
+                foreach (var dto in dtos)
+                {
+                    dto.IsFavorite = favoriteIds.Contains(dto.Id);
+                }
+            }
+
+            return dtos;
         }
 
-        public async Task<IEnumerable<DoctorProfileResponseDTO>> GetdisApprovedDoctorsAsync()
+        public async Task<IEnumerable<DoctorProfileResponseDTO>> GetdisApprovedDoctorsAsync(int patientId = 0)
         {
             var doctors = await _doctorProfileRepository.GetdisApprovedDoctorsAsync();
-            return _mapper.Map<IEnumerable<DoctorProfileResponseDTO>>(doctors);
+            var dtos = _mapper.Map<IEnumerable<DoctorProfileResponseDTO>>(doctors).ToList();
+
+            if (patientId > 0 && dtos.Any())
+            {
+                var doctorIds = dtos.Select(d => d.Id).ToList();
+                var favoriteIds = await _favoriteService.GetFavoriteServiceProviderIdsAsync(patientId, doctorIds);
+
+                foreach (var dto in dtos)
+                {
+                    dto.IsFavorite = favoriteIds.Contains(dto.Id);
+                }
+            }
+
+            return dtos;
         }
     }
 }

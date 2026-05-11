@@ -4,8 +4,8 @@
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string FileUrl { get; set; } = string.Empty;
-        public string FileType { get; set; } = string.Empty;
+        public string? Summary { get; set; }
         public DateTime UploadedAt { get; set; }
+        public List<MedicalReportFileResponseDTO> Files { get; set; } = new();
     }
 }

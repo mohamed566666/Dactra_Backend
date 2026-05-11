@@ -98,25 +98,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "1b707d7d-af45-4328-a09d-5f64d243dac1",
+                            Id = "25f2c7fc-399f-4bd8-81b2-37ed0e702b6f",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "fb660785-5f1f-4dc5-b0bf-c87d6e48dba2",
+                            Id = "d7ac378e-7a31-4715-9877-5dc88b4a798e",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "1c12b808-bc2d-4124-a015-bed5c9e24e63",
+                            Id = "ed6e0289-c1ab-4101-a89b-0214806ef215",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "4a96926d-5202-4bd3-8775-9ff5f7ca0d79",
+                            Id = "80381f54-b8f0-4d40-95a0-d9aa13518889",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -592,15 +592,6 @@ namespace Dactra.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("FileType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("FileUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -609,8 +600,7 @@ namespace Dactra.Migrations
                     b.Property<int>("PatientProfileId")
                         .HasColumnType("int");
 
-                    b.Property<string>("PublicId")
-                        .IsRequired()
+                    b.Property<string>("Summary")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UploadedAt")
@@ -621,6 +611,37 @@ namespace Dactra.Migrations
                     b.HasIndex("PatientProfileId");
 
                     b.ToTable("MedicalReports");
+                });
+
+            modelBuilder.Entity("Dactra.Models.MedicalReportFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("FileUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MedicalReportId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PublicId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicalReportId");
+
+                    b.ToTable("MedicalReportFile");
                 });
 
             modelBuilder.Entity("Dactra.Models.MedicineDoseTime", b =>
@@ -2099,6 +2120,17 @@ namespace Dactra.Migrations
                     b.Navigation("PatientProfile");
                 });
 
+            modelBuilder.Entity("Dactra.Models.MedicalReportFile", b =>
+                {
+                    b.HasOne("Dactra.Models.MedicalReport", "MedicalReport")
+                        .WithMany("Files")
+                        .HasForeignKey("MedicalReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MedicalReport");
+                });
+
             modelBuilder.Entity("Dactra.Models.MedicineDoseTime", b =>
                 {
                     b.HasOne("Dactra.Models.PrescriptionMedicine", "PrescriptionMedicine")
@@ -2643,6 +2675,11 @@ namespace Dactra.Migrations
                     b.Navigation("Post");
 
                     b.Navigation("Questions");
+                });
+
+            modelBuilder.Entity("Dactra.Models.MedicalReport", b =>
+                {
+                    b.Navigation("Files");
                 });
 
             modelBuilder.Entity("Dactra.Models.PatientAppointment", b =>
