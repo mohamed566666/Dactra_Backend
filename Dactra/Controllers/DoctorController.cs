@@ -228,7 +228,19 @@ namespace Dactra.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "An error occurred while retrieving doctors", error = ex.Message });
+                var result = await _doctorService.GetFilteredDoctorsAsync(filter, 0);
+                if (result.TotalCount == 0)
+                {
+                    return Ok(new PaginatedDoctorsResponseDTO
+                    {
+                        Doctors = new List<DoctorsFilterResponseDTO>(),
+                        CurrentPage = 1,
+                        TotalPages = 0,
+                        PageSize = filter.PageSize,
+                        TotalCount = 0
+                    });
+                }
+                return Ok(result);
             }
         }
 
