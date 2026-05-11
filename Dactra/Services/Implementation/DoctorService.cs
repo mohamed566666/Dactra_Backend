@@ -14,6 +14,7 @@ namespace Dactra.Services.Implementation
         private readonly IFavoriteService _favoriteService;
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IPatientProfileRepository _patientProfileRepository;
 
         public DoctorService(
             IDoctorProfileRepository doctorProfileRepository,
@@ -22,7 +23,8 @@ namespace Dactra.Services.Implementation
             ApplicationDbContext context,
             IDoctorQualificationService doctorQualificationService,
             IMapper mapper,
-            IFavoriteService favoriteService)
+            IFavoriteService favoriteService,
+            IPatientProfileRepository patientProfileRepository)
         {
             _doctorProfileRepository = doctorProfileRepository;
             _userRepository = userRepository;
@@ -31,6 +33,7 @@ namespace Dactra.Services.Implementation
             _doctorQualificationService = doctorQualificationService;
             _ratingService = ratingService;
             _favoriteService = favoriteService;
+            _patientProfileRepository = patientProfileRepository;
         }
 
         public async Task CompleteRegistrationAsync(DoctorCompleteDTO doctorComplateDTO)
@@ -183,7 +186,7 @@ namespace Dactra.Services.Implementation
             var (doctors, totalCount) = await _doctorProfileRepository.GetFilteredDoctorsAsync(filter);
             var result = _mapper.Map<PaginatedDoctorsResponseDTO>((doctors, totalCount, filter));
 
-            if (patientId > 0 && result.Doctors.Any())
+            if (patientId  > 0 && result.Doctors.Any())
             {
                 var doctorIds = result.Doctors.Select(d => d.Id).ToList();
                 var favoriteIds = await _favoriteService.GetFavoriteServiceProviderIdsAsync(patientId, doctorIds);
