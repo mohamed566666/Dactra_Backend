@@ -68,5 +68,20 @@
                     .ThenInclude(d => d.User)
                 .FirstOrDefaultAsync(a => a.Id == appointmentId);
         }
+
+        public async Task<List<Prescription>> GetByUserIdAsync(string userId)
+        {
+            return await _context.Prescriptions.Include(p => p.Medicines)
+                    .ThenInclude(m => m.DoseTimes)
+                    .Include(p => p.Appointment)
+                    .ThenInclude(a => a.Patient)
+                    .ThenInclude(pa => pa.User)
+                    .Include(p => p.Appointment)
+                    .ThenInclude(a => a.Slot)
+                    .ThenInclude(s => s.Doctor)
+                    .ThenInclude(d => d.User)
+                .Where(p => p.Appointment.Patient.User.Id == userId)
+                .ToListAsync();
+        }
     }
 }
