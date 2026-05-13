@@ -43,7 +43,7 @@ namespace Dactra.Repositories.Implementation
         public async Task<(List<Post> Posts, int TotalCount)> GetAllAsync(int page, int pageSize, string? currentUserId = null)
         {
             var query = _context.Posts
-                .Where(p => !p.isDeleted)
+                .Where(p => !p.isDeleted  && p.Doctor.approvalStatus == ApprovalStatus.approved)
                 .Include(p => p.Doctor)
                     .ThenInclude(d => d.User)
                 .Include(p => p.Doctor)
