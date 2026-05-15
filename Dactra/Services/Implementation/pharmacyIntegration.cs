@@ -30,7 +30,7 @@ namespace Dactra.Services.Implementation
                 .Where(pm => pm.PrescriptionId == prescriptionId)
                 .Select(pm => new PharmacyItemDto
                 {
-                    medicineName = "Panadol" + " Tablets " + "250mg",
+                    medicineName = pm.Name,
                     quantity = 1
                 })
                 .ToListAsync();
