@@ -17,5 +17,7 @@
         public DateTime RequestedAtUtc { get; set; }
         public DateTime? RespondedAtUtc { get; set; }
         public List<SponsorshipResponseDTO> CounterOffers { get; set; } = new();
+        public string? ProviderImageUrl { get; set; }
+        public string? DoctorImageUrl { get; set; }
     }
 }

@@ -77,7 +77,10 @@
             var query = _context.PatientDoctorCares
                 .Where(x => x.DoctorId == doctorId
                          && x.IsActive
-                         && x.ExpiresAtUtc > DateTime.UtcNow);
+                         && x.ExpiresAtUtc > DateTime.UtcNow)
+                .Include(p => p.Patient)
+                    .ThenInclude(p => p.User)
+                    .AsSplitQuery();
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {

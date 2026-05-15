@@ -18,9 +18,14 @@ namespace Dactra.Repositories.Implementation
                 .Where(x => x.Id == id)
                 .Include(x => x.Doctor)
                     .ThenInclude(d => d.specialization)
+                .Include(x => x.Doctor)
+                    .ThenInclude(d => d.User)
                 .Include(x => x.MedicalTestProvider)
+                    .ThenInclude(p => p.User)
                 .Include(x => x.CounterOffers)
                 .Include(x => x.ParentOffer)
+                .Include(x => x.MedicalTestProvider)
+                    .ThenInclude(p => p.User)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
         }
@@ -34,6 +39,10 @@ namespace Dactra.Repositories.Implementation
                     .ThenInclude(d => d.User)
                 .Include(x => x.Doctor)
                     .ThenInclude(d => d.specialization)
+                .Include(x => x.MedicalTestProvider)
+                    .ThenInclude(p => p.User)
+                .Include(x => x.Doctor)
+                    .ThenInclude(d => d.User)
                 .Include(x => x.ParentOffer)
                 .Include(x => x.CounterOffers)
                 .AsSplitQuery()
@@ -104,6 +113,10 @@ namespace Dactra.Repositories.Implementation
                     .ThenInclude(d => d.specialization)
                 .Include(x => x.CounterOffers)
                 .Include(x => x.ParentOffer)
+                .Include(x => x.MedicalTestProvider)
+                    .ThenInclude(p => p.User)
+                .Include(x => x.Doctor)
+                    .ThenInclude(d => d.User)
                 .OrderByDescending(x => x.RequestedAtUtc)
                 .Skip(pagination.Skip)
                 .Take(pagination.PageSize)
@@ -136,6 +149,10 @@ namespace Dactra.Repositories.Implementation
                     .ThenInclude(d => d.specialization)
                 .Include(x => x.ParentOffer)
                 .Include(x => x.CounterOffers)
+                .Include(x => x.MedicalTestProvider)
+                    .ThenInclude(p => p.User)
+                .Include(x => x.Doctor)
+                    .ThenInclude(d => d.User)
                 .OrderByDescending(x => x.RequestedAtUtc)
                 .Skip(pagination.Skip)
                 .Take(pagination.PageSize)
@@ -186,6 +203,10 @@ namespace Dactra.Repositories.Implementation
                     .ThenInclude(d => d.specialization)
                 .Include(x => x.ParentOffer)
                 .Include(x => x.CounterOffers)
+                .Include(x => x.MedicalTestProvider)
+                    .ThenInclude(p => p.User)
+                .Include(x => x.Doctor)
+                    .ThenInclude(d => d.User)
                 .OrderByDescending(x => x.RequestedAtUtc)
                 .Skip(pagination.Skip)
                 .Take(pagination.PageSize)
@@ -223,6 +244,9 @@ namespace Dactra.Repositories.Implementation
                 .Where(x => x.DoctorId == doctorId
                          && x.Status == SponsorshipStatus.Active)
                 .Include(x => x.MedicalTestProvider)
+                    .ThenInclude(p => p.User)
+                .Include(x => x.Doctor)
+                    .ThenInclude(d => d.User)
                 .ToListAsync();
         }
 
@@ -233,9 +257,13 @@ namespace Dactra.Repositories.Implementation
                          && x.Status == SponsorshipStatus.Active)
                 .Include(x => x.Doctor)
                     .ThenInclude(d => d.specialization)
+                .Include(x => x.Doctor)
+                    .ThenInclude(d => d.User)
                 .Include(x => x.MedicalTestProvider)
                     .ThenInclude(x => x.Offerings)
                         .ThenInclude(x => x.TestService)
+                .Include(x => x.MedicalTestProvider)
+                    .ThenInclude(p => p.User)
                 .AsSplitQuery()
                 .AsNoTracking()
                 .ToListAsync();
@@ -288,8 +316,11 @@ namespace Dactra.Repositories.Implementation
                                  && !x.IsCounterOffer
                                  && x.Status == SponsorshipStatus.Pending)
                         .Include(x => x.MedicalTestProvider)
+                            .ThenInclude(p => p.User)
                          .Include(x => x.Doctor)
-                            .ThenInclude(d => d.specialization);
+                            .ThenInclude(d => d.specialization)
+                        .Include(x => x.Doctor)
+                            .ThenInclude(d => d.User);
                     break;
 
                 case OfferFilterStatus.Counter:
@@ -301,9 +332,12 @@ namespace Dactra.Repositories.Implementation
                             .ThenInclude(d => d.specialization)
                         .Include(x => x.CounterOffers)
                             .ThenInclude(c => c.MedicalTestProvider)
+                                .ThenInclude(p => p.User)
                          .Include(x => x.CounterOffers)
                             .ThenInclude(c => c.Doctor)
-                                .ThenInclude(d => d.specialization);
+                                .ThenInclude(d => d.specialization)
+                        .Include(x => x.Doctor)
+                            .ThenInclude(d => d.User);
                     break;
 
                 case OfferFilterStatus.Rejected:
@@ -312,8 +346,11 @@ namespace Dactra.Repositories.Implementation
                                  && x.IsCounterOffer
                                  && x.Status == SponsorshipStatus.Rejected)
                         .Include(x => x.MedicalTestProvider)
+                            .ThenInclude(p => p.User)
                          .Include(x => x.Doctor)
-                            .ThenInclude(d => d.specialization);
+                            .ThenInclude(d => d.specialization)
+                        .Include(x => x.Doctor)
+                            .ThenInclude(d => d.User);
                     break;
 
                 default:
@@ -326,6 +363,10 @@ namespace Dactra.Repositories.Implementation
                 .Include(x => x.MedicalTestProvider)
                 .Include(x => x.CounterOffers)
                 .Include(x => x.ParentOffer)
+                .Include(x => x.MedicalTestProvider)
+                    .ThenInclude(p => p.User)
+                .Include(x => x.Doctor)
+                            .ThenInclude(d => d.User)
                 .OrderByDescending(x => x.RequestedAtUtc)
                 .Skip(pagination.Skip)
                 .Take(pagination.PageSize)
