@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dactra.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260515191250_CreateMedicinesTable")]
+    partial class CreateMedicinesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,25 +101,25 @@ namespace Dactra.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "5897330c-8b01-41b5-b42a-813039d8c802",
+                            Id = "b4c6512b-9bb4-408d-b0c8-be21b5acb8db",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "0ce123f1-9d1e-41e3-aa66-df1b159f7a21",
+                            Id = "e3b1f7ac-052f-477f-817d-fa5191d56458",
                             Name = "Doctor",
                             NormalizedName = "DOCTOR"
                         },
                         new
                         {
-                            Id = "c6b58f34-f2c7-41ec-a5cf-a4161c0d9838",
+                            Id = "32613dcf-5488-4f73-b984-2e0126ed528c",
                             Name = "Patient",
                             NormalizedName = "PATIENT"
                         },
                         new
                         {
-                            Id = "a5686309-985d-4e1f-bb0e-c45bab42eb37",
+                            Id = "72cbe21b-ed9d-4d1f-b234-7acf8e46519a",
                             Name = "MedicalTestProvider",
                             NormalizedName = "MEDICALTESTPROVIDER"
                         });
@@ -642,23 +645,6 @@ namespace Dactra.Migrations
                     b.HasIndex("MedicalReportId");
 
                     b.ToTable("MedicalReportFile");
-                });
-
-            modelBuilder.Entity("Dactra.Models.Medicine", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Medicines");
                 });
 
             modelBuilder.Entity("Dactra.Models.MedicineDoseTime", b =>

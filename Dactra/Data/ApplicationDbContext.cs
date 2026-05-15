@@ -56,6 +56,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<Prescription> Prescriptions { get; set; }
     public DbSet<PrescriptionMedicine> PrescriptionMedicines { get; set; }
     public DbSet<MedicineDoseTime> MedicineDoseTimes { get; set; }
+    public DbSet<Medicine> Medicines { get; set; }
     public DbSet<PatientFavoriteServiceProvider> PatientFavoriteServiceProviders { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
