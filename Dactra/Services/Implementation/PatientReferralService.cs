@@ -168,7 +168,8 @@ namespace Dactra.Services.Implementation
                 PatientId = x.PatientId,
                 PatientName = $"{x.Patient?.FirstName} {x.Patient?.LastName}".Trim(),
                 PhoneNumber = x.Patient?.User?.PhoneNumber ?? string.Empty,
-                Email = x.Patient?.User?.Email ?? string.Empty
+                Email = x.Patient?.User?.Email ?? string.Empty,
+                ProfilePictureUrl = x.Patient.User.ImageUrl,
             }).ToList();
             return new PagedResultDto<DoctorCarePatientItemDTO>
             {
@@ -236,7 +237,8 @@ namespace Dactra.Services.Implementation
                     Services = services,
                     TotalBeforeDiscount = totalBefore,
                     TotalAfterDiscount = totalAfter,
-                    TotalSaved = Math.Round(totalBefore - totalAfter, 2)
+                    TotalSaved = Math.Round(totalBefore - totalAfter, 2),
+                    PatientImageUrl = r.Patient.User.ImageUrl
                 };
             }).ToList();
 
@@ -294,7 +296,8 @@ namespace Dactra.Services.Implementation
                 Services = serviceItems,
                 TotalBeforeDiscount = totalBefore,
                 TotalAfterDiscount = totalAfter,
-                TotalSaved = Math.Round(totalBefore - totalAfter, 2)
+                TotalSaved = Math.Round(totalBefore - totalAfter, 2),
+                PatientImageUrl = r.Patient.User.ImageUrl
             };
         }
     }

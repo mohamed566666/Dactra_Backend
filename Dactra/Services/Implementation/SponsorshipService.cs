@@ -415,7 +415,9 @@ namespace Dactra.Services.Implementation
             RequestedAtUtc = x.RequestedAtUtc,
             RespondedAtUtc = x.RespondedAtUtc,
             CounterOffers = x.CounterOffers?.Select(c => MapToResponseWithFilterStatus(c, filterStatus)).ToList() ?? new(),
-            DoctorSpeciality = x.Doctor?.specialization?.Name ?? string.Empty
+            DoctorSpeciality = x.Doctor?.specialization?.Name ?? string.Empty,
+            ProviderImageUrl = x.MedicalTestProvider.User.ImageUrl,
+            DoctorImageUrl = x.Doctor.User.ImageUrl
         };
 
         private OfferFilterStatus GetStatusForFilterEndpoint(DoctorMedicalTestSponsor x, OfferFilterStatus filterStatus)
@@ -465,7 +467,9 @@ namespace Dactra.Services.Implementation
             RequestedAtUtc = x.RequestedAtUtc,
             RespondedAtUtc = x.RespondedAtUtc,
             CounterOffers = x.CounterOffers?.Select(MapToResponse).ToList() ?? new(),
-            DoctorSpeciality = x.Doctor?.specialization?.Name ?? string.Empty
+            DoctorSpeciality = x.Doctor?.specialization?.Name ?? string.Empty,
+            ProviderImageUrl = x.MedicalTestProvider.User.ImageUrl,
+            DoctorImageUrl = x.Doctor.User.ImageUrl
         };
 
         private ProviderOfferItemDTO MapToProviderOfferItem(DoctorMedicalTestSponsor x, OfferFilterStatus requestedStatus)

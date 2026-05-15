@@ -177,7 +177,8 @@ namespace Dactra.Repositories.Implementation
                         id = p.UserId,
                         fullName = p.FirstName + " " + p.LastName,
                         Email = p.User.Email,
-                        isDeleted = p.User.isDeleted
+                        isDeleted = p.User.isDeleted,
+                        profileId = p.Id
                     })
                     .AsNoTracking()
                     .ToListAsync();
@@ -223,7 +224,8 @@ namespace Dactra.Repositories.Implementation
                     id = x.Patient.UserId,
                     fullName = x.Patient.FirstName + " " + x.Patient.LastName,
                     Email = x.Patient.User.Email,
-                    isDeleted = x.Patient.User.isDeleted
+                    isDeleted = x.Patient.User.isDeleted,
+                    profileId = x.Patient.Id
                 })
                 .ToList();
             return paged;
@@ -294,7 +296,8 @@ namespace Dactra.Repositories.Implementation
                         ProfileId = d.Id,
                         Name = d.FirstName + " " + d.LastName,
                         Email = d.User.Email,
-                        approvalStatus = d.approvalStatus
+                        approvalStatus = d.approvalStatus,
+                        LicenceNo = d.LicenceNo
                     })
                     .AsNoTracking()
                     .ToListAsync();
@@ -338,7 +341,8 @@ namespace Dactra.Repositories.Implementation
                     ProfileId = x.Doctor.Id,
                     Name = x.Doctor.FirstName + " " + x.Doctor.LastName,
                     Email = x.Doctor.User.Email,
-                    approvalStatus = x.Doctor.approvalStatus
+                    approvalStatus = x.Doctor.approvalStatus,
+                    LicenceNo = x.Doctor.LicenceNo
                 })
                 .ToList();
 
@@ -376,7 +380,8 @@ namespace Dactra.Repositories.Implementation
                         Name = p.Name,
                         PhoneNumber = p.User.PhoneNumber,
                         approvalStatus = p.approvalStatus,
-                        Address = p.Address
+                        Address = p.Address,
+                        LicenceNo = p.LicenceNo
                     })
                     .AsNoTracking()
                     .ToListAsync();
@@ -414,7 +419,8 @@ namespace Dactra.Repositories.Implementation
                     Name = x.Provider.Name,
                     PhoneNumber = x.Provider.User.PhoneNumber,
                     approvalStatus = x.Provider.approvalStatus,
-                    Address = x.Provider.Address
+                    Address = x.Provider.Address,
+                    LicenceNo = x.Provider.LicenceNo
                 })
                 .ToList();
 
@@ -454,7 +460,8 @@ namespace Dactra.Repositories.Implementation
                         Name = p.Name,
                         PhoneNumber = p.User.PhoneNumber,
                         approvalStatus = p.approvalStatus,
-                        Address = p.Address
+                        Address = p.Address,
+                        LicenceNo = p.LicenceNo
                     })
                     .AsNoTracking()
                     .ToListAsync();
@@ -492,7 +499,8 @@ namespace Dactra.Repositories.Implementation
                     Name = x.Provider.Name,
                     PhoneNumber = x.Provider.User.PhoneNumber,
                     approvalStatus = x.Provider.approvalStatus,
-                    Address = x.Provider.Address
+                    Address = x.Provider.Address,
+                    LicenceNo = x.Provider.LicenceNo
                 })
                 .ToList();
 

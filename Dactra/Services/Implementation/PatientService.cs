@@ -93,7 +93,7 @@
             var profile = await _patientProfileRepository.GetByUserIdAsync(userId);
             if (profile == null)
             {
-                throw new KeyNotFoundException("Patient Profile Not Found");
+                return null;
             }
             return _mapper.Map<PatientProfileResponseDTO>(profile);
         }

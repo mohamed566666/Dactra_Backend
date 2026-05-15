@@ -19,5 +19,6 @@
         public decimal TotalBeforeDiscount { get; set; }
         public decimal TotalAfterDiscount { get; set; }
         public decimal TotalSaved { get; set; }
+        public string? PatientImageUrl { get; set; }
     }
 }

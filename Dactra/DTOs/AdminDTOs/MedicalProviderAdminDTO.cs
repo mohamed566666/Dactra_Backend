@@ -7,5 +7,6 @@
         public string PhoneNumber { get; set; }
         public ApprovalStatus approvalStatus { get; set; }
         public string Address { get; set; }
+        public string LicenceNo { get; set; }
     }
 }

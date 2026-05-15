@@ -10,6 +10,7 @@
         public override async Task<IEnumerable<MedicalTestProviderProfile>> GetAllAsync()
         {
             return await _context.MedicalTestProviders
+                .Where(m => m.approvalStatus == ApprovalStatus.approved)
                 .Include(m => m.User).Include(m => m.WorkingHours)
                 .ToListAsync();
         }
@@ -17,13 +18,13 @@
         {
             return await _context.MedicalTestProviders
                 .Include(m => m.User).Include(m => m.WorkingHours)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id && m.approvalStatus == ApprovalStatus.approved);
         }
         public async Task<MedicalTestProviderProfile?> GetByUserIdAsync(string userId)
         {
             return await _context.MedicalTestProviders
                 .Include(m => m.User)
-                .FirstOrDefaultAsync(m => m.UserId == userId);
+                .FirstOrDefaultAsync(m => m.UserId == userId && m.approvalStatus == ApprovalStatus.approved);
         }
 
         public async Task<IEnumerable<MedicalTestProviderProfile>> GetApprovedProfilesAsync(MedicalTestProviderType? type = null)
