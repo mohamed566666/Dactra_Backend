@@ -112,10 +112,11 @@ namespace Dactra.Services.Implementation
         public async Task<RoomStatusDto> GetRoomStatusAsync(int appointmentId)
         {
             var session = await _context.VideoCallSessions
+                .Include(s => s.Appointment)
                 .FirstOrDefaultAsync(s => s.AppointmentId == appointmentId);
 
             if (session == null)
-                return new RoomStatusDto(0, "", VideoCallStatus.Waiting, false, false, null);
+                return new RoomStatusDto(0, "", VideoCallStatus.Waiting, false, false, null, 0);
 
             return new RoomStatusDto(
                 SessionId: session.Id,
@@ -123,7 +124,8 @@ namespace Dactra.Services.Implementation
                 Status: session.Status,
                 IsDoctorOnline: session.DoctorJoinedAt != null,
                 IsPatientOnline: session.PatientJoinedAt != null,
-                StartedAtUtc: session.StartedAtUtc
+                StartedAtUtc: session.StartedAtUtc,
+                PatientId: session.Appointment.PatientId
             );
         }
 
