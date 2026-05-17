@@ -23,7 +23,7 @@ namespace Dactra.Services.Implementation
                 UserId = userId,
                 Title = dto.Title,
                 Content = dto.Content,
-                Against= dto.Against,
+                Against= ComplaintAgainst.System,
             };
 
             await _repo.AddAsync(complaint);
