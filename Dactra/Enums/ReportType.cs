@@ -5,5 +5,7 @@
         Post,
         Comment,
         Question,
+        Doctor,
+        Patient
     }
 }
