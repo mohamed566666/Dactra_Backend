@@ -8,7 +8,6 @@
         [Required]
         public string Content { get; set; }
 
-        [Required]
-        public ComplaintAgainst Against { get; set; }
+
     }
 }

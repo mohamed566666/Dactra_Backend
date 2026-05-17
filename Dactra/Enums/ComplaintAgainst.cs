@@ -2,8 +2,6 @@
 {
     public enum ComplaintAgainst
     {
-        System,
-        Doctor,
-        Patient
+        System
     }
 }
