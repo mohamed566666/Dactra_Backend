@@ -15,7 +15,8 @@
         VideoCallStatus Status,
         bool IsDoctorOnline,
         bool IsPatientOnline,
-        DateTime? StartedAtUtc
+        DateTime? StartedAtUtc,
+        int PatientId
     );
     public record EndCallRequestDto(int AppointmentId);
 }
