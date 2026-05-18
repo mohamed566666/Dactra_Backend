@@ -202,7 +202,9 @@ namespace Dactra.Repositories.Implementation
                         fullName = p.FirstName + " " + p.LastName,
                         Email = p.User.Email,
                         isDeleted = p.User.isDeleted,
-                        profileId = p.Id
+                        profileId = p.Id,
+                        imageUrl = p.User.ImageUrl
+
                     })
                     .AsNoTracking()
                     .ToListAsync();
@@ -249,7 +251,8 @@ namespace Dactra.Repositories.Implementation
                     fullName = x.Patient.FirstName + " " + x.Patient.LastName,
                     Email = x.Patient.User.Email,
                     isDeleted = x.Patient.User.isDeleted,
-                    profileId = x.Patient.Id
+                    profileId = x.Patient.Id,
+                    imageUrl = x.Patient.User.ImageUrl
                 })
                 .ToList();
             return paged;
@@ -321,7 +324,9 @@ namespace Dactra.Repositories.Implementation
                         Name = d.FirstName + " " + d.LastName,
                         Email = d.User.Email,
                         approvalStatus = d.approvalStatus,
-                        LicenceNo = d.LicenceNo
+                        LicenceNo = d.LicenceNo,
+                        imageUrl = d.User.ImageUrl
+
                     })
                     .AsNoTracking()
                     .ToListAsync();
@@ -366,7 +371,8 @@ namespace Dactra.Repositories.Implementation
                     Name = x.Doctor.FirstName + " " + x.Doctor.LastName,
                     Email = x.Doctor.User.Email,
                     approvalStatus = x.Doctor.approvalStatus,
-                    LicenceNo = x.Doctor.LicenceNo
+                    LicenceNo = x.Doctor.LicenceNo,
+                    imageUrl = x.Doctor.User.ImageUrl
                 })
                 .ToList();
 
