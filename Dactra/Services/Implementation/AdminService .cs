@@ -127,7 +127,7 @@ namespace Dactra.Services.Implementation
             };
         }
 
-        public async Task<Dictionary<string, int>> GetWeeklyAppointmentsCount()
+        public async Task<WeeklyAppointmentsResponse> GetWeeklyAppointmentsCount()
         {
             return await _repo.GetWeeklyAppointmentsCount();
         }
