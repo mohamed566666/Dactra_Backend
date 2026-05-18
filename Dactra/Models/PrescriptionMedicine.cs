@@ -15,9 +15,7 @@
         [MaxLength(200)]
         public string Name { get; set; } = string.Empty;
 
-        [Required]
-        [MaxLength(100)]
-        public string? Dose { get; set; } = string.Empty;
+        public string? Dose { get; set; }
 
         [Required]
         [Range(1, 365, ErrorMessage = "Duration must be between 1 and 365 days")]
