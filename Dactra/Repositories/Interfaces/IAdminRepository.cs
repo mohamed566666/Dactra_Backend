@@ -19,7 +19,7 @@ namespace Dactra.Repositories.Interfaces
         Task<int> GetPatientsCount();
         Task<int> GetLabCount();
         Task<int> GetScanCount();
-        Task<Dictionary<string, int>> GetWeeklyAppointmentsCount();
+        Task<WeeklyAppointmentsResponse> GetWeeklyAppointmentsCount();
 
         Task<List<patientinfoDto>> patientinfo(int page, int pageSize , string? searchName = null);
         Task<List< questionInfoDto>> questioninfo(int page  , int pageSize );

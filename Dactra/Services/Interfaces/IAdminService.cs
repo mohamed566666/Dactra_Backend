@@ -14,7 +14,7 @@ namespace Dactra.Services.Interfaces
         Task<bool> DeleteQuestions(string id);
         Task<bool> DeletePosts(string id);
         Task<StatsDto> GetSummary();
-        Task<Dictionary<string, int>> GetWeeklyAppointmentsCount();
+        Task<WeeklyAppointmentsResponse> GetWeeklyAppointmentsCount();
         Task<List<patientinfoDto>> patientinfo(int page, int pageSize , string? searchName = null);
         Task<List<postInfoDto>> postinfo(int page, int pageSize);
         Task<List<questionInfoDto>> questioninfo(int page, int pageSize);

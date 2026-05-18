@@ -126,28 +126,52 @@ namespace Dactra.Repositories.Implementation
             return await _context.MedicalTestProviders.Where(p => p.Type == Enums.MedicalTestProviderType.Scan).CountAsync();
         }
 
-        public async Task<Dictionary<string, int>> GetWeeklyAppointmentsCount()
+        public async Task<WeeklyAppointmentsResponse> GetWeeklyAppointmentsCount()
         {
             var today = DateTime.UtcNow.Date;
 
-            var startOfWeek = today.AddDays(-(int)today.DayOfWeek + 6); 
+            int diff = (7 + (today.DayOfWeek - DayOfWeek.Saturday)) % 7;
+            var startOfWeek = today.AddDays(-diff);
+
             var endOfWeek = startOfWeek.AddDays(6);
 
-            var appointments = await _context.PatientAppointments
-                .Where(a => a.BookedAt.Date >= startOfWeek && a.BookedAt.Date <= endOfWeek)
+            var appointments = await _context.PatientAppointments.Include(a => a.Slot)
+                .Where(a => a.BookedAt.Date >= startOfWeek &&
+                            a.BookedAt.Date <= endOfWeek)
                 .ToListAsync();
 
             var countsByDay = appointments
                 .GroupBy(a => a.BookedAt.DayOfWeek)
                 .ToDictionary(
-                    g => CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(g.Key),
+                    g => g.Key,
                     g => g.Count()
                 );
 
-           
-            var orderedDays = new[] { "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
-            var result = orderedDays.ToDictionary(day => day, day => countsByDay.ContainsKey(day) ? countsByDay[day] : 0);
-            return result;
+            var orderedDays = new[]
+            {
+                DayOfWeek.Saturday,
+                DayOfWeek.Sunday,
+                DayOfWeek.Monday,
+                DayOfWeek.Tuesday,
+                DayOfWeek.Wednesday,
+                DayOfWeek.Thursday,
+                DayOfWeek.Friday
+            };
+
+            var result = orderedDays.ToDictionary(
+                day => day.ToString(),
+                day => countsByDay.ContainsKey(day) ? countsByDay[day] : 0
+            );
+            var onlineCount = appointments.Count(a => a.Slot.SlotType == Enums.SlotType.Online);
+            var offlineCount = appointments.Count(a => a.Slot.SlotType == Enums.SlotType.InPerson);
+
+            return new WeeklyAppointmentsResponse
+            {
+                DailyCounts = result,
+                OnlineCount = onlineCount,
+                OfflineCount = offlineCount,
+                TotalCount = appointments.Count
+            };
         }
 
         public async Task<bool> IsAdmin(ApplicationUser user)
